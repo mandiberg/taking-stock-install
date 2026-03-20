@@ -7,7 +7,8 @@
 static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool videoLoop,
     const std::vector<std::vector<BinItem>>& bins,
     const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
-    std::vector<VideoSlot>& out, bool quiet, bool deferPlay = false) {
+    std::vector<VideoSlot>& out, bool quiet, bool deferPlay = false,
+    bool deferLoad = false, const char* arrangementContext = "current arrangement") {
     out.clear();
     if (!binSorter) return;
 
@@ -36,17 +37,21 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                     slot.path = path;
                     slot.nextPath = nextPath;
                     if (!path.empty()) {
-                        if (slot.player.load(path)) {
-                            slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
-                            if (!deferPlay) slot.player.play();
-                            if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
-                                slot.nextPlayer.setLoopState(OF_LOOP_NONE);
-                                slot.nextPlayer.setPosition(0);
+                        slot.hasVideo = true;
+                        if (!deferLoad) {
+                            if (slot.player.load(path)) {
+                                ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << path;
+                                slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
+                                if (!deferPlay) slot.player.play();
+                                if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
+                                    ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << nextPath;
+                                    slot.nextPlayer.setLoopState(OF_LOOP_NONE);
+                                    slot.nextPlayer.setPosition(0);
+                                }
+                            } else {
+                                slot.hasVideo = false;
+                                if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
                             }
-                            slot.hasVideo = true;
-                        } else {
-                            slot.hasVideo = false;
-                            if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
                         }
                     } else {
                         slot.hasVideo = false;
@@ -55,7 +60,8 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                         float slotAspect = (slot.h > 0) ? (float)slot.w / slot.h : 0;
                         ofLogNotice("BinSorterRenderer") << "Slot " << (out.size() + 1) << ": "
                             << slot.w << "x" << slot.h << " aspect=" << slotAspect
-                            << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path;
+                            << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path
+                            << " [" << arrangementContext << "]";
                     }
                     out.push_back(slot);
                 }
@@ -74,17 +80,21 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                 slot.path = path;
                 slot.nextPath = nextPath;
                 if (!path.empty()) {
-                    if (slot.player.load(path)) {
-                        slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
-                        if (!deferPlay) slot.player.play();
-                        if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
-                            slot.nextPlayer.setLoopState(OF_LOOP_NONE);
-                            slot.nextPlayer.setPosition(0);
+                    slot.hasVideo = true;
+                    if (!deferLoad) {
+                        if (slot.player.load(path)) {
+                            ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << path;
+                            slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
+                            if (!deferPlay) slot.player.play();
+                            if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
+                                ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << nextPath;
+                                slot.nextPlayer.setLoopState(OF_LOOP_NONE);
+                                slot.nextPlayer.setPosition(0);
+                            }
+                        } else {
+                            slot.hasVideo = false;
+                            if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
                         }
-                        slot.hasVideo = true;
-                    } else {
-                        slot.hasVideo = false;
-                        if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
                     }
                 } else {
                     slot.hasVideo = false;
@@ -93,7 +103,8 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                     float slotAspect = (slot.h > 0) ? (float)slot.w / slot.h : 0;
                     ofLogNotice("BinSorterRenderer") << "Slot " << (out.size() + 1) << ": "
                         << slot.w << "x" << slot.h << " aspect=" << slotAspect
-                        << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path;
+                        << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path
+                        << " [" << arrangementContext << "]";
                 }
                 out.push_back(slot);
             }
@@ -117,20 +128,22 @@ void BinSorterRenderer::buildSlots() {
 void BinSorterRenderer::buildSlotsFromArrangement(const std::vector<std::vector<BinItem>>& bins,
     const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
     std::vector<VideoSlot>& out) {
-    buildSlotsImpl(binSorter, videoPool, videoLoop, bins, nestedBins, out, false);
+    buildSlotsImpl(binSorter, videoPool, videoLoop, bins, nestedBins, out, false, false, false, "current arrangement");
 }
 
 void BinSorterRenderer::preloadFromArrangement(const Arrangement& arr) {
     if (!binSorter) return;
     nextSlots.clear();
-    buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true);
-    for (auto& slot : nextSlots) {
-        if (slot.hasVideo) {
-            slot.player.update();
-            if (slot.nextPlayer.isLoaded())
-                slot.nextPlayer.update();
+    nextSlotsLoadQueue.clear();
+    buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true, true, "next arrangement");
+    for (size_t i = 0; i < nextSlots.size(); ++i) {
+        if (!nextSlots[i].path.empty()) {
+            nextSlotsLoadQueue.push_back({i, false});
+            if (!videoLoop && !nextSlots[i].nextPath.empty())
+                nextSlotsLoadQueue.push_back({i, true});
         }
     }
+    lastNextSlotLoadTime = ofGetElapsedTimef();
 }
 
 void BinSorterRenderer::swapToPreloaded(const Arrangement& arr) {
@@ -159,6 +172,33 @@ void BinSorterRenderer::update() {
         slotsPendingDeletion.clear();
     didSwapThisFrame = false;
 
+    // Staggered preload: load one video for next arrangement every 0.5s
+    if (!nextSlotsLoadQueue.empty()) {
+        float now = ofGetElapsedTimef();
+        if (now - lastNextSlotLoadTime >= 0.5f) {
+            auto p = nextSlotsLoadQueue.front();
+            nextSlotsLoadQueue.pop_front();
+            size_t slotIdx = p.first;
+            bool isNextPlayer = p.second;
+            if (slotIdx < nextSlots.size()) {
+                auto& slot = nextSlots[slotIdx];
+                if (isNextPlayer) {
+                    if (!slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
+                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement] " << slot.nextPath;
+                        slot.nextPlayer.setLoopState(OF_LOOP_NONE);
+                        slot.nextPlayer.setPosition(0);
+                    }
+                } else {
+                    if (!slot.path.empty() && slot.player.load(slot.path)) {
+                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement] " << slot.path;
+                        slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
+                    }
+                }
+            }
+            lastNextSlotLoadTime = now;
+        }
+    }
+
     for (auto& slot : nextSlots) {
         if (slot.hasVideo) {
             slot.player.update();
@@ -184,6 +224,7 @@ void BinSorterRenderer::update() {
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
                             if (slot.player.load(newPath)) {
+                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement] " << newPath;
                                 slot.player.setLoopState(OF_LOOP_NONE);
                                 slot.player.setPosition(0);
                                 slot.path = slot.nextPath;
@@ -208,6 +249,7 @@ void BinSorterRenderer::update() {
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
                             if (slot.player.load(path)) {
+                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement] " << path;
                                 slot.path = path;
                                 slot.player.setLoopState(OF_LOOP_NONE);
                                 slot.player.play();

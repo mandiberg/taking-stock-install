@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <deque>
+#include <utility>
 
 struct VideoSlot {
     ofVideoPlayer player;      // currently displaying
@@ -29,6 +31,7 @@ public:
     std::vector<VideoSlot>& getSlots() { return slots; }
     const std::vector<VideoSlot>& getSlots() const { return slots; }
     bool hasPreloadedLayout() const { return !nextSlots.empty(); }
+    bool isPreloadComplete() const { return nextSlots.empty() || nextSlotsLoadQueue.empty(); }
 private:
     void buildSlots();
     void buildSlotsFromArrangement(const std::vector<std::vector<BinItem>>& bins,
@@ -40,6 +43,8 @@ private:
     bool videoLoop = false;
     std::vector<VideoSlot> slots;
     std::vector<VideoSlot> nextSlots;
+    std::deque<std::pair<size_t, bool>> nextSlotsLoadQueue;  // (slotIndex, isNextPlayer) - load one every 0.5s
+    float lastNextSlotLoadTime = 0.f;
     std::vector<VideoSlot> slotsPendingDeletion;  // defer destruction to avoid Bus error when freeing GPU resources
     bool didSwapThisFrame = false;  // skip clearing pending in same frame as swap
     std::set<std::string> loggedNotReadyKeys;

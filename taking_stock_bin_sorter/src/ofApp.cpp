@@ -14,8 +14,8 @@ void ofApp::setup() {
         config.sizeRatios.push_back(SizeRatio(3, 2, 0.2f, 0.2f, 0.2f));
     }
 
-    if (!videoPool.load(config.videoAssetPath)) {
-        ofLogWarning("ofApp") << "No video assets found, will use colored rects";
+    if (!videoPool.loadFromCsv(config.videosCsvPath)) {
+        ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
     }
 
     binSorter = std::make_unique<BinSorter>(config.boxWidth, config.boxHeight, config.sizeRatios,
@@ -131,7 +131,13 @@ void ofApp::setup() {
         nextLayoutIdx = pickNextArrangementIndex();
         renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
     }
-    scheduleNextTransition();
+    float nextTimer = scheduleNextTransition();
+    if (!arrangements.empty()) {
+        logArrangementInfo(0);
+        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+        ofLogNotice("ofApp") << "Initial layout | next_transition_timer=" << nextTimer << "s";
+        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+    }
 }
 
 void ofApp::logArrangementInfo(size_t idx) {
@@ -268,7 +274,8 @@ void ofApp::update() {
 
     if (transitionState == TransitionState::Idle) {
         bool trigger = arrangementPickRequested || (now >= nextTransitionTime);
-        if (trigger && !arrangements.empty()) {
+        bool preloadReady = arrangements.size() <= 1 || renderer.isPreloadComplete();
+        if (trigger && !arrangements.empty() && preloadReady) {
             arrangementPickRequested = false;
 
             if (config.transitionType == TransitionType::Jumpcut) {

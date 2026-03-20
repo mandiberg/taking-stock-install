@@ -4,14 +4,24 @@
 #include <vector>
 #include <map>
 
+struct VideoEntry {
+    std::string videoId;
+    std::string filename;
+    float ratio;
+    std::string object;
+    std::string fullPath;  // resolved path to video file
+};
+
 class VideoAssetPool {
 public:
-    bool load(const std::string& assetRootPath);
+    bool loadFromCsv(const std::string& csvPath);
     void resetUsed();  // call when starting a new layout - makes all videos available again
     std::string getVideoPath(int wr, int hr);  // picks from unused; reuses only when none left
     bool hasVideosFor(int wr, int hr) const;
 private:
-    std::map<std::string, std::vector<std::string>> pathsByRatio;
-    std::map<std::string, std::vector<std::string>> availableByRatio;  // shrinks as videos are picked
-    static bool isVideoExtension(const std::string& path);
+    static constexpr float RATIO_TOLERANCE = 0.01f;  // forgiving for "1" vs "1.000", 0.667 vs 0.6667, etc.
+
+    std::vector<VideoEntry> videos;
+    std::map<std::string, std::vector<size_t>> availableByRatioKey;  // key "wr_hr" -> indices into videos
+    std::string videoFolder;  // directory containing videos (parent of csv)
 };

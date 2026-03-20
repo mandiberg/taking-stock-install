@@ -26,6 +26,7 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "BOX_WIDTH") { config.boxWidth = std::stoi(value); return; }
     if (key == "BOX_HEIGHT") { config.boxHeight = std::stoi(value); return; }
     if (key == "VIDEO_ASSET_PATH") { config.videoAssetPath = value; return; }
+    if (key == "VIDEOS_CSV_PATH") { config.videosCsvPath = value; return; }
     if (key == "ARRANGEMENTS_PATH") { config.arrangementsPath = value; return; }
     if (key == "VIDEO_LOOP") {
         std::string v = value;

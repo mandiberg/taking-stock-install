@@ -10,6 +10,7 @@ struct BinSorterConfig {
     int boxWidth = 1920;
     int boxHeight = 1080;
     std::string videoAssetPath = "videos";
+    std::string videosCsvPath = "videos/videos.csv";  // path to videos.csv (replaces folder-based loading)
     std::string arrangementsPath = "arrangements";
     bool videoLoop = false;  // when false, swap to new video when finished; when true, loop
     TransitionType transitionType = TransitionType::Jumpcut;

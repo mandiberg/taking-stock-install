@@ -1,16 +1,17 @@
-1# config.txt
+# config.txt
 BOX_WIDTH = 800
 BOX_HEIGHT = 800
 VIDEO_ASSET_PATH = ../../../../taking_stock_production/bin_sorting/videos
+VIDEOS_CSV_PATH = ../../../../taking_stock_production/bin_sorting/videos/videos.csv
 ARRANGEMENTS_PATH = ../../../../taking_stock_production/bin_sorting/arrangements
 VIDEO_LOOP = false  # loop videos or swap to new video when finished
 
 # Layout transition: jumpcut | fade | jumpcut_to_black
-TRANSITION_TYPE = jumpsuit
-TRANSITION_DURATION_FADE = 3    # seconds for fade down/up
+TRANSITION_TYPE = fade
+TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
 TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
-TRANSITION_TIMER_MIN = 10    # min seconds between auto-transitions
-TRANSITION_TIMER_MAX = 20    # max seconds between auto-transitions
+TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
+TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
 ### CONTROLS ###
 #s: export image 
