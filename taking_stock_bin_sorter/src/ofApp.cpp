@@ -121,6 +121,7 @@ void ofApp::setup() {
     for (size_t i = 0; i < arrangements.size(); ++i) pickQueue.push_back(i);
     std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
 
+    pickSelectAndApplyFilter();
     renderer.setup(binSorter.get(), &videoPool, config.videoLoop);
 
     ofSetWindowShape(config.boxWidth, config.boxHeight);
@@ -129,6 +130,8 @@ void ofApp::setup() {
 
     if (arrangements.size() > 1) {
         nextLayoutIdx = pickNextArrangementIndex();
+        pickSelectAndApplyFilter();
+        videoPool.resetUsed();
         renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
     }
     float nextTimer = scheduleNextTransition();
@@ -185,6 +188,29 @@ void ofApp::logArrangementInfo(size_t idx) {
     }
 }
 
+void ofApp::pickSelectAndApplyFilter() {
+    if (!config.selectMode || config.selectOptions.empty()) {
+        videoPool.setObjectFilter({});
+        return;
+    }
+    float totalWeight = 0.f;
+    for (const auto& opt : config.selectOptions)
+        totalWeight += opt.weight;
+    if (totalWeight <= 0.f) {
+        videoPool.setObjectFilter({});
+        return;
+    }
+    float r = ofRandom(0.f, totalWeight);
+    for (const auto& opt : config.selectOptions) {
+        r -= opt.weight;
+        if (r < 0.f) {
+            videoPool.setObjectFilter(opt.objects);
+            return;
+        }
+    }
+    videoPool.setObjectFilter(config.selectOptions.back().objects);
+}
+
 void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
     if (!renderer.hasPreloadedLayout()) {
@@ -199,11 +225,14 @@ void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
 void ofApp::preloadNextLayout() {
     if (arrangements.size() <= 1) return;
     nextLayoutIdx = pickNextArrangementIndex();
+    pickSelectAndApplyFilter();
+    videoPool.resetUsed();
     renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
 }
 
 void ofApp::pickAndLoadArrangement(size_t idx) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
+    pickSelectAndApplyFilter();
     binSorter->loadArrangement(arrangements[idx].bins, arrangements[idx].nestedBins);
     ofLogNotice("ofApp") << "Picked arrangement " << (idx + 1) << " of " << arrangements.size();
     renderer.regenerate();

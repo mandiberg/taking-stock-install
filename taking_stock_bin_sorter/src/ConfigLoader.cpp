@@ -68,6 +68,42 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "LAYOUT_PHASES") { config.layoutPhases = std::stoi(value); return; }
     if (key == "PLACEMENT_AREA_EXPONENT") { config.placementAreaExponent = std::stof(value); return; }
     if (key == "PLACEMENT_TOP_K") { config.placementTopK = std::stoi(value); return; }
+    if (key == "SELECT_MODE") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.selectMode = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
+
+    if (key == "SELECT") {
+        size_t lb = value.find('[');
+        size_t rb = value.find(']');
+        if (lb != std::string::npos && rb != std::string::npos && rb > lb) {
+            std::string inner = trim(value.substr(lb + 1, rb - lb - 1));
+            std::string rest = trim(value.substr(rb + 1));
+            SelectOption opt;
+            if (!inner.empty()) {
+                size_t pos = 0;
+                while (pos < inner.size()) {
+                    size_t comma = inner.find(',', pos);
+                    std::string obj = trim(inner.substr(pos, (comma == std::string::npos ? inner.size() : comma) - pos));
+                    if (!obj.empty()) opt.objects.push_back(obj);
+                    pos = (comma == std::string::npos) ? inner.size() : comma + 1;
+                }
+            }
+            float weight = 1.0f;
+            if (!rest.empty() && rest[0] == ',') {
+                std::istringstream iss(trim(rest.substr(1)));
+                if (iss >> weight) { /* ok */ }
+            } else {
+                std::istringstream iss(rest);
+                if (iss >> weight) { /* ok */ }
+            }
+            opt.weight = weight;
+            config.selectOptions.push_back(opt);
+        }
+        return;
+    }
 
     if (key == "SIZE_RATIO") {
         std::istringstream iss(value);

@@ -1,4 +1,6 @@
 # config.txt
+
+####### PATHS & WINDOW SIZE #########
 BOX_WIDTH = 800
 BOX_HEIGHT = 800
 VIDEO_ASSET_PATH = ../../../../taking_stock_production/bin_sorting/videos
@@ -6,17 +8,31 @@ VIDEOS_CSV_PATH = ../../../../taking_stock_production/bin_sorting/videos/videos.
 ARRANGEMENTS_PATH = ../../../../taking_stock_production/bin_sorting/arrangements
 VIDEO_LOOP = false  # loop videos or swap to new video when finished
 
-# Layout transition: jumpcut | fade | jumpcut_to_black
+
+############## CONTROLS ################
+#s: export image 
+#r: regenerate layout
+
+
+############# LAYOUT TRANSITIONS ######################
+# Transition Type: jumpcut | fade | jumpcut_to_black
 TRANSITION_TYPE = fade
 TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
 TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
 TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
 TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
-### CONTROLS ###
-#s: export image 
-#r: regenerate layout
 
+############# SELECT MODE ######################
+# Select mode: filter videos by CSV object column when loading arrangements
+# Usage: SELECT = [obj1, obj2], weight   # [*] = any object
+SELECT_MODE = true
+SELECT = [1], 1
+# SELECT = [2], 0.3
+# SELECT = [*], 0.2
+
+
+############# VIDEO RATIOS ######################
 # wr hr weight expandX expandY
 SIZE_RATIO = 1 1 0.2 0.1 0.1
 #SIZE_RATIO = 1 2 0.1 0.2 0.2
@@ -27,6 +43,7 @@ SIZE_RATIO = 3 2 0.2 0.1 0.1
 #SIZE_RATIO = 3 1 0.05 0.2 0.2
 
 
+################ LAYOUT STRUCTURE ########################
 GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
 NESTING_LAYERS = 0
@@ -39,7 +56,8 @@ BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
 BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
 BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
 
-#Layout generation tuning (for more thorough discovery):
+
+################ LAYOUT GENERATION ########################
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
 LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)

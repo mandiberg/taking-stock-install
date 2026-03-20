@@ -98,6 +98,23 @@ void VideoAssetPool::resetUsed() {
     availableByRatioKey.clear();
 }
 
+void VideoAssetPool::setObjectFilter(const std::vector<std::string>& allowedObjects) {
+    objectFilter.clear();
+    if (allowedObjects.empty()) return;
+    for (const auto& o : allowedObjects) {
+        if (o == "*") return;  // [*] or [x, *] = no filter
+    }
+    for (const auto& o : allowedObjects) {
+        if (!o.empty()) objectFilter.insert(o);
+    }
+}
+
+bool VideoAssetPool::passesObjectFilter(const VideoEntry& entry) const {
+    if (objectFilter.empty()) return true;
+    if (objectFilter.find("*") != objectFilter.end()) return true;
+    return objectFilter.find(entry.object) != objectFilter.end();
+}
+
 std::string VideoAssetPool::getVideoPath(int wr, int hr) {
     if (videos.empty()) return "";
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
@@ -107,7 +124,7 @@ std::string VideoAssetPool::getVideoPath(int wr, int hr) {
 
     if (available.empty()) {
         for (size_t i = 0; i < videos.size(); ++i) {
-            if (std::abs(videos[i].ratio - targetAspect) < RATIO_TOLERANCE)
+            if (std::abs(videos[i].ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(videos[i]))
                 available.push_back(i);
         }
     }
@@ -138,7 +155,7 @@ bool VideoAssetPool::hasVideosFor(int wr, int hr) const {
     if (videos.empty()) return false;
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
     for (const auto& v : videos) {
-        if (std::abs(v.ratio - targetAspect) < RATIO_TOLERANCE)
+        if (std::abs(v.ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(v))
             return true;
     }
     return false;

@@ -18,6 +18,7 @@ public:
     void keyPressed(int key);
 
 private:
+    void pickSelectAndApplyFilter();
     void pickAndLoadArrangement(size_t idx);
     void swapToPreloadedAndLog(size_t idx, bool deferPlay = false);
     void logArrangementInfo(size_t idx);

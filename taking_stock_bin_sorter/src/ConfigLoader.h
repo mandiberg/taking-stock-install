@@ -6,6 +6,11 @@
 
 enum class TransitionType { Jumpcut, Fade, JumpcutToBlack };
 
+struct SelectOption {
+    std::vector<std::string> objects;  // empty or ["*"] = any object
+    float weight = 1.0f;
+};
+
 struct BinSorterConfig {
     int boxWidth = 1920;
     int boxHeight = 1080;
@@ -35,6 +40,8 @@ struct BinSorterConfig {
     int layoutPhases = 5;               // number of reseeded phases to explore different regions
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items
     int placementTopK = 3;              // randomly pick from top K candidates for variation (1=always best)
+    bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines
+    std::vector<SelectOption> selectOptions;
 };
 
 class ConfigLoader {
