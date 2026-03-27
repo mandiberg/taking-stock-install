@@ -69,12 +69,44 @@ std::pair<int, int> BinSorter::selectWeightedRatio() {
     return {sizeRatios.back().w, sizeRatios.back().h};
 }
 
-std::pair<float, float> BinSorter::getExpandAllowances(int wr, int hr) {
+std::pair<float, float> BinSorter::getExpandAllowances(int wr, int hr) const {
     for (const auto& r : sizeRatios) {
         if (r.w == wr && r.h == hr)
             return {r.expandX, r.expandY};
     }
     return {0.0f, 0.0f};
+}
+
+bool BinSorter::arrangementAspectWithinExpandTolerance(
+    const std::vector<std::vector<BinItem>>& bins_,
+    const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const {
+    for (size_t bi = 0; bi < bins_.size(); ++bi) {
+        for (const auto& it : bins_[bi]) {
+            auto itNested = nestedBins_.find({(int)bi, it.itemIdx});
+            if (itNested != nestedBins_.end()) {
+                for (const auto& nit : itNested->second.items) {
+                    int wr = 0, hr = 0;
+                    if (!getItemRatio(nit.w, nit.h, wr, hr) || nit.h <= 0 || hr <= 0) continue;
+                    float calcRatio = (float)nit.w / nit.h;
+                    float slotRatio = (float)wr / hr;
+                    auto [ex, ey] = getExpandAllowances(wr, hr);
+                    float maxDrift = slotRatio * (2.f * ex + 2.f * ey);
+                    if (std::fabs(calcRatio - slotRatio) > maxDrift)
+                        return false;
+                }
+            } else {
+                int wr = 0, hr = 0;
+                if (!getItemRatio(it.w, it.h, wr, hr) || it.h <= 0 || hr <= 0) continue;
+                float calcRatio = (float)it.w / it.h;
+                float slotRatio = (float)wr / hr;
+                auto [ex, ey] = getExpandAllowances(wr, hr);
+                float maxDrift = slotRatio * (2.f * ex + 2.f * ey);
+                if (std::fabs(calcRatio - slotRatio) > maxDrift)
+                    return false;
+            }
+        }
+    }
+    return true;
 }
 
 std::tuple<int, int, int, int> BinSorter::gapsForItem(
@@ -336,7 +368,6 @@ std::vector<std::tuple<int,int,int,int>> BinSorter::tryLayoutNItems(
                 }
                 if (valid) {
                     bool doFlip = chanceToDo(0.5f);
-                    ofLogNotice("BinSorter") << "tryLayoutNItems: valid layout n=" << n << " doFlip=" << doFlip;
                     if (doFlip) {
                         for (auto& p : placements) {
                             int py = std::get<1>(p), ph = std::get<3>(p);
@@ -737,9 +768,6 @@ std::vector<std::vector<BinItem>> BinSorter::sortInfinite() {
 
             std::vector<std::tuple<int,int,int,int>> placements;
             for (int n = target; n >= minN; --n) {
-                if (n >= 3)
-                    ofLogNotice("BinSorter") << "tryLayoutNItems: attempting n=" << n << " in " << w << "x" << h
-                        << " (parent " << wr << "x" << hr << ") ratios=" << ratiosOnly.size();
                 for (int attempt = 0; attempt < breakBoxFillAttempts; ++attempt) {
                     placements = tryLayoutNItems(w, h, n, ratiosOnly);
                     if (placements.empty()) {

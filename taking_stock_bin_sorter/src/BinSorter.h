@@ -65,6 +65,9 @@ public:
     int getLargestFittableAreaInLayout() const;
     void loadArrangement(const std::vector<std::vector<BinItem>>& bins_,
                          const std::map<std::pair<int, int>, NestedBinData>& nestedBins_);
+    /// True if every leaf slot's pixel aspect is within expand-allowance slack vs nominal ratio (see config ASPECT_EXPAND_FILTER).
+    bool arrangementAspectWithinExpandTolerance(const std::vector<std::vector<BinItem>>& bins_,
+        const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const;
 
 private:
     std::vector<SizeRatio> sizeRatios;
@@ -92,7 +95,7 @@ private:
 
     void normalizeWeights();
     std::pair<int, int> selectWeightedRatio();
-    std::pair<float, float> getExpandAllowances(int wr, int hr);
+    std::pair<float, float> getExpandAllowances(int wr, int hr) const;
     std::tuple<int, int, int, int> gapsForItem(const std::vector<BinItem>& binItems,
                                                 const BinItem& item, int boxW, int boxH, int tolerance = 1);
     std::vector<BinItem> gapFillPass(std::vector<BinItem> binItems, int boxW, int boxH);

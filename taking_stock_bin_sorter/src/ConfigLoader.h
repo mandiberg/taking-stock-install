@@ -25,6 +25,7 @@ struct BinSorterConfig {
     float transitionTimerMax = 90.f;
     std::vector<SizeRatio> sizeRatios;
     int gapFilterThreshold = 1000;   // reject layouts where largest empty rect >= this (px²); 0 = only perfect fill
+    bool aspectExpandFilter = true;  // reject layouts where |calc_ratio - slot_ratio| exceeds expand slack (see SIZE_RATIO expandX/Y)
     int packingStopArea = 1000;     // stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
     int nestingLayers = 1;
     int nestedMinSpaceThreshold = 0;

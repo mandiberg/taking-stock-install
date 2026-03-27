@@ -37,14 +37,23 @@ void ofApp::setup() {
                     binSorter->loadArrangement(a.bins, a.nestedBins);
                     int maxGap = binSorter->getLargestFittableAreaInLayout();
                     int threshold = (config.gapFilterThreshold == 0) ? 1 : config.gapFilterThreshold;
-                    return maxGap >= threshold;
+                    if (maxGap >= threshold) return true;
                 }
+                if (config.aspectExpandFilter &&
+                    !binSorter->arrangementAspectWithinExpandTolerance(a.bins, a.nestedBins))
+                    return true;
                 return false;
             });
         arrangements.erase(it, arrangements.end());
         if (!arrangements.empty()) {
-            ofLogNotice("ofApp") << "Loaded " << arrangements.size() << " arrangements from disk"
-                << (config.gapFilterThreshold >= 0 ? " (filtered by gap threshold)" : "");
+            std::string tail;
+            if (config.gapFilterThreshold >= 0 && config.aspectExpandFilter)
+                tail = " (filtered by gap + aspect-expand)";
+            else if (config.gapFilterThreshold >= 0)
+                tail = " (filtered by gap threshold)";
+            else if (config.aspectExpandFilter)
+                tail = " (filtered by aspect-expand)";
+            ofLogNotice("ofApp") << "Loaded " << arrangements.size() << " arrangements from disk" << tail;
         }
         if (arrangements.empty()) {
             ofLogWarning("ofApp") << "All loaded arrangements were invalid or exceeded gap threshold, generating new";
@@ -77,6 +86,10 @@ void ofApp::setup() {
                         if (maxGap >= threshold) {
                             staleCount++;
                             if (staleCount >= config.layoutStaleThreshold) break;
+                        } else if (config.aspectExpandFilter &&
+                            !binSorter->arrangementAspectWithinExpandTolerance(arr.bins, arr.nestedBins)) {
+                            staleCount++;
+                            if (staleCount >= config.layoutStaleThreshold) break;
                         } else {
                             arrangements.push_back(arr);
                             staleCount = 0;
@@ -84,6 +97,10 @@ void ofApp::setup() {
                                 ofLogNotice("ofApp") << "Arrangements: " << arrangements.size();
                             }
                         }
+                    } else if (config.aspectExpandFilter &&
+                        !binSorter->arrangementAspectWithinExpandTolerance(arr.bins, arr.nestedBins)) {
+                        staleCount++;
+                        if (staleCount >= config.layoutStaleThreshold) break;
                     } else {
                         arrangements.push_back(arr);
                         staleCount = 0;

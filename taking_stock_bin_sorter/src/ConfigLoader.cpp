@@ -53,6 +53,12 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         return;
     }
     if (key == "GAP_FILTER_THRESHOLD") { config.gapFilterThreshold = std::stoi(value); return; }
+    if (key == "ASPECT_EXPAND_FILTER") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.aspectExpandFilter = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
     if (key == "PACKING_STOP_AREA") { config.packingStopArea = std::stoi(value); return; }
     if (key == "NESTING_LAYERS") { config.nestingLayers = std::stoi(value); return; }
     if (key == "NESTED_MIN_SPACE_THRESHOLD") { config.nestedMinSpaceThreshold = std::stoi(value); return; }
