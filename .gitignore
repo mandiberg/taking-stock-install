@@ -1,1 +1,8 @@
 **/.DS_Store
+
+# openFrameworks SDK
+takingstock_install/openframeworks/of_*/
+
+# Large media/data files
+takingstock_install/videos/*.mp4
+takingstock_install/videos/*.csv
