@@ -3,9 +3,9 @@
 ####### PATHS & WINDOW SIZE #########
 BOX_WIDTH = 1500
 BOX_HEIGHT = 750
-VIDEO_ASSET_PATH = ../../../../taking_stock_production/bin_sorting/videos
-VIDEOS_CSV_PATH = ../../../../taking_stock_production/bin_sorting/videos/videos.csv
-ARRANGEMENTS_PATH = ../../../../taking_stock_production/bin_sorting/arrangements
+VIDEO_ASSET_PATH = ../videos
+VIDEOS_CSV_PATH = ../videos/videos.csv
+ARRANGEMENTS_PATH = ../arrangements
 VIDEO_LOOP = false  # loop videos or swap to new video when finished
 
 
