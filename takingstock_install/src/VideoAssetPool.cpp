@@ -160,3 +160,12 @@ bool VideoAssetPool::hasVideosFor(int wr, int hr) const {
     }
     return false;
 }
+
+std::map<float, int> VideoAssetPool::getRatioCounts() const {
+    std::map<float, int> counts;
+    for (const auto& v : videos) {
+        float rounded = std::round(v.ratio * 1000.f) / 1000.f;
+        counts[rounded]++;
+    }
+    return counts;
+}

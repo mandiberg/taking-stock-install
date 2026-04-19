@@ -39,6 +39,8 @@ struct BinSorterConfig {
     int layoutMaxAttempts = 50000;      // max sort() calls per phase before giving up
     int layoutStaleThreshold = 1500;   // stop phase after this many consecutive duplicates
     int layoutPhases = 5;               // number of reseeded phases to explore different regions
+    float expandX = 0.1f;               // horizontal expand allowance applied to all video ratios
+    float expandY = 0.1f;               // vertical expand allowance applied to all video ratios
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items
     int placementTopK = 3;              // randomly pick from top K candidates for variation (1=always best)
     bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines

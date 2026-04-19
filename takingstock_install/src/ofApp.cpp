@@ -9,13 +9,27 @@ void ofApp::setup() {
     ofSetBackgroundColor(0, 0, 0);
     if (!ConfigLoader::load("config.txt", config)) {
         ofLogError("ofApp") << "Failed to load config.txt, using defaults";
-        config.sizeRatios.push_back(SizeRatio(1, 1, 0.3f, 0.2f, 0.2f));
-        config.sizeRatios.push_back(SizeRatio(2, 3, 0.2f, 0.2f, 0.2f));
-        config.sizeRatios.push_back(SizeRatio(3, 2, 0.2f, 0.2f, 0.2f));
     }
 
     if (!videoPool.loadFromCsv(config.videosCsvPath)) {
         ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
+    }
+
+    // Derive size ratios from the CSV: weight each ratio by its video count
+    auto ratioCounts = videoPool.getRatioCounts();
+    int totalVideos = 0;
+    for (auto& [ratio, count] : ratioCounts) totalVideos += count;
+    ofLogNotice("ofApp") << "Videos loaded: " << totalVideos << " total, " << ratioCounts.size() << " ratio(s)";
+    for (auto& [ratio, count] : ratioCounts) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(3) << ratio;
+        ofLogNotice("ofApp") << "  ratio " << oss.str() << " -> " << count << " videos";
+        int w = (int)std::round(ratio * 1000.f);
+        config.sizeRatios.push_back(SizeRatio(w, 1000, (float)count, config.expandX, config.expandY));
+    }
+    if (config.sizeRatios.empty()) {
+        ofLogWarning("ofApp") << "No ratios found in CSV, falling back to 1:1";
+        config.sizeRatios.push_back(SizeRatio(1000, 1000, 1.0f, config.expandX, config.expandY));
     }
 
     binSorter = std::make_unique<BinSorter>(config.boxWidth, config.boxHeight, config.sizeRatios,

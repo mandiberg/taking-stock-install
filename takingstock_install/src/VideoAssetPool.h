@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <cmath>
 
 struct VideoEntry {
     std::string videoId;
@@ -20,6 +21,8 @@ public:
     void setObjectFilter(const std::vector<std::string>& allowedObjects);  // empty or ["*"] = no filter
     std::string getVideoPath(int wr, int hr);  // picks from unused; reuses only when none left
     bool hasVideosFor(int wr, int hr) const;
+    // Returns a map of ratio (rounded to nearest 0.001) -> count of videos with that ratio
+    std::map<float, int> getRatioCounts() const;
 private:
     bool passesObjectFilter(const VideoEntry& entry) const;
 

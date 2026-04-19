@@ -111,14 +111,8 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         return;
     }
 
-    if (key == "SIZE_RATIO") {
-        std::istringstream iss(value);
-        int w, h;
-        float weight, exX, exY;
-        if (iss >> w >> h >> weight >> exX >> exY)
-            config.sizeRatios.push_back(SizeRatio(w, h, weight, exX, exY));
-        return;
-    }
+    if (key == "EXPAND_X") { config.expandX = std::stof(value); return; }
+    if (key == "EXPAND_Y") { config.expandY = std::stof(value); return; }
 }
 
 bool ConfigLoader::load(const std::string& path, BinSorterConfig& out) {
