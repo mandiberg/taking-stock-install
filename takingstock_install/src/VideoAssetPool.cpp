@@ -51,39 +51,64 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
         ofLogWarning("VideoAssetPool") << "videos.csv is empty";
         return false;
     }
-    // Parse header to find column indices (supports video_id,filename,ratio,object OR video_id,filename,object,ratio)
+    // Parse header — required: file_name, ratio; optional: object, cluster_no, pose_no
+    // Legacy 'filename' column is accepted with a deprecation warning.
     std::vector<std::string> header = splitCsvLine(line);
-    int idxVideoId = -1, idxFilename = -1, idxRatio = -1, idxObject = -1;
+    int idxFilename = -1, idxRatio = -1, idxObject = -1, idxClusterNo = -1, idxPoseNo = -1;
     for (size_t i = 0; i < header.size(); ++i) {
         std::string h = header[i];
         std::transform(h.begin(), h.end(), h.begin(), ::tolower);
-        if (h.find("video_id") != std::string::npos) idxVideoId = (int)i;
-        else if (h.find("filename") != std::string::npos) idxFilename = (int)i;
-        else if (h.find("ratio") != std::string::npos) idxRatio = (int)i;
-        else if (h.find("object") != std::string::npos) idxObject = (int)i;
+        if (h == "file_name") {
+            idxFilename = (int)i;
+        } else if (h == "filename" && idxFilename < 0) {
+            idxFilename = (int)i;
+            ofLogWarning("VideoAssetPool") << "CSV column 'filename' is deprecated; rename it to 'file_name'";
+        } else if (h == "ratio") {
+            idxRatio = (int)i;
+        } else if (h.find("object") != std::string::npos) {
+            idxObject = (int)i;
+        } else if (h == "cluster_no") {
+            idxClusterNo = (int)i;
+        } else if (h == "pose_no") {
+            idxPoseNo = (int)i;
+        }
     }
-    if (idxVideoId < 0 || idxFilename < 0 || idxRatio < 0 || idxObject < 0) {
-        ofLogWarning("VideoAssetPool") << "videos.csv header must have video_id, filename, ratio, object columns";
+    if (idxFilename < 0 || idxRatio < 0) {
+        ofLogWarning("VideoAssetPool") << "installation.csv must have 'file_name' and 'ratio' columns";
         return false;
     }
+    objectColumnFound = (idxObject >= 0);
+    if (!objectColumnFound) {
+        ofLogWarning("VideoAssetPool") << "installation.csv has no 'object' column; "
+            "SELECT_MODE cannot work and will be disabled";
+    }
 
+    int rowNum = 1;
     while (std::getline(f, line)) {
+        ++rowNum;
         if (line.empty()) continue;
         std::vector<std::string> fields = splitCsvLine(line);
-        int maxIdx = std::max(std::max(idxVideoId, idxFilename), std::max(idxRatio, idxObject));
-        if (fields.size() < (size_t)maxIdx + 1) continue;
+        int maxRequired = std::max(idxFilename, idxRatio);
+        if ((int)fields.size() < maxRequired + 1) continue;
 
         VideoEntry entry;
-        entry.videoId = fields[idxVideoId];
-        entry.filename = fields[idxFilename];
-        entry.object = fields[idxObject];
+        entry.filename  = fields[idxFilename];
+        entry.videoId   = entry.filename;
+        entry.object    = (idxObject    >= 0 && idxObject    < (int)fields.size()) ? fields[idxObject]    : "";
+        entry.clusterNo = (idxClusterNo >= 0 && idxClusterNo < (int)fields.size()) ? fields[idxClusterNo] : "";
+        entry.poseNo    = (idxPoseNo    >= 0 && idxPoseNo    < (int)fields.size()) ? fields[idxPoseNo]    : "";
         try {
             entry.ratio = std::stof(fields[idxRatio]);
         } catch (...) {
-            ofLogWarning("VideoAssetPool") << "Invalid ratio in row: " << line;
+            ofLogWarning("VideoAssetPool") << "Row " << rowNum << ": invalid ratio value, skipping";
             continue;
         }
         entry.fullPath = ofFilePath::join(videoFolder, entry.filename);
+
+        if (idxClusterNo >= 0 && entry.clusterNo.empty())
+            ofLogWarning("VideoAssetPool") << "Row " << rowNum << " (" << entry.filename << "): cluster_no is empty";
+        if (idxPoseNo >= 0 && entry.poseNo.empty())
+            ofLogWarning("VideoAssetPool") << "Row " << rowNum << " (" << entry.filename << "): pose_no is empty";
 
         videos.push_back(entry);
     }

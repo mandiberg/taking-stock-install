@@ -15,6 +15,26 @@ void ofApp::setup() {
         ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
     }
 
+    if (!videoPool.hasObjectColumn() && config.selectMode) {
+        ofLogWarning("ofApp") << "SELECT_MODE disabled: no 'object' column found in CSV";
+        config.selectMode = false;
+    }
+
+    // Check whether the CSV or video files have changed since the last run.
+    // If so, delete any cached arrangement file so it gets regenerated with
+    // the updated ratios and weightings.
+    std::string currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
+    std::string fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+    std::string savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
+    if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
+        ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
+        std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+        if (!oldPath.empty()) {
+            ofFile(oldPath).remove(false);
+            ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
+        }
+    }
+
     // Derive size ratios from the CSV: weight each ratio by its video count
     auto ratioCounts = videoPool.getRatioCounts();
     int totalVideos = 0;
@@ -68,6 +88,10 @@ void ofApp::setup() {
             else if (config.aspectExpandFilter)
                 tail = " (filtered by aspect-expand)";
             ofLogNotice("ofApp") << "Loaded " << arrangements.size() << " arrangements from disk" << tail;
+            // First run with fingerprinting: adopt current fingerprint so future
+            // runs only regenerate when inputs actually change.
+            if (savedFingerprint.empty())
+                ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
         if (arrangements.empty()) {
             ofLogWarning("ofApp") << "All loaded arrangements were invalid or exceeded gap threshold, generating new";
@@ -138,6 +162,7 @@ void ofApp::setup() {
         if (!arrangements.empty()) {
             std::string savePath = ArrangementIO::getArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers, (int)arrangements.size());
             ArrangementIO::save(savePath, arrangements);
+            ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
     }
 

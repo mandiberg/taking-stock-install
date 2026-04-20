@@ -3,6 +3,13 @@
 # openFrameworks SDK
 takingstock_install/openframeworks/of_*/
 
+# Build artifacts
+takingstock_install/bin/*.app/
+takingstock_install/obj/
+
 # Large media/data files
 takingstock_install/videos/*.mp4
 takingstock_install/videos/*.csv
+
+#arrangements
+takingstock_install/arrangements/*arrangements*

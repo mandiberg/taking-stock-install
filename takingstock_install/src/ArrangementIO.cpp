@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <cstdint>
 #include <numeric>
+#include <algorithm>
 
 static const uint32_t MAGIC = 0x42534F52;  // "BSOR"
 static const uint32_t VERSION = 1;
@@ -39,6 +40,79 @@ std::string findArrangementPath(const std::string& arrangementsPath, int boxWidt
     }
     return "";
 }
+
+// -- Input fingerprinting -------------------------------------------------------
+
+static uint64_t fnv1a64(const std::string& s) {
+    uint64_t h = 14695981039346656037ULL;
+    for (unsigned char c : s) { h ^= c; h *= 1099511628211ULL; }
+    return h;
+}
+
+static uint64_t hashFileContents(const std::string& path) {
+    std::ifstream f(path, std::ios::binary);
+    if (!f) return 0;
+    std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    return fnv1a64(content);
+}
+
+std::string computeInputsFingerprint(const std::string& csvPath) {
+    std::string fullCsvPath = ofToDataPath(csvPath, true);
+    uint64_t csvHash = hashFileContents(fullCsvPath);
+
+    // List all mp4 files in the video folder (same folder as the CSV), sorted by name.
+    // Include each file's size so additions, removals, and replacements are all detected.
+    std::string videoFolder = ofFilePath::getEnclosingDirectory(fullCsvPath, false);
+    ofDirectory dir(videoFolder);
+    dir.allowExt("mp4");
+    dir.allowExt("MP4");
+    dir.listDir();
+
+    std::vector<std::string> entries;
+    entries.reserve(dir.size());
+    for (int i = 0; i < dir.size(); ++i) {
+        std::ifstream vf(dir.getPath(i), std::ios::binary | std::ios::ate);
+        long long sz = vf.is_open() ? static_cast<long long>(vf.tellg()) : -1;
+        entries.push_back(dir.getName(i) + ":" + std::to_string(sz));
+    }
+    std::sort(entries.begin(), entries.end());
+
+    uint64_t videoHash = 14695981039346656037ULL;
+    for (const auto& e : entries)
+        videoHash = fnv1a64(std::to_string(videoHash) + e);
+
+    std::ostringstream oss;
+    oss << std::hex << std::setw(16) << std::setfill('0') << csvHash
+        << "_" << std::setw(16) << std::setfill('0') << videoHash;
+    return oss.str();
+}
+
+std::string getFingerprintPath(const std::string& arrangementsPath, int boxWidth, int boxHeight, int nestingLayers) {
+    std::string filename = getAspectPrefix(boxWidth, boxHeight, nestingLayers) + "inputs.fingerprint";
+    return ofFilePath::join(ofToDataPath(arrangementsPath, true), filename);
+}
+
+bool saveFingerprint(const std::string& path, const std::string& fingerprint) {
+    std::string dirPath = ofFilePath::getEnclosingDirectory(path, false);
+    ofDirectory::createDirectory(dirPath, false, true);
+    std::ofstream f(path);
+    if (!f) {
+        ofLogError("ArrangementIO") << "Failed to write fingerprint: " << path;
+        return false;
+    }
+    f << fingerprint;
+    return f.good();
+}
+
+std::string loadFingerprint(const std::string& path) {
+    std::ifstream f(path);
+    if (!f) return "";
+    std::string fp;
+    std::getline(f, fp);
+    return fp;
+}
+
+// -- Arrangement validation ----------------------------------------------------
 
 static bool validateNestedItemsInBounds(const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
                                          const std::vector<BinItem>& parentItems) {

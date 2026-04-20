@@ -10,4 +10,11 @@ namespace ArrangementIO {
     bool isValidArrangement(const Arrangement& arr, int boxWidth, int boxHeight);
     bool load(const std::string& path, std::vector<Arrangement>& out);
     bool save(const std::string& path, const std::vector<Arrangement>& arrangements);
+
+    // Input fingerprinting: detects changes to the CSV and video files so cached
+    // arrangements are automatically regenerated when inputs change.
+    std::string computeInputsFingerprint(const std::string& csvPath);
+    std::string getFingerprintPath(const std::string& arrangementsPath, int boxWidth, int boxHeight, int nestingLayers);
+    bool saveFingerprint(const std::string& path, const std::string& fingerprint);
+    std::string loadFingerprint(const std::string& path);
 }

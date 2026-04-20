@@ -15,15 +15,15 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "taking_stock_bin_sorter.app"
-               BlueprintName = "taking_stock_bin_sorter"
-               ReferencedContainer = "container:taking_stock_bin_sorter.xcodeproj">
+               BuildableName = "takingstock_install.app"
+               BlueprintName = "takingstock_install"
+               ReferencedContainer = "container:takingstock_install.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -31,16 +31,16 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "taking_stock_bin_sorter.app"
-            BlueprintName = "taking_stock_bin_sorter"
-            ReferencedContainer = "container:taking_stock_bin_sorter.xcodeproj">
+            BuildableName = "takingstock_install.app"
+            BlueprintName = "takingstock_install"
+            ReferencedContainer = "container:takingstock_install.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -54,12 +54,12 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "taking_stock_bin_sorter.app"
-            BlueprintName = "taking_stock_bin_sorter"
-            ReferencedContainer = "container:taking_stock_bin_sorter.xcodeproj">
+            BuildableName = "takingstock_install.app"
+            BlueprintName = "takingstock_install"
+            ReferencedContainer = "container:takingstock_install.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
+       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OS_ACTIVITY_MODE"
             value = "disable"
@@ -78,7 +78,7 @@
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -88,17 +88,17 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "taking_stock_bin_sorter.app"
-            BlueprintName = "taking_stock_bin_sorter"
-            ReferencedContainer = "container:taking_stock_bin_sorter.xcodeproj">
+            BuildableName = "takingstock_install.app"
+            BlueprintName = "takingstock_install"
+            ReferencedContainer = "container:takingstock_install.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Debug">
+      buildConfiguration = "Release">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

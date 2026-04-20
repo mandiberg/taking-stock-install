@@ -11,6 +11,8 @@ struct VideoEntry {
     std::string filename;
     float ratio;
     std::string object;
+    std::string clusterNo;
+    std::string poseNo;
     std::string fullPath;  // resolved path to video file
 };
 
@@ -23,10 +25,13 @@ public:
     bool hasVideosFor(int wr, int hr) const;
     // Returns a map of ratio (rounded to nearest 0.001) -> count of videos with that ratio
     std::map<float, int> getRatioCounts() const;
+    bool hasObjectColumn() const { return objectColumnFound; }
 private:
     bool passesObjectFilter(const VideoEntry& entry) const;
 
     static constexpr float RATIO_TOLERANCE = 0.01f;  // forgiving for "1" vs "1.000", 0.667 vs 0.6667, etc.
+
+    bool objectColumnFound = false;
 
     std::vector<VideoEntry> videos;
     std::map<std::string, std::vector<size_t>> availableByRatioKey;  // key "wr_hr" -> indices into videos

@@ -309,6 +309,13 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
         return areaA < areaB;
     });
 
+    // Scissor all slot drawing to the content region so aspect-fill overflow
+    // never bleeds into the black bars when the window is larger than the layout.
+    // ofGetCurrentViewport() gives the correct height for both window and FBO targets.
+    int viewH = (int)ofGetCurrentViewport().height;
+    glEnable(GL_SCISSOR_TEST);
+    glScissor((GLint)(offsetX), (GLint)(viewH - (offsetY + boxH)), (GLsizei)contentW, (GLsizei)boxH);
+
     for (size_t idx : drawOrder) {
         const auto& slot = slots[idx];
         float dx = offsetX + slot.x;
@@ -359,6 +366,8 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
             ofDrawRectangle(dx, dy, slot.w, slot.h);
         }
     }
+
+    glDisable(GL_SCISSOR_TEST);
 }
 
 void BinSorterRenderer::drawToFbo(ofFbo& fbo) {

@@ -1,10 +1,10 @@
 # config.txt
 
 ####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1500
+BOX_WIDTH = 1000
 BOX_HEIGHT = 750
 VIDEO_ASSET_PATH = ../../videos
-VIDEOS_CSV_PATH = ../../videos/videos.csv
+VIDEOS_CSV_PATH = ../../videos/installation.csv
 ARRANGEMENTS_PATH = ../../arrangements
 VIDEO_LOOP = false  # loop videos or swap to new video when finished
 
