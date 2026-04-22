@@ -1,15 +1,15 @@
 **/.DS_Store
 
 # openFrameworks SDK
-takingstock_install/openframeworks/of_*/
+takingstock_app/openframeworks/of_*/
 
 # Build artifacts
-takingstock_install/bin/*.app/
-takingstock_install/obj/
+takingstock_app/bin/*.app/
+takingstock_app/obj/
 
 # Large media/data files
-takingstock_install/videos/*.mp4
-takingstock_install/videos/*.csv
+takingstock_app/videos/*.mp4
+takingstock_app/videos/*.csv
 
 #arrangements
-takingstock_install/arrangements/*arrangements*
+takingstock_app/arrangements/*arrangements*

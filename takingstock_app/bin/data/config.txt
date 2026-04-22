@@ -1,0 +1,58 @@
+# config.txt
+
+####### PATHS & WINDOW SIZE #########
+BOX_WIDTH = 1000
+BOX_HEIGHT = 750
+VIDEO_ASSET_PATH = ../../videos
+VIDEOS_CSV_PATH = ../../videos/installation.csv
+ARRANGEMENTS_PATH = ../../arrangements
+VIDEO_LOOP = false  # loop videos or swap to new video when finished
+
+
+############## CONTROLS ################
+#s: export image 
+#r: regenerate layout
+
+
+############# LAYOUT TRANSITIONS ######################
+# Transition Type: jumpcut | fade | jumpcut_to_black
+TRANSITION_TYPE = fade
+TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
+TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
+TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
+TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
+
+
+############# SELECT MODE ######################
+# Select mode: filter videos by CSV object column when loading arrangements
+# Usage: SELECT = [obj1, obj2], weight   # [*] = any object
+SELECT_MODE = false
+SELECT = [1], 1
+# SELECT = [2], 0.3
+# SELECT = [*], 0.2
+
+
+################ LAYOUT STRUCTURE ########################
+GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
+# Reject layouts where |calc_ratio - slot_ratio| > slot_ratio * (2*expandX + 2*expandY)
+ASPECT_EXPAND_FILTER = true
+EXPAND_X = 0.1   # horizontal expand allowance applied to all video ratios
+EXPAND_Y = 0.1   # vertical expand allowance applied to all video ratios
+PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+NESTING_LAYERS = 0
+NESTED_MIN_SPACE_THRESHOLD = 0
+MAIN_BIN_FILL_CHANCE = 0.05
+ITEM_BREAK_SCALE = 0.35 #How big does an object have to be to have a chance to break?
+ITEM_BREAK_CHANCE = 0.5 #what is the chance to break?
+BREAK_BOX_MIN_ITEMS = 1 #How many items to break into?
+BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
+BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
+BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
+
+
+################ LAYOUT GENERATION ########################
+LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
+LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
+LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)
+PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
+PLACEMENT_TOP_K = 3          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
