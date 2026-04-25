@@ -6,4 +6,6 @@ Hello future person! This folder will hold all of the generated arrangements for
 The files are formatted as such:
 
 aspect ratio(w/h)_number of nesting layers_num_arrangements_xxx
-ie 2_n0_num_arrangements_393
+ie 1.333_n0_num_arrangements_393
+
+An explanation of what arrangements are can be found in the readme one directory up from this one.

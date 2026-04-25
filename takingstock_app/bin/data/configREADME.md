@@ -1,42 +1,57 @@
-# config.txt
+# CONFIG README
 
-####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1000
-BOX_HEIGHT = 750
+### Last updated by Tench C 04.22.26
 
-VIDEO_ASSET_PATH = ../../videos
-VIDEOS_CSV_PATH = ../../videos/installation.csv
-ARRANGEMENTS_PATH = ../../arrangements
+The config.txt file is where all config of the takingstock_app happens. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does.
 
-VIDEO_LOOP = false  # loop videos or swap to new video when finished
+**BOX_WIDTH** Means how wide the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
+**BOX_HEIGHT** Means how tall the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
+
+**VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
+**VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render
+
+**ARRANGEMENTS_PATH** = This is a path to the folder where all generated arrangements will be saved.
+
+**VIDEO_LOOP** = Options: (true or false) This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio
+
+
+
+
+
 
 
 ############## CONTROLS ################
 #s: export image 
 #r: regenerate layout
 
-
 ############# LAYOUT TRANSITIONS ######################
+
 # Transition Type: jumpcut | fade | jumpcut_to_black
+
 TRANSITION_TYPE = fade
 TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
 TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
 TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
 TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
-
 ############# SELECT MODE ######################
+
 # Select mode: filter videos by CSV object column when loading arrangements
+
 # Usage: SELECT = [obj1, obj2], weight   # [*] = any object
+
 SELECT_MODE = false
 SELECT = [1], 1
-# SELECT = [2], 0.3
-# SELECT = [*], 0.2
 
+# SELECT = [2], 0.3
+
+# SELECT = [*], 0.2
 
 ################ LAYOUT STRUCTURE ########################
 GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
+
 # Reject layouts where |calc_ratio - slot_ratio| > slot_ratio * (2*expandX + 2*expandY)
+
 ASPECT_EXPAND_FILTER = true
 EXPAND_X = 0.1   # horizontal expand allowance applied to all video ratios
 EXPAND_Y = 0.1   # vertical expand allowance applied to all video ratios
@@ -50,7 +65,6 @@ BREAK_BOX_MIN_ITEMS = 1 #How many items to break into?
 BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
 BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
 BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
-
 
 ################ LAYOUT GENERATION ########################
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)

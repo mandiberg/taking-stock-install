@@ -1,9 +1,10 @@
 # Taking Stock Install Repo
-### Last updated by Tench C 04.19.26
+
+### Last updated by Tench C 04.22.26
 
 ## Intro:
 
-Hello future person! this repo is built to generate different layouts of videos created from the original takingstock repo: https://github.com/mandiberg/takingstock
+Hello future person! this repo is built to generate different layouts of videos created from the original takingstock repo: [https://github.com/mandiberg/takingstock](https://github.com/mandiberg/takingstock)
 
 It is mostly plug and play, however it does need a few tweaks to get set up. Follow these directions.
 
@@ -21,7 +22,15 @@ The first time you set up the app you will have to execute the `make` command, b
 When executing `make RunRelease`, it may take 1-5 minutes to generate valid arrangements before the app window opens. The terminal will print out information as it calculates valid arrangements such as aspect ratios of given videos and number of arrangements generated.
 
 ## Config:
+
 This app has many config options in terms of how videos are processed and developed. all config can be altered in the file **bin/data/config.txt** There is additionally a configReadMe.md file in the same folder (**bin/data/**) that explains all of the different options listed in the config.txt file.
 
 ## Arrangements:
+
 Arrangements is the term used to describe the different layouts the app generates and saves based on the aspect ratios of the videos and installation.csv file in the videos folder. For instance, in a 1000x1000px render window, one arrangement might be a 500x1000 vertical video and two 500x500 square videos. Arrangements are generated based a modified bin sorting algorithm. the config file has options for controlling how arrangements are generated and which ones are accepted as valid, but generally all valid arrangements will fill the entire window with no empty space and tile perfectly.  
+
+If for any reason you need to regenerate arrangements, you can go to the arrangements folder inside the current folder (takingstock_app) and delete the arrangements files directly. 
+
+Arrangements files are named based on this format: 
+    aspect ratio(w/h)_number of nesting layers_num_arrangements_xxx
+    an example: 1.333_n0_num_arrangements_393
