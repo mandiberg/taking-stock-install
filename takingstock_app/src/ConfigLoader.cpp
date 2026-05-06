@@ -119,8 +119,43 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         return;
     }
 
-    if (key == "EXPAND_X") { config.expandX = std::stof(value); return; }
-    if (key == "EXPAND_Y") { config.expandY = std::stof(value); return; }
+    if (key == "EXPAND_RANGE") {
+        size_t lb = value.find('[');
+        size_t rb = value.find(']');
+        if (lb != std::string::npos && rb != std::string::npos && rb > lb) {
+            std::istringstream iss(value.substr(lb + 1, rb - lb - 1));
+            float vals[6] = {};
+            char comma;
+            int n = 0;
+            while (n < 6 && (iss >> vals[n])) { n++; iss >> comma; }
+            if (n == 6) {
+                ExpandRange er;
+                er.minRatio = vals[0]; er.maxRatio = vals[1];
+                er.top = vals[2]; er.right = vals[3]; er.bottom = vals[4]; er.left = vals[5];
+                config.expandRanges.push_back(er);
+            } else {
+                ofLogWarning("ConfigLoader") << "EXPAND_RANGE needs 6 values [minRatio, maxRatio, top, right, bottom, left]; got " << n;
+            }
+        }
+        return;
+    }
+    if (key == "EXPAND_FALLBACK") {
+        size_t lb = value.find('[');
+        size_t rb = value.find(']');
+        if (lb != std::string::npos && rb != std::string::npos && rb > lb) {
+            std::istringstream iss(value.substr(lb + 1, rb - lb - 1));
+            float vals[4] = {};
+            char comma;
+            int n = 0;
+            while (n < 4 && (iss >> vals[n])) { n++; iss >> comma; }
+            if (n == 4) {
+                config.expandFallback = {vals[0], vals[1], vals[2], vals[3]};
+            } else {
+                ofLogWarning("ConfigLoader") << "EXPAND_FALLBACK needs 4 values [top, right, bottom, left]; got " << n;
+            }
+        }
+        return;
+    }
 }
 
 bool ConfigLoader::load(const std::string& path, BinSorterConfig& out) {
@@ -136,5 +171,19 @@ bool ConfigLoader::load(const std::string& path, BinSorterConfig& out) {
         if (line.empty() || line[0] == '#') continue;
         parseLine(line, out);
     }
+
+    // Warn about overlapping EXPAND_RANGEs (first match wins, but overlap is likely a mistake)
+    const auto& ranges = out.expandRanges;
+    for (size_t i = 0; i < ranges.size(); ++i) {
+        for (size_t j = i + 1; j < ranges.size(); ++j) {
+            if (ranges[i].minRatio < ranges[j].maxRatio && ranges[j].minRatio < ranges[i].maxRatio) {
+                ofLogWarning("ConfigLoader")
+                    << "EXPAND_RANGE overlap: entry " << i << " [" << ranges[i].minRatio << ", " << ranges[i].maxRatio << "]"
+                    << " overlaps entry " << j << " [" << ranges[j].minRatio << ", " << ranges[j].maxRatio << "]"
+                    << " — first match wins, consider fixing your ranges";
+            }
+        }
+    }
+
     return true;
 }

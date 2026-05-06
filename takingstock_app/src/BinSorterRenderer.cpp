@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include <algorithm>
 #include <iterator>
+#include <queue>
+#include <set>
 
 static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool videoLoop,
     const std::vector<std::vector<BinItem>>& bins,
@@ -300,14 +302,99 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
         ofDrawRectangle(offX, offY, boxW, boxH);
     }
 
-    // Draw smallest first, largest last so overlaps favor larger items
-    std::vector<size_t> drawOrder(slots.size());
-    for (size_t i = 0; i < slots.size(); ++i) drawOrder[i] = i;
-    std::sort(drawOrder.begin(), drawOrder.end(), [this](size_t a, size_t b) {
-        int areaA = slots[a].w * slots[a].h;
-        int areaB = slots[b].w * slots[b].h;
-        return areaA < areaB;
-    });
+    // Draw order: slots whose videos overflow into edge-adjacent neighbors are drawn
+    // first so the neighbor's video covers the aspect-fill bleed.
+    // Overflow direction is determined by comparing the target video aspect ratio
+    // (ratioW/ratioH) against the actual slot aspect ratio (w/h):
+    //   vidAspect > slotAspect → scales to full height → overflows left/right
+    //   vidAspect < slotAspect → scales to full width  → overflows top/bottom
+    // A directed "draw before" graph is built from these relationships, resolved
+    // via topological sort (Kahn's). Mutual conflicts and ties fall back to
+    // smallest-area-first, preserving the original overlap behavior.
+    std::vector<size_t> drawOrder;
+    {
+        const int edgeTol = 1;
+        int N = (int)slots.size();
+        auto area = [&](int k) { return slots[k].w * slots[k].h; };
+
+        std::vector<bool> ovLR(N), ovTB(N);
+        for (int i = 0; i < N; ++i) {
+            const auto& s = slots[i];
+            float vid = (s.ratioH > 0) ? (float)s.ratioW / s.ratioH : 1.f;
+            float slt = (s.h > 0)      ? (float)s.w / s.h            : 1.f;
+            ovLR[i] = vid > slt + 0.01f;
+            ovTB[i] = vid < slt - 0.01f;
+        }
+
+        // Collect candidate "draw i before j" edges where i's overflow bleeds into j.
+        std::vector<std::pair<int,int>> candidates;
+        for (int i = 0; i < N; ++i) {
+            if (!ovLR[i] && !ovTB[i]) continue;
+            const auto& sa = slots[i];
+            for (int j = 0; j < N; ++j) {
+                if (i == j) continue;
+                const auto& sb = slots[j];
+                bool bleeds = false;
+                if (ovLR[i]) {
+                    bool adjV   = std::abs(sa.x + sa.w - sb.x) <= edgeTol ||
+                                  std::abs(sb.x + sb.w - sa.x) <= edgeTol;
+                    bool vertOv = !(sa.y + sa.h <= sb.y || sb.y + sb.h <= sa.y);
+                    bleeds = adjV && vertOv;
+                } else {
+                    bool adjH   = std::abs(sa.y + sa.h - sb.y) <= edgeTol ||
+                                  std::abs(sb.y + sb.h - sa.y) <= edgeTol;
+                    bool horzOv = !(sa.x + sa.w <= sb.x || sb.x + sb.w <= sa.x);
+                    bleeds = adjH && horzOv;
+                }
+                if (bleeds) candidates.push_back({i, j});
+            }
+        }
+
+        // Resolve mutual conflicts (i→j and j→i both exist) using geometry:
+        // for a shared horizontal edge draw the upper slot (smaller y) first so
+        // the lower slot covers its downward bleed; for a shared vertical edge
+        // draw the left slot (smaller x) first so the right slot covers its bleed.
+        // This matches the natural direction of aspect-fill overflow.
+        std::set<std::pair<int,int>> edgeSet;
+        for (auto [i, j] : candidates) {
+            if (edgeSet.count({j, i})) {
+                const auto& sa = slots[i];
+                const auto& sb = slots[j];
+                bool sharedH = std::abs(sa.y + sa.h - sb.y) <= edgeTol ||
+                               std::abs(sb.y + sb.h - sa.y) <= edgeTol;
+                // keepIJ = true → i should be drawn before j (replace j→i with i→j)
+                bool keepIJ = sharedH ? (sa.y < sb.y) : (sa.x < sb.x);
+                if (keepIJ) { edgeSet.erase({j, i}); edgeSet.insert({i, j}); }
+                // else: existing {j, i} is already the correct direction
+            } else {
+                edgeSet.insert({i, j});
+            }
+        }
+
+        std::vector<std::vector<int>> outEdges(N);
+        std::vector<int> inDeg(N, 0);
+        for (auto [i, j] : edgeSet) { outEdges[i].push_back(j); inDeg[j]++; }
+
+        // Kahn's topological sort, tie-breaking by smallest area first.
+        using P = std::pair<int,int>;
+        std::priority_queue<P, std::vector<P>, std::greater<P>> pq;
+        for (int i = 0; i < N; ++i)
+            if (inDeg[i] == 0) pq.push({area(i), i});
+
+        drawOrder.reserve(N);
+        while (!pq.empty()) {
+            auto [a, i] = pq.top(); pq.pop();
+            drawOrder.push_back((size_t)i);
+            for (int j : outEdges[i])
+                if (--inDeg[j] == 0) pq.push({area(j), j});
+        }
+        // Fallback: any nodes left in a cycle are appended in area order.
+        std::vector<P> rem;
+        for (int i = 0; i < N; ++i)
+            if (inDeg[i] > 0) rem.push_back({area(i), i});
+        std::sort(rem.begin(), rem.end());
+        for (auto [a, i] : rem) drawOrder.push_back((size_t)i);
+    }
 
     // Scissor all slot drawing to the content region so aspect-fill overflow
     // never bleeds into the black bars when the window is larger than the layout.

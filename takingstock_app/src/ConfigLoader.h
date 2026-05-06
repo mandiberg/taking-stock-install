@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 #include "BinSorter.h"
@@ -10,6 +11,11 @@ enum class WeightNormalization { Raw, Sqrt, Equal };
 struct SelectOption {
     std::vector<std::string> objects;  // empty or ["*"] = any object
     float weight = 1.0f;
+};
+
+struct ExpandRange {
+    float minRatio, maxRatio;
+    float top, right, bottom, left;
 };
 
 struct BinSorterConfig {
@@ -40,8 +46,8 @@ struct BinSorterConfig {
     int layoutMaxAttempts = 50000;      // max sort() calls per phase before giving up
     int layoutStaleThreshold = 1500;   // stop phase after this many consecutive duplicates
     int layoutPhases = 5;               // number of reseeded phases to explore different regions
-    float expandX = 0.1f;               // horizontal expand allowance applied to all video ratios
-    float expandY = 0.1f;               // vertical expand allowance applied to all video ratios
+    std::vector<ExpandRange> expandRanges;                        // per-ratio-range directional expand rules (first match wins)
+    std::array<float, 4> expandFallback = {0.1f, 0.1f, 0.1f, 0.1f};  // [top, right, bottom, left] used when no range matches
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items
     int placementTopK = 3;              // randomly pick from top K candidates for variation (1=always best)
     WeightNormalization weightNormalization = WeightNormalization::Sqrt;  // how to normalize per-ratio video counts into placement weights

@@ -69,40 +69,90 @@ std::pair<int, int> BinSorter::selectWeightedRatio() {
     return {sizeRatios.back().w, sizeRatios.back().h};
 }
 
-std::pair<float, float> BinSorter::getExpandAllowances(int wr, int hr) const {
+std::tuple<float, float, float, float> BinSorter::getExpandAllowances(int wr, int hr) const {
     for (const auto& r : sizeRatios) {
         if (r.w == wr && r.h == hr)
-            return {r.expandX, r.expandY};
+            return {r.expandTop, r.expandRight, r.expandBottom, r.expandLeft};
     }
-    return {0.0f, 0.0f};
+    return {0.0f, 0.0f, 0.0f, 0.0f};
 }
 
-bool BinSorter::arrangementAspectWithinExpandTolerance(
+bool BinSorter::hasMutualEdgeOverflow(
     const std::vector<std::vector<BinItem>>& bins_,
-    const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const {
+    const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const
+{
+    struct SlotInfo { int x, y, w, h, wr, hr; };
+    std::vector<SlotInfo> slots;
+
     for (size_t bi = 0; bi < bins_.size(); ++bi) {
         for (const auto& it : bins_[bi]) {
             auto itNested = nestedBins_.find({(int)bi, it.itemIdx});
             if (itNested != nestedBins_.end()) {
                 for (const auto& nit : itNested->second.items) {
                     int wr = 0, hr = 0;
-                    if (!getItemRatio(nit.w, nit.h, wr, hr) || nit.h <= 0 || hr <= 0) continue;
-                    float calcRatio = (float)nit.w / nit.h;
-                    float slotRatio = (float)wr / hr;
-                    auto [ex, ey] = getExpandAllowances(wr, hr);
-                    float maxDrift = slotRatio * (2.f * ex + 2.f * ey);
-                    if (std::fabs(calcRatio - slotRatio) > maxDrift)
-                        return false;
+                    getItemRatio(nit.w, nit.h, wr, hr);
+                    slots.push_back({it.x + nit.x, it.y + nit.y, nit.w, nit.h, wr, hr});
                 }
             } else {
                 int wr = 0, hr = 0;
-                if (!getItemRatio(it.w, it.h, wr, hr) || it.h <= 0 || hr <= 0) continue;
-                float calcRatio = (float)it.w / it.h;
-                float slotRatio = (float)wr / hr;
-                auto [ex, ey] = getExpandAllowances(wr, hr);
-                float maxDrift = slotRatio * (2.f * ex + 2.f * ey);
-                if (std::fabs(calcRatio - slotRatio) > maxDrift)
-                    return false;
+                getItemRatio(it.w, it.h, wr, hr);
+                slots.push_back({it.x, it.y, it.w, it.h, wr, hr});
+            }
+        }
+    }
+
+    const int edgeTol = 1;
+    for (size_t i = 0; i < slots.size(); ++i) {
+        for (size_t j = i + 1; j < slots.size(); ++j) {
+            const auto& a = slots[i];
+            const auto& b = slots[j];
+            float aVid  = (a.hr > 0) ? (float)a.wr / a.hr : 1.f;
+            float aSlot = (a.h  > 0) ? (float)a.w  / a.h  : 1.f;
+            float bVid  = (b.hr > 0) ? (float)b.wr / b.hr : 1.f;
+            float bSlot = (b.h  > 0) ? (float)b.w  / b.h  : 1.f;
+            bool aOvTB = aVid < aSlot - 0.01f;
+            bool bOvTB = bVid < bSlot - 0.01f;
+            bool aOvLR = aVid > aSlot + 0.01f;
+            bool bOvLR = bVid > bSlot + 0.01f;
+            bool horzOv = !(a.x + a.w <= b.x || b.x + b.w <= a.x);
+            bool vertOv = !(a.y + a.h <= b.y || b.y + b.h <= a.y);
+            // Shared horizontal edge: both ovTB → each bleeds toward the boundary
+            if ((std::abs(a.y + a.h - b.y) <= edgeTol || std::abs(b.y + b.h - a.y) <= edgeTol)
+                && horzOv && aOvTB && bOvTB) return true;
+            // Shared vertical edge: both ovLR → each bleeds toward the boundary
+            if ((std::abs(a.x + a.w - b.x) <= edgeTol || std::abs(b.x + b.w - a.x) <= edgeTol)
+                && vertOv && aOvLR && bOvLR) return true;
+        }
+    }
+    return false;
+}
+
+bool BinSorter::arrangementAspectWithinExpandTolerance(
+    const std::vector<std::vector<BinItem>>& bins_,
+    const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const {
+
+    auto checkSlot = [&](int w, int h) -> bool {
+        int wr = 0, hr = 0;
+        if (!getItemRatio(w, h, wr, hr) || h <= 0 || hr <= 0) return true;
+        float calcRatio = (float)w / h;
+        float slotRatio = (float)wr / hr;
+        float drift = std::fabs(calcRatio - slotRatio);
+        auto [exTop, exRight, exBot, exLeft] = getExpandAllowances(wr, hr);
+        // horizontal check: width drift tolerance = expandLeft + expandRight (as fraction of slotRatio)
+        if (drift > slotRatio * (exLeft + exRight)) return false;
+        // vertical check: height drift tolerance = expandTop + expandBottom (as fraction of calcRatio)
+        if (calcRatio > 0.f && drift > calcRatio * (exTop + exBot)) return false;
+        return true;
+    };
+
+    for (size_t bi = 0; bi < bins_.size(); ++bi) {
+        for (const auto& it : bins_[bi]) {
+            auto itNested = nestedBins_.find({(int)bi, it.itemIdx});
+            if (itNested != nestedBins_.end()) {
+                for (const auto& nit : itNested->second.items)
+                    if (!checkSlot(nit.w, nit.h)) return false;
+            } else {
+                if (!checkSlot(it.w, it.h)) return false;
             }
         }
     }
@@ -162,13 +212,13 @@ std::vector<BinItem> BinSorter::gapFillPass(std::vector<BinItem> binItems, int b
 
         int wr = 0, hr = 0;
         if (!getItemRatio(it.w, it.h, wr, hr)) continue;
-        auto [expandX, expandY] = getExpandAllowances(wr, hr);
-        if (expandX <= 0 && expandY <= 0) continue;
+        auto [exTop, exRight, exBot, exLeft] = getExpandAllowances(wr, hr);
+        if (exTop <= 0 && exRight <= 0 && exBot <= 0 && exLeft <= 0) continue;
 
-        int dwLeft = std::min(leftG, (int)(baseW * expandX));
-        int dwRight = std::min(rightG, (int)(baseW * expandX));
-        int dhBottom = std::min(bottomG, (int)(baseH * expandY));
-        int dhTop = std::min(topG, (int)(baseH * expandY));
+        int dwLeft   = std::min(leftG,   (int)(baseW * exLeft));
+        int dwRight  = std::min(rightG,  (int)(baseW * exRight));
+        int dhBottom = std::min(bottomG, (int)(baseH * exBot));
+        int dhTop    = std::min(topG,    (int)(baseH * exTop));
 
         int newX = it.x - dwLeft;
         int newY = it.y - dhTop;
@@ -189,15 +239,14 @@ std::vector<BinItem> BinSorter::stretchToEdges(std::vector<BinItem> binItems, in
     const int maxGap = 16;  // extend items to fill gaps up to this many pixels
     for (size_t i = 0; i < binItems.size(); ++i) {
         auto& it = binItems[i];
-        int gapRight = boxW - (it.x + it.w);
-        int gapBottom = boxH - (it.y + it.h);
-        if (gapRight <= 0 && gapBottom <= 0) continue;
 
         int wr = 0, hr = 0;
         if (!getItemRatio(it.w, it.h, wr, hr)) continue;
-        auto [expandX, expandY] = getExpandAllowances(wr, hr);
+        auto [exTop, exRight, exBot, exLeft] = getExpandAllowances(wr, hr);
 
-        if (gapRight > 0 && gapRight <= maxGap && expandX > 0) {
+        // Right edge: increase w
+        int gapRight = boxW - (it.x + it.w);
+        if (gapRight > 0 && gapRight <= maxGap && exRight > 0) {
             bool blocked = false;
             for (size_t j = 0; j < binItems.size() && !blocked; ++j) {
                 if (j == i) continue;
@@ -207,13 +256,14 @@ std::vector<BinItem> BinSorter::stretchToEdges(std::vector<BinItem> binItems, in
                 blocked = true;
             }
             if (!blocked) {
-                int dw = std::min(gapRight, (int)(it.w * expandX));
+                int dw = std::min(gapRight, (int)(it.w * exRight));
                 if (dw > 0) it.w += dw;
             }
         }
 
-        gapBottom = boxH - (it.y + it.h);
-        if (gapBottom > 0 && gapBottom <= maxGap && expandY > 0) {
+        // Bottom edge: increase h
+        int gapBottom = boxH - (it.y + it.h);
+        if (gapBottom > 0 && gapBottom <= maxGap && exBot > 0) {
             bool blocked = false;
             for (size_t j = 0; j < binItems.size() && !blocked; ++j) {
                 if (j == i) continue;
@@ -223,8 +273,43 @@ std::vector<BinItem> BinSorter::stretchToEdges(std::vector<BinItem> binItems, in
                 blocked = true;
             }
             if (!blocked) {
-                int dh = std::min(gapBottom, (int)(it.h * expandY));
+                int dh = std::min(gapBottom, (int)(it.h * exBot));
                 if (dh > 0) it.h += dh;
+            }
+        }
+
+        // Left edge: decrease x, increase w (stretch from center leftward)
+        int gapLeft = it.x;
+        if (gapLeft > 0 && gapLeft <= maxGap && exLeft > 0) {
+            bool blocked = false;
+            for (size_t j = 0; j < binItems.size() && !blocked; ++j) {
+                if (j == i) continue;
+                const auto& o = binItems[j];
+                if (o.x >= it.x) continue;        // not in the left gap
+                if (o.x + o.w <= 0) continue;      // fully outside box
+                if (o.y + o.h <= it.y || o.y >= it.y + it.h) continue;  // no vertical overlap
+                blocked = true;
+            }
+            if (!blocked) {
+                int dw = std::min(gapLeft, (int)(it.w * exLeft));
+                if (dw > 0) { it.x -= dw; it.w += dw; }
+            }
+        }
+
+        // Top edge: decrease y, increase h (stretch from center upward)
+        int gapTop = it.y;
+        if (gapTop > 0 && gapTop <= maxGap && exTop > 0) {
+            bool blocked = false;
+            for (size_t j = 0; j < binItems.size() && !blocked; ++j) {
+                if (j == i) continue;
+                const auto& o = binItems[j];
+                if (o.y + o.h <= 0 || o.y >= it.y) continue;
+                if (o.x + o.w <= it.x || o.x >= it.x + it.w) continue;
+                blocked = true;
+            }
+            if (!blocked) {
+                int dh = std::min(gapTop, (int)(it.h * exTop));
+                if (dh > 0) { it.y -= dh; it.h += dh; }
             }
         }
     }

@@ -9,10 +9,16 @@ struct SizeRatio {
     int w;
     int h;
     float weight;
-    float expandX;
-    float expandY;
-    SizeRatio(int w_, int h_, float weight_ = 1.0f, float exX = 0.0f, float exY = 0.0f)
-        : w(w_), h(h_), weight(weight_), expandX(exX), expandY(exY) {}
+    float expandTop;
+    float expandRight;
+    float expandBottom;
+    float expandLeft;
+    SizeRatio(int w_, int h_, float weight_ = 1.0f,
+              float exTop = 0.0f, float exRight = 0.0f,
+              float exBottom = 0.0f, float exLeft = 0.0f)
+        : w(w_), h(h_), weight(weight_),
+          expandTop(exTop), expandRight(exRight),
+          expandBottom(exBottom), expandLeft(exLeft) {}
 };
 
 struct BinItem {
@@ -68,6 +74,10 @@ public:
     /// True if every leaf slot's pixel aspect is within expand-allowance slack vs nominal ratio (see config ASPECT_EXPAND_FILTER).
     bool arrangementAspectWithinExpandTolerance(const std::vector<std::vector<BinItem>>& bins_,
         const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const;
+    /// True if any two edge-adjacent leaf slots both overflow toward their shared edge,
+    /// meaning no draw order can fully hide the aspect-fill bleed (arrangement should be discarded).
+    bool hasMutualEdgeOverflow(const std::vector<std::vector<BinItem>>& bins_,
+        const std::map<std::pair<int, int>, NestedBinData>& nestedBins_) const;
 
 private:
     std::vector<SizeRatio> sizeRatios;
@@ -95,7 +105,7 @@ private:
 
     void normalizeWeights();
     std::pair<int, int> selectWeightedRatio();
-    std::pair<float, float> getExpandAllowances(int wr, int hr) const;
+    std::tuple<float, float, float, float> getExpandAllowances(int wr, int hr) const; // top, right, bottom, left
     std::tuple<int, int, int, int> gapsForItem(const std::vector<BinItem>& binItems,
                                                 const BinItem& item, int boxW, int boxH, int tolerance = 1);
     std::vector<BinItem> gapFillPass(std::vector<BinItem> binItems, int boxW, int boxH);

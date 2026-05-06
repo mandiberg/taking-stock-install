@@ -99,16 +99,26 @@ From that score, the algorithm will pick one out of the top candidates for the v
 
 ### ARRANGEMENTS EXPAND
 
-Due to the nature of arranging videos with set aspect ratios, there are certain times where there aren't enough aspect ratios to generate any valid arrangements. One way we get around that is having expand options. Expand options allow each video to be expanded on an x and y axis by a certain percentage to fill in empty spaces that the video would leave blank at it's default aspect ratio. 
+Due to the nature of arranging videos with set aspect ratios, there are certain times where there aren't enough aspect ratios to generate any valid arrangements. One way we get around that is having expand options. Expand options allow each video to be expanded on any of its four edges to fill in empty spaces that the video would leave blank at its default aspect ratio. Videos are always drawn centered in their slot, so expanding any edge crops the video from its center outward — no stretching occurs.
 
-For example, if there is a 1x1 video placed into a 100x110px space, the algorithm would look at the **EXPAND_Y** parameter to see if it could expand the video to fill the space. If the space is larger than the **EXPAND_Y** parameter could fill, the algorithm would discard the arrangement. If the space is within what the **EXPAND_Y** parameter could fill, the video would be scaled up to fill the space. It's important to note that **EXPAND_X** and **EXPAND_Y** do not stretch the video, but expand it equally to preserve the aspect ratio. This means that in the example of a 1x1 video filling a 100x110px space, the video would be scaled up to 110x110px and the left and right sides would get cropped by 5px each, totalling to the 100x110px video.
+For example, if a 1:1 video is placed into a 100x110px slot and `expandBottom = 0.1`, the algorithm allows the video to expand downward by up to 10% of its height (10px), filling the 10px gap at the bottom. The video is drawn as a 110x110 frame centered in the slot, with 5px cropped from the top and bottom.
 
+Expand values are defined per **aspect ratio range** using `EXPAND_RANGE`, so portrait videos, square videos, and landscape videos can all have different tolerances. A fallback applies to any ratio not matched by a range.
 
+**EXPAND_RANGE** = Defines directional expand allowances for a range of aspect ratios. Format:
+```
+EXPAND_RANGE = [minRatio, maxRatio, expandTop, expandRight, expandBottom, expandLeft]
+```
+- `minRatio` / `maxRatio`: the inclusive aspect ratio range (width/height, e.g. 0.667 = portrait, 1.5 = landscape)
+- `expandTop` / `expandRight` / `expandBottom` / `expandLeft`: how much each edge is allowed to stretch as a fraction of the item's size (e.g. 0.1 = up to 10%)
+- Multiple `EXPAND_RANGE` lines are allowed. **First match wins.** If two ranges overlap, a warning is logged.
 
-**EXPAND_X** = This is the percent that any video is allowed to expand on the x axis to fill space, listed as a deicmal (default = 0.1) 
-**EXPAND_Y** = This is the percent that any video is allowed to expand on the y axis to fill space, listed as a deicmal (default = 0.1) 
-**ASPECT_EXPAND_FILTER** = This is a boolean that decides whether or not arrangements that go beyond the **EXPAND_X** and **EXPAND_Y** Allowances are valid. (defualt = true) Options :[true, false] 
-**ASPECT_EXPAND_FILTE** |calc_ratio - slot_ratio| > slot_ratio * (2***EXPAND_X** + 2***EXPAND_Y**) 
+**EXPAND_FALLBACK** = Directional expand values used for any ratio not matched by any `EXPAND_RANGE`. Format:
+```
+EXPAND_FALLBACK = [top, right, bottom, left]
+```
+
+**ASPECT_EXPAND_FILTER** = Boolean that controls whether arrangements violating expand tolerances are rejected. When `true`, each slot's actual pixel aspect ratio is checked independently against horizontal tolerance (`expandLeft + expandRight`) and vertical tolerance (`expandTop + expandBottom`) — both must pass. Options: [true, false] (default = true)
 
 GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items

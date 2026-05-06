@@ -53,11 +53,27 @@ void ofApp::setup() {
             default:                         w_norm = std::sqrt((float)count); break;
         }
         int w = (int)std::round(ratio * 1000.f);
-        config.sizeRatios.push_back(SizeRatio(w, 1000, w_norm, config.expandX, config.expandY));
+
+        const auto& fb = config.expandFallback;
+        float eTop = fb[0], eRight = fb[1], eBot = fb[2], eLeft = fb[3];
+        int matchCount = 0;
+        for (const auto& er : config.expandRanges) {
+            if (ratio >= er.minRatio && ratio <= er.maxRatio) {
+                if (matchCount == 0) { eTop = er.top; eRight = er.right; eBot = er.bottom; eLeft = er.left; }
+                matchCount++;
+            }
+        }
+        if (matchCount > 1) {
+            ofLogWarning("ofApp") << "ratio " << oss.str() << " matched " << matchCount
+                << " EXPAND_RANGEs; using first match — consider fixing overlapping ranges";
+        }
+
+        config.sizeRatios.push_back(SizeRatio(w, 1000, w_norm, eTop, eRight, eBot, eLeft));
     }
     if (config.sizeRatios.empty()) {
         ofLogWarning("ofApp") << "No ratios found in CSV, falling back to 1:1";
-        config.sizeRatios.push_back(SizeRatio(1000, 1000, 1.0f, config.expandX, config.expandY));
+        const auto& fb = config.expandFallback;
+        config.sizeRatios.push_back(SizeRatio(1000, 1000, 1.0f, fb[0], fb[1], fb[2], fb[3]));
     }
 
     binSorter = std::make_unique<BinSorter>(config.boxWidth, config.boxHeight, config.sizeRatios,
@@ -84,6 +100,10 @@ void ofApp::setup() {
                 if (config.aspectExpandFilter &&
                     !binSorter->arrangementAspectWithinExpandTolerance(a.bins, a.nestedBins))
                     return true;
+                if (binSorter->hasMutualEdgeOverflow(a.bins, a.nestedBins)) {
+                    ofLogNotice("ofApp") << "Discarding cached arrangement: mutual edge overflow at shared boundary";
+                    return true;
+                }
                 return false;
             });
         arrangements.erase(it, arrangements.end());
@@ -115,6 +135,7 @@ void ofApp::setup() {
             int phaseStartCount = (int)arrangements.size();
             int attempts = 0;
             int staleCount = 0;
+            int mutualOverlapDiscarded = 0;
 
             while (attempts < config.layoutMaxAttempts) {
                 binSorter->sort(-1);
@@ -136,6 +157,10 @@ void ofApp::setup() {
                             !binSorter->arrangementAspectWithinExpandTolerance(arr.bins, arr.nestedBins)) {
                             staleCount++;
                             if (staleCount >= config.layoutStaleThreshold) break;
+                        } else if (binSorter->hasMutualEdgeOverflow(arr.bins, arr.nestedBins)) {
+                            mutualOverlapDiscarded++;
+                            staleCount++;
+                            if (staleCount >= config.layoutStaleThreshold) break;
                         } else {
                             arrangements.push_back(arr);
                             staleCount = 0;
@@ -145,6 +170,10 @@ void ofApp::setup() {
                         }
                     } else if (config.aspectExpandFilter &&
                         !binSorter->arrangementAspectWithinExpandTolerance(arr.bins, arr.nestedBins)) {
+                        staleCount++;
+                        if (staleCount >= config.layoutStaleThreshold) break;
+                    } else if (binSorter->hasMutualEdgeOverflow(arr.bins, arr.nestedBins)) {
+                        mutualOverlapDiscarded++;
                         staleCount++;
                         if (staleCount >= config.layoutStaleThreshold) break;
                     } else {
@@ -162,7 +191,9 @@ void ofApp::setup() {
             }
 
             int phaseNew = (int)arrangements.size() - phaseStartCount;
-            ofLogNotice("ofApp") << "Phase " << (phase + 1) << ": found " << phaseNew << " new (total " << arrangements.size() << ")";
+            ofLogNotice("ofApp") << "Phase " << (phase + 1) << ": found " << phaseNew << " new (total "
+                << arrangements.size() << ")"
+                << (mutualOverlapDiscarded > 0 ? ", discarded " + std::to_string(mutualOverlapDiscarded) + " for mutual edge overlap" : "");
         }
 
         ofLogNotice("ofApp") << "Finished: " << arrangements.size() << " unique arrangements";

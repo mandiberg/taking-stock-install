@@ -1,7 +1,7 @@
 # config.txt
 
 ####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1000
+BOX_WIDTH = 1250
 BOX_HEIGHT = 750
 
 VIDEO_ASSET_PATH = ../../videos
@@ -36,10 +36,16 @@ SELECT = [1], 1
 
 ################ LAYOUT STRUCTURE ########################
 GAP_FILTER_THRESHOLD = 0 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
-# Reject layouts where |calc_ratio - slot_ratio| > slot_ratio * (2*expandX + 2*expandY)
+# Reject layouts where slot drift exceeds both horizontal (expandLeft+expandRight) and vertical (expandTop+expandBottom) tolerances
 ASPECT_EXPAND_FILTER = true
-EXPAND_X = 0.1   # horizontal expand allowance applied to all video ratios
-EXPAND_Y = 0.1   # vertical expand allowance applied to all video ratios
+# Per-ratio-range directional expand: [minRatio, maxRatio, expandTop, expandRight, expandBottom, expandLeft]
+# Ratios are width/height (>1 = landscape, <1 = portrait). First matching range wins.
+EXPAND_RANGE = [0.60, 0.89, 0.025, 0.1, 0.025, 0.1]   # portrait-ish (0.665, 0.748, 0.798, 0.856)
+EXPAND_RANGE = [0.89, 1.10, 0.05, 0.05, 0.05, 0.05]   # square-ish (1.000)
+EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1.337, 1.504)
+
+# Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
+EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
