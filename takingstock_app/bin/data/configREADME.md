@@ -4,61 +4,123 @@
 
 The config.txt file is where all config of the takingstock_app happens. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does.
 
+## WINDOW
+
 **BOX_WIDTH** Means how wide the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
 **BOX_HEIGHT** Means how tall the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
 
+
+## PATHS
+
 **VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
 **VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render
-
 **ARRANGEMENTS_PATH** = This is a path to the folder where all generated arrangements will be saved.
 
-**VIDEO_LOOP** = Options: (true or false) This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio
+
+
+## LOOPS
+
+**VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio
+
+
+
+## CONTROLS
+**s**: export image 
+**r**: regenerate layout
+
+
+## TRANSITIONS
+
+Transitions are how the app moves between arrangements. There are three main modes: **jumpcut**, **fade**, and **jumpcut_to_black**. 
+- in **jumpcut** mode, arrangements will immediately cut from arrangement A to B.
+- in **fade** mode, arrangements will fade to black from arrangement A for a set number of seconds (*TRANSITION_DURATION_FADE*) and then fade up to arrangement B for a (*TRANSITION_DURATION_FADE*) number of seconds.
+- in **jumpcut_to_black** mode the arrangement will cut from A to black for a set number of seconds (*TRANSITION_DURATION_JUMP_TO_BLACK*) and then cut to arrangement B
+
+Each arrangement is held for a random amount of time between TRANSITION_TIMER_MIN and TRANSITION_TIMER_MAX
+
+**TRANSITION_TYPE** = Options: [**jumpcut**, **fade**, **jumpcut_to_black**]
+**TRANSITION_DURATION_FADE** = this is the duration in seconds of each part of the fade in the **fade** transition type, meaning it is the duration of the fade down, and then again the fade up, so the full transition will take 2x this number.
+**TRANSITION_DURATION_JUMP_TO_BLACK** = this is the duration in seconds to hold the black screen in the **jumpcut_to_black** transition mode
+**TRANSITION_TIMER_MIN** = This is the minimum duration in seconds for each arrangement to be held
+**TRANSITION_TIMER_MAX** = This is the maximum duration in seconds for each arrangement to be held
+
+
+
+## SELECT MODE
+
+Select mode is currently not working, but will eventually be used to pick out more specific information about which videos are played when. It will allow you to filter which videos are selected based off columns in the instllation.csv file. ie you can only select videos from cluster 11 or only select videos with the laptop object.
+
+
+
+## ARRANGEMENTS
+
+Arrangements is the term used to describe the different layouts the app generates and saves based on the aspect ratios of the videos and installation.csv file in the videos folder. For instance, in a 1000x1000px render window, one arrangement might be a 500x1000 vertical video and two 500x500 square videos. Arrangements are generated based a modified bin sorting algorithm. the config file has options for controlling how arrangements are generated and which ones are accepted as valid, but generally all valid arrangements will fill the entire window with no empty space and tile perfectly.  
+
+Arrangement generation happens with a variety of paramaters that dictate how long arrangement generation lasts for and what arrangements are considered valid. Arrangement generation happens at program start, unless there is already an arrangements file that matches all the settings and videos in the arrangements folder. 
+
+Arrangements decide which videos to pick based on two factors, scale (area in pixels), and weight (calculated per aspect ratio by how many videos in the videos folder have that specific aspect ratio). 
+If there are 20 videos with a 2x3 aspect ratio and 5 videos with a 1x1 aspect ratio, the 2x3 aspect ratio will have a weight 4x what the 1x1 aspect ratio will have. Both weight and scale are used to decide which videos are placed in arrangements.
+
+
+
+### ARRANGEMENTS ATTEMPTS
+Arrangement generation happens in a phase based system, where the program attempts to generate a certain amount of arrangements, and if they are considered valid (we'll get to that in the next step) it saves them. If it creates creates too many duplicates and stalls out it will move to the next phase, which uses a seeding system to try to fill in some different spaces. 
+
+Attempts go like this -> 
+generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a **LAYOUT_STALE_THRESHOLD** number of duplicate arrangements created, then re-seed, go to the next phase, and repeat until all phases completed.
+
+**LAYOUT_MAX_ATTEMPTS** = This is the maximum number of generation attempts the program will try per phase (default = 50000)
+**LAYOUT_STALE_THRESHOLD** = This is the maximum number of duplicates the program will allow before it skips to the next phase (default = 3000)
+**LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
 
 
 
 
+### ARRANGEMENTS ITEM PLACEMENT
+
+Arrangement generation uses a customized bin packing algorithm. For some general info on bin packing algorithms read here: https://en.wikipedia.org/wiki/Bin_packing_problem 
+The algorithm starts by filling as much space as possible with the first video, creating a large video that typically goes the entire height of the window. It then fills in around this large item. 
+
+Back to the two factors of arrangement video picking (area and weight), these have the most impact on the first item placement, but are used in placing every item. The next two parameters are used to control how weight vs area are prioritized. Each video is given a score based on its area and weight, and the score decides which video is placed.
+
+The placement score is calculated using this equation:
+score = (area^**PLACEMENT_AREA_EXPONENT**) * weight
+
+From that score, the algorithm will pick one out of the top candidates for the video to be placed in the arrangement. The number of candidates it picks from is set in **PLACEMENT_TOP_K**
+
+**PLACEMENT_AREA_EXPONENT** = This is the exponent that is used in the weighting equation, >1 favor larger area fills with less wieght (defualt 1.4) 
+**PLACEMENT_TOP_K** = Number of candidates algorithm will pick from for item placement, vastly increases number of arrangments (default = 3) 
+**WEIGHT_NORMALIZATION** = Controls how video counts per aspect ratio are converted into placement weights. Options: [**raw**, **sqrt**, **equal**] (default = sqrt)
+- **raw**: weight equals the raw video count. A ratio with 177 videos has 44x the weight of one with 4 videos. Use this only when your video counts are already balanced across ratios, otherwise the packer will overwhelmingly favor the most common ratio and struggle to generate valid arrangements.
+- **sqrt**: weight equals the square root of the video count (e.g. 177 → 13.3, 4 → 2.0). Ratios with more videos are still preferred, but the imbalance is compressed enough that all ratios meaningfully compete during placement.
+- **equal**: all ratios get weight 1.0 regardless of video count. Use this to treat all aspect ratios as equally likely candidates during layout generation.
 
 
 
-############## CONTROLS ################
-#s: export image 
-#r: regenerate layout
+### ARRANGEMENTS EXPAND
 
-############# LAYOUT TRANSITIONS ######################
+Due to the nature of arranging videos with set aspect ratios, there are certain times where there aren't enough aspect ratios to generate any valid arrangements. One way we get around that is having expand options. Expand options allow each video to be expanded on an x and y axis by a certain percentage to fill in empty spaces that the video would leave blank at it's default aspect ratio. 
 
-# Transition Type: jumpcut | fade | jumpcut_to_black
+For example, if there is a 1x1 video placed into a 100x110px space, the algorithm would look at the **EXPAND_Y** parameter to see if it could expand the video to fill the space. If the space is larger than the **EXPAND_Y** parameter could fill, the algorithm would discard the arrangement. If the space is within what the **EXPAND_Y** parameter could fill, the video would be scaled up to fill the space. It's important to note that **EXPAND_X** and **EXPAND_Y** do not stretch the video, but expand it equally to preserve the aspect ratio. This means that in the example of a 1x1 video filling a 100x110px space, the video would be scaled up to 110x110px and the left and right sides would get cropped by 5px each, totalling to the 100x110px video.
 
-TRANSITION_TYPE = fade
-TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
-TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
-TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
-TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
-############# SELECT MODE ######################
 
-# Select mode: filter videos by CSV object column when loading arrangements
+**EXPAND_X** = This is the percent that any video is allowed to expand on the x axis to fill space, listed as a deicmal (default = 0.1) 
+**EXPAND_Y** = This is the percent that any video is allowed to expand on the y axis to fill space, listed as a deicmal (default = 0.1) 
+**ASPECT_EXPAND_FILTER** = This is a boolean that decides whether or not arrangements that go beyond the **EXPAND_X** and **EXPAND_Y** Allowances are valid. (defualt = true) Options :[true, false] 
+**ASPECT_EXPAND_FILTE** |calc_ratio - slot_ratio| > slot_ratio * (2***EXPAND_X** + 2***EXPAND_Y**) 
 
-# Usage: SELECT = [obj1, obj2], weight   # [*] = any object
-
-SELECT_MODE = false
-SELECT = [1], 1
-
-# SELECT = [2], 0.3
-
-# SELECT = [*], 0.2
-
-################ LAYOUT STRUCTURE ########################
 GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
-
-# Reject layouts where |calc_ratio - slot_ratio| > slot_ratio * (2*expandX + 2*expandY)
-
-ASPECT_EXPAND_FILTER = true
-EXPAND_X = 0.1   # horizontal expand allowance applied to all video ratios
-EXPAND_Y = 0.1   # vertical expand allowance applied to all video ratios
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+
+
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
+
+
 MAIN_BIN_FILL_CHANCE = 0.05
+
+
 ITEM_BREAK_SCALE = 0.35 #How big does an object have to be to have a chance to break?
 ITEM_BREAK_CHANCE = 0.5 #what is the chance to break?
 BREAK_BOX_MIN_ITEMS = 1 #How many items to break into?
@@ -66,9 +128,3 @@ BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
 BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
 BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
 
-################ LAYOUT GENERATION ########################
-LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
-LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
-LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)
-PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
-PLACEMENT_TOP_K = 3          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements

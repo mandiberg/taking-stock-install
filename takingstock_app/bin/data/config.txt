@@ -35,7 +35,7 @@ SELECT = [1], 1
 
 
 ################ LAYOUT STRUCTURE ########################
-GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
+GAP_FILTER_THRESHOLD = 0 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
 # Reject layouts where |calc_ratio - slot_ratio| > slot_ratio * (2*expandX + 2*expandY)
 ASPECT_EXPAND_FILTER = true
 EXPAND_X = 0.1   # horizontal expand allowance applied to all video ratios
@@ -57,4 +57,5 @@ LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
 LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)
 PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
-PLACEMENT_TOP_K = 3          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
+PLACEMENT_TOP_K = 6          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
+WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)

@@ -5,6 +5,7 @@
 #include "BinSorter.h"
 
 enum class TransitionType { Jumpcut, Fade, JumpcutToBlack };
+enum class WeightNormalization { Raw, Sqrt, Equal };
 
 struct SelectOption {
     std::vector<std::string> objects;  // empty or ["*"] = any object
@@ -43,6 +44,7 @@ struct BinSorterConfig {
     float expandY = 0.1f;               // vertical expand allowance applied to all video ratios
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items
     int placementTopK = 3;              // randomly pick from top K candidates for variation (1=always best)
+    WeightNormalization weightNormalization = WeightNormalization::Sqrt;  // how to normalize per-ratio video counts into placement weights
     bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines
     std::vector<SelectOption> selectOptions;
 };

@@ -1,6 +1,7 @@
 #include "ofApp.h"
 #include "ArrangementIO.h"
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <set>
 #include <random>
@@ -35,7 +36,7 @@ void ofApp::setup() {
         }
     }
 
-    // Derive size ratios from the CSV: weight each ratio by its video count
+    // Derive size ratios from the CSV: weight each ratio by its video count (normalized per config)
     auto ratioCounts = videoPool.getRatioCounts();
     int totalVideos = 0;
     for (auto& [ratio, count] : ratioCounts) totalVideos += count;
@@ -44,8 +45,15 @@ void ofApp::setup() {
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(3) << ratio;
         ofLogNotice("ofApp") << "  ratio " << oss.str() << " -> " << count << " videos";
+        float w_norm;
+        switch (config.weightNormalization) {
+            case WeightNormalization::Raw:   w_norm = (float)count; break;
+            case WeightNormalization::Equal: w_norm = 1.0f; break;
+            case WeightNormalization::Sqrt:
+            default:                         w_norm = std::sqrt((float)count); break;
+        }
         int w = (int)std::round(ratio * 1000.f);
-        config.sizeRatios.push_back(SizeRatio(w, 1000, (float)count, config.expandX, config.expandY));
+        config.sizeRatios.push_back(SizeRatio(w, 1000, w_norm, config.expandX, config.expandY));
     }
     if (config.sizeRatios.empty()) {
         ofLogWarning("ofApp") << "No ratios found in CSV, falling back to 1:1";
