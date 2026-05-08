@@ -120,21 +120,37 @@ EXPAND_FALLBACK = [top, right, bottom, left]
 
 **ASPECT_EXPAND_FILTER** = Boolean that controls whether arrangements violating expand tolerances are rejected. When `true`, each slot's actual pixel aspect ratio is checked independently against horizontal tolerance (`expandLeft + expandRight`) and vertical tolerance (`expandTop + expandBottom`) — both must pass. Options: [true, false] (default = true)
 
-GAP_FILTER_THRESHOLD = 10 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
-PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+**GAP_FILTER_THRESHOLD** = Arrangements where the largest empty rectangle is ≥ this area (pixels²) are rejected. Set to `0` to only accept perfect fills (no empty space anywhere in the layout). Higher values allow arrangements with small residual gaps. This check runs both at generation time and when loading cached arrangements on startup. (default = 0)
+
+**PACKING_STOP_AREA** = The bin packing algorithm stops adding items to the layout when the largest item that could still fit would be smaller than this area (pixels²). This prevents the layout from being filled with extremely tiny video slots. For example, at `40000` the algorithm stops when no item larger than roughly 200×200px can fit. (default = 40000)
 
 
-NESTING_LAYERS = 0
-NESTED_MIN_SPACE_THRESHOLD = 0
+
+### NESTING
+
+Nesting allows a single large slot in the layout to contain its own inner sub-layout of multiple smaller videos, creating a picture-in-picture effect. Nesting uses the same bin-packing algorithm recursively and is separate from the Break Box system below.
+
+**NESTING_LAYERS** = Number of recursive nesting layers to attempt. `0` = no nesting (each slot maps to exactly one video). `1` = after the main layout is placed, the algorithm tries to subdivide one of the larger items into its own tiled inner arrangement of multiple videos. (default = 0)
+
+**NESTED_MIN_SPACE_THRESHOLD** = When nesting is active, this is the minimum area (pixels²) the nested packing algorithm uses as its stopping condition — analogous to `PACKING_STOP_AREA` for the inner layout. Higher values produce fewer, larger items inside the nested sub-layout. (default = 0)
 
 
-MAIN_BIN_FILL_CHANCE = 0.05
 
+### BREAK BOX
 
-ITEM_BREAK_SCALE = 0.35 #How big does an object have to be to have a chance to break?
-ITEM_BREAK_CHANCE = 0.5 #what is the chance to break?
-BREAK_BOX_MIN_ITEMS = 1 #How many items to break into?
-BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
-BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
-BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
+The Break Box system allows a single large slot to be replaced during layout generation by a group of smaller slots that together cover the same area. Unlike nesting, the sub-items become full members of the top-level layout rather than an inner sub-layer. Only one break is allowed per layout.
+
+**MAIN_BIN_FILL_CHANCE** = Probability (0.0–1.0) that the very first item placed is allowed to match the full window's own aspect ratio, which would fill the entire canvas with one video. At the default `0.05` there is a 5% chance of this; otherwise the first item is forbidden from matching the window ratio, ensuring each layout always contains at least two videos. (default = 0.05)
+
+**ITEM_BREAK_SCALE** = The minimum fraction of total canvas area an item must cover to be eligible for breaking into sub-items. For example, `0.35` means only items occupying ≥ 35% of the canvas can break. Small items placed in corners are never eligible. (default = 0.35)
+
+**ITEM_BREAK_CHANCE** = When an item is eligible to break (meets the `ITEM_BREAK_SCALE` threshold), this is the probability (0.0–1.0) that the break actually happens. `0.5` = 50% chance. (default = 0.5)
+
+**BREAK_BOX_MIN_ITEMS** = The minimum number of sub-items a break must produce to be accepted. The algorithm will not keep a break result that yields fewer items than this. (default = 1)
+
+**BREAK_BOX_MAX_ITEMS** = The maximum number of sub-items a break can produce. The actual target count is chosen randomly between `BREAK_BOX_MIN_ITEMS` and `BREAK_BOX_MAX_ITEMS` for each break attempt. (default = 4)
+
+**BREAK_BOX_FILL_ATTEMPTS** = How many times the algorithm will try to fill the break box at the current target item count before stepping down by one and trying with one fewer sub-item. If no valid arrangement is found at count N after this many tries it attempts N-1, then N-2, and so on down to `BREAK_BOX_MIN_ITEMS`. (default = 5)
+
+**BREAK_BOX_COVERAGE_THRESHOLD** = The fraction (0.0–1.0) of the original item's area that must be collectively covered by the sub-items for the break to be accepted. `0.99` means the sub-items must fill at least 99% of the original slot's area — essentially no visible gaps allowed inside the break box. (default = 0.99)
 
