@@ -6,6 +6,12 @@
 #include <set>
 #include <random>
 
+std::string ofApp::getCurrentKeyVideoClusterNo() const {
+    int keyIdx = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
+    if (keyIdx < 0) return "";
+    return renderer.getSlots()[keyIdx].clusterNo;
+}
+
 std::string ofApp::findAudioFile(const std::string& clusterNo) const {
     if (config.audioPath.empty() || clusterNo.empty()) return "";
     std::string resolvedPath = ofToDataPath(config.audioPath, true);

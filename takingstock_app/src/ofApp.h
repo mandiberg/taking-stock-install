@@ -17,6 +17,9 @@ public:
     void draw();
     void keyPressed(int key);
 
+    std::string getCurrentKeyVideoClusterNo() const;
+    bool isKeyVideoEnabled() const { return config.keyVideo; }
+
 private:
     void pickSelectAndApplyFilter();
     void pickAndLoadArrangement(size_t idx);

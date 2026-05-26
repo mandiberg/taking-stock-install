@@ -10,6 +10,22 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 **BOX_HEIGHT** Means how tall the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
 
 
+
+## SECONDARY WINDOW
+
+The secondary window is an optional second OS window that displays live data about the current arrangement's key video. It is intended to eventually show spreadsheet-style metadata; for now it displays the key video's `cluster_no` value, updated automatically on every arrangement change.
+
+The secondary window requires `KEY_VIDEO = true` to be meaningful. If the secondary window is enabled but `KEY_VIDEO` is disabled, the window will display a message indicating that `KEY_VIDEO` must be enabled. When `KEY_VIDEO` is enabled but no qualifying video is found for the current arrangement, the window shows `--` in place of the cluster number.
+
+The secondary window shares a GL context with the main window and runs on the same loop — no additional threads are involved.
+
+**SECONDARY_WINDOW_ENABLED** = Options: [true, false] When `true`, a second OS window opens alongside the main render window at startup. When `false`, no secondary window is created and the other `SECONDARY_WINDOW_*` settings are ignored. (default = false)
+
+**SECONDARY_WINDOW_WIDTH** = Width in pixels of the secondary window. (default = 400)
+
+**SECONDARY_WINDOW_HEIGHT** = Height in pixels of the secondary window. (default = 300)
+
+
 ## PATHS
 
 **VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
