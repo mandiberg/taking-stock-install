@@ -20,13 +20,22 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 
 ## LOOPS
 
-**VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio
+**VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio (default = true) **SET TO TRUE WHEN RUNNING FOR >12HRS**
 
 
 
 ## CONTROLS
 **s**: export image 
 **r**: regenerate layout
+
+
+## KEY VIDEO
+
+The key video is the longest-playing video in an arrangement. When key video mode is enabled, the layout transition fires when the key video's full duration has elapsed, instead of using the random `TRANSITION_TIMER_MIN/MAX` range. This ensures the arrangement is always held for exactly as long as its longest video plays.
+
+**KEY_VIDEO** = Options: [true, false] When `true`, the transition timer is set to the duration of the longest loaded video that meets the minimum length requirement. If no qualifying video is found, the app falls back to the random `TRANSITION_TIMER_MIN/MAX` timer. (default = false)
+
+**KEY_VIDEO_MIN_LENGTH** = The minimum duration in seconds a video must have to be considered the key video. For example, setting this to `30` means only videos 30 seconds or longer can be the key video. Set to `0` to allow any video to qualify. (default = 0)
 
 
 ## TRANSITIONS

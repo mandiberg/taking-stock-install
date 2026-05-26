@@ -88,6 +88,13 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.selectMode = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "KEY_VIDEO") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.keyVideo = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
+    if (key == "KEY_VIDEO_MIN_LENGTH") { config.keyVideoMinLength = std::stof(value); return; }
 
     if (key == "SELECT") {
         size_t lb = value.find('[');

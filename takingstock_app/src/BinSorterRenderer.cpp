@@ -10,25 +10,25 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
     const std::vector<std::vector<BinItem>>& bins,
     const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
     std::vector<VideoSlot>& out, bool quiet, bool deferPlay = false,
-    bool deferLoad = false, const char* arrangementContext = "current arrangement") {
+    bool deferLoad = false, const char* arrangementContext = "current arrangement",
+    bool keyVideo = false, float keyVideoMinLength = 0.f) {
     out.clear();
     if (!binSorter) return;
 
     int boxW = binSorter->getBoxWidth();
     const int padding = 20;
 
+    // Pass 1: assign paths from CSV pool data — no file loading yet
     for (size_t bi = 0; bi < bins.size(); ++bi) {
         float baseX = bi * (boxW + padding);
         float baseY = 0;
-
         for (const auto& it : bins[bi]) {
             auto itNested = nestedBins.find({(int)bi, it.itemIdx});
             if (itNested != nestedBins.end()) {
                 for (const auto& nit : itNested->second.items) {
                     int wr = 0, hr = 0;
                     binSorter->getItemRatio(nit.w, nit.h, wr, hr);
-                    std::string path = videoPool ? videoPool->getVideoPath(wr, hr) : "";
-                    std::string nextPath = (!videoLoop && videoPool) ? videoPool->getVideoPath(wr, hr) : "";
+                    VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr) : VideoEntry{};
                     VideoSlot slot;
                     slot.x = (int)(baseX + it.x + nit.x);
                     slot.y = (int)(baseY + it.y + nit.y);
@@ -36,42 +36,17 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                     slot.h = nit.h;
                     slot.ratioW = wr;
                     slot.ratioH = hr;
-                    slot.path = path;
-                    slot.nextPath = nextPath;
-                    if (!path.empty()) {
-                        slot.hasVideo = true;
-                        if (!deferLoad) {
-                            if (slot.player.load(path)) {
-                                ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << path;
-                                slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
-                                if (!deferPlay) slot.player.play();
-                                if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
-                                    ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << nextPath;
-                                    slot.nextPlayer.setLoopState(OF_LOOP_NONE);
-                                    slot.nextPlayer.setPosition(0);
-                                }
-                            } else {
-                                slot.hasVideo = false;
-                                if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
-                            }
-                        }
-                    } else {
-                        slot.hasVideo = false;
-                    }
-                    if (!quiet) {
-                        float slotAspect = (slot.h > 0) ? (float)slot.w / slot.h : 0;
-                        ofLogNotice("BinSorterRenderer") << "Slot " << (out.size() + 1) << ": "
-                            << slot.w << "x" << slot.h << " aspect=" << slotAspect
-                            << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path
-                            << " [" << arrangementContext << "]";
-                    }
-                    out.push_back(slot);
+                    slot.path = entry.fullPath;
+                    slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr) : "";
+                    slot.clusterNo = entry.clusterNo;
+                    slot.duration = entry.duration;
+                    slot.hasVideo = !slot.path.empty();
+                    out.push_back(std::move(slot));
                 }
             } else {
                 int wr = 0, hr = 0;
                 binSorter->getItemRatio(it.w, it.h, wr, hr);
-                std::string path = videoPool ? videoPool->getVideoPath(wr, hr) : "";
-                std::string nextPath = (!videoLoop && videoPool) ? videoPool->getVideoPath(wr, hr) : "";
+                VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr) : VideoEntry{};
                 VideoSlot slot;
                 slot.x = (int)(baseX + it.x);
                 slot.y = (int)(baseY + it.y);
@@ -79,47 +54,90 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                 slot.h = it.h;
                 slot.ratioW = wr;
                 slot.ratioH = hr;
-                slot.path = path;
-                slot.nextPath = nextPath;
-                if (!path.empty()) {
-                    slot.hasVideo = true;
-                    if (!deferLoad) {
-                        if (slot.player.load(path)) {
-                            ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << path;
-                            slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
-                            if (!deferPlay) slot.player.play();
-                            if (!videoLoop && !nextPath.empty() && slot.nextPlayer.load(nextPath)) {
-                                ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << nextPath;
-                                slot.nextPlayer.setLoopState(OF_LOOP_NONE);
-                                slot.nextPlayer.setPosition(0);
-                            }
-                        } else {
-                            slot.hasVideo = false;
-                            if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio " << wr << "_" << hr << ": " << path;
-                        }
+                slot.path = entry.fullPath;
+                slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr) : "";
+                slot.clusterNo = entry.clusterNo;
+                slot.duration = entry.duration;
+                slot.hasVideo = !slot.path.empty();
+                out.push_back(std::move(slot));
+            }
+        }
+    }
+
+    // Pass 2: key video check and replacement (CSV only, no file I/O)
+    // If no assigned video meets the minimum duration, try swapping one slot's video
+    // with a qualifying one from the pool. Stops at the first successful replacement.
+    if (keyVideo && keyVideoMinLength > 0.f && videoPool) {
+        bool hasQualifying = false;
+        for (const auto& slot : out) {
+            if (slot.hasVideo && slot.duration >= keyVideoMinLength) { hasQualifying = true; break; }
+        }
+        if (!hasQualifying) {
+            for (size_t i = 0; i < out.size(); ++i) {
+                auto& slot = out[i];
+                if (!slot.hasVideo) continue;
+                VideoEntry qual = videoPool->getVideoEntryWithMinDuration(slot.ratioW, slot.ratioH, keyVideoMinLength);
+                if (!qual.fullPath.empty()) {
+                    ofLogNotice("BinSorterRenderer") << "KEY_VIDEO: slot " << (i + 1)
+                        << " swapped to qualifying video (duration=" << qual.duration << "s)"
+                        << " [" << arrangementContext << "]";
+                    slot.path = qual.fullPath;
+                    slot.duration = qual.duration;
+                    slot.clusterNo = qual.clusterNo;
+                    hasQualifying = true;
+                    break;
+                }
+            }
+            if (!hasQualifying) {
+                ofLogWarning("BinSorterRenderer") << "KEY_VIDEO: no video with duration>="
+                    << keyVideoMinLength << "s available for any slot ratio"
+                    << " [" << arrangementContext << "]";
+            }
+        }
+    }
+
+    // Pass 3: load players (skipped when deferLoad — staggered load handles it later)
+    if (!deferLoad) {
+        for (size_t i = 0; i < out.size(); ++i) {
+            auto& slot = out[i];
+            if (slot.hasVideo) {
+                if (slot.player.load(slot.path)) {
+                    ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << slot.path;
+                    slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
+                    if (!deferPlay) slot.player.play();
+                    if (!videoLoop && !slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
+                        ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << slot.nextPath;
+                        slot.nextPlayer.setLoopState(OF_LOOP_NONE);
+                        slot.nextPlayer.setPosition(0);
                     }
                 } else {
                     slot.hasVideo = false;
+                    if (!quiet) ofLogWarning("BinSorterRenderer") << "load failed for ratio "
+                        << slot.ratioW << "_" << slot.ratioH << ": " << slot.path;
                 }
-                if (!quiet) {
-                    float slotAspect = (slot.h > 0) ? (float)slot.w / slot.h : 0;
-                    ofLogNotice("BinSorterRenderer") << "Slot " << (out.size() + 1) << ": "
-                        << slot.w << "x" << slot.h << " aspect=" << slotAspect
-                        << " -> ratio " << wr << ":" << hr << (path.empty() ? "" : " ") << path
-                        << " [" << arrangementContext << "]";
-                }
-                out.push_back(slot);
+            }
+            if (!quiet) {
+                float slotAspect = (slot.h > 0) ? (float)slot.w / slot.h : 0;
+                ofLogNotice("BinSorterRenderer") << "Slot " << (i + 1) << ": "
+                    << slot.w << "x" << slot.h << " aspect=" << slotAspect
+                    << " -> ratio " << slot.ratioW << ":" << slot.ratioH
+                    << (slot.path.empty() ? "" : " ") << slot.path
+                    << " [" << arrangementContext << "]";
             }
         }
     }
 }
 
-void BinSorterRenderer::setup(BinSorter* sorter, VideoAssetPool* pool, bool videoLoop_) {
+void BinSorterRenderer::setup(BinSorter* sorter, VideoAssetPool* pool, bool videoLoop_,
+                              bool keyVideo_, float keyVideoMinLength_) {
     binSorter = sorter;
     videoPool = pool;
     videoLoop = videoLoop_;
+    keyVideo = keyVideo_;
+    keyVideoMinLength = keyVideoMinLength_;
     if (videoPool) videoPool->resetUsed();
     buildSlots();
+    drawOrderDirty = true;
 }
 
 void BinSorterRenderer::buildSlots() {
@@ -130,14 +148,16 @@ void BinSorterRenderer::buildSlots() {
 void BinSorterRenderer::buildSlotsFromArrangement(const std::vector<std::vector<BinItem>>& bins,
     const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
     std::vector<VideoSlot>& out) {
-    buildSlotsImpl(binSorter, videoPool, videoLoop, bins, nestedBins, out, false, false, false, "current arrangement");
+    buildSlotsImpl(binSorter, videoPool, videoLoop, bins, nestedBins, out, false, false, false,
+                   "current arrangement", keyVideo, keyVideoMinLength);
 }
 
 void BinSorterRenderer::preloadFromArrangement(const Arrangement& arr) {
     if (!binSorter) return;
     nextSlots.clear();
     nextSlotsLoadQueue.clear();
-    buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true, true, "next arrangement");
+    buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true, true,
+                   "next arrangement", keyVideo, keyVideoMinLength);
     for (size_t i = 0; i < nextSlots.size(); ++i) {
         if (!nextSlots[i].path.empty()) {
             nextSlotsLoadQueue.push_back({i, false});
@@ -158,7 +178,9 @@ void BinSorterRenderer::swapToPreloaded(const Arrangement& arr) {
         std::make_move_iterator(nextSlots.begin()),
         std::make_move_iterator(nextSlots.end()));
     nextSlots.clear();
+    loggedNotReadyKeys.clear();
     didSwapThisFrame = true;
+    drawOrderDirty = true;
 }
 
 void BinSorterRenderer::startPlaying() {
@@ -311,8 +333,9 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
     // A directed "draw before" graph is built from these relationships, resolved
     // via topological sort (Kahn's). Mutual conflicts and ties fall back to
     // smallest-area-first, preserving the original overlap behavior.
-    std::vector<size_t> drawOrder;
-    {
+    // The result is cached and only recomputed when slots change (drawOrderDirty).
+    if (drawOrderDirty) {
+        cachedDrawOrder.clear();
         const int edgeTol = 1;
         int N = (int)slots.size();
         auto area = [&](int k) { return slots[k].w * slots[k].h; };
@@ -381,10 +404,10 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
         for (int i = 0; i < N; ++i)
             if (inDeg[i] == 0) pq.push({area(i), i});
 
-        drawOrder.reserve(N);
+        cachedDrawOrder.reserve(N);
         while (!pq.empty()) {
             auto [a, i] = pq.top(); pq.pop();
-            drawOrder.push_back((size_t)i);
+            cachedDrawOrder.push_back((size_t)i);
             for (int j : outEdges[i])
                 if (--inDeg[j] == 0) pq.push({area(j), j});
         }
@@ -393,7 +416,9 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
         for (int i = 0; i < N; ++i)
             if (inDeg[i] > 0) rem.push_back({area(i), i});
         std::sort(rem.begin(), rem.end());
-        for (auto [a, i] : rem) drawOrder.push_back((size_t)i);
+        for (auto [a, i] : rem) cachedDrawOrder.push_back((size_t)i);
+
+        drawOrderDirty = false;
     }
 
     // Scissor all slot drawing to the content region so aspect-fill overflow
@@ -403,7 +428,7 @@ void BinSorterRenderer::draw(float offsetX, float offsetY) {
     glEnable(GL_SCISSOR_TEST);
     glScissor((GLint)(offsetX), (GLint)(viewH - (offsetY + boxH)), (GLsizei)contentW, (GLsizei)boxH);
 
-    for (size_t idx : drawOrder) {
+    for (size_t idx : cachedDrawOrder) {
         const auto& slot = slots[idx];
         float dx = offsetX + slot.x;
         float dy = offsetY + slot.y;
@@ -470,5 +495,25 @@ void BinSorterRenderer::regenerate() {
         loggedNotReadyKeys.clear();
         slots.clear();
         buildSlots();
+        drawOrderDirty = true;
     }
+}
+
+int BinSorterRenderer::getKeyVideoSlotIndex(float minLength) const {
+    float best = -1.f;
+    int bestIdx = -1;
+    for (int i = 0; i < (int)slots.size(); ++i) {
+        if (!slots[i].hasVideo) continue;
+        float dur = slots[i].duration;
+        if (dur >= minLength && dur > best) {
+            best = dur;
+            bestIdx = i;
+        }
+    }
+    return bestIdx;
+}
+
+float BinSorterRenderer::getKeyVideoDuration(float minLength) const {
+    int idx = getKeyVideoSlotIndex(minLength);
+    return (idx >= 0) ? slots[idx].duration : -1.f;
 }

@@ -53,6 +53,8 @@ struct BinSorterConfig {
     WeightNormalization weightNormalization = WeightNormalization::Sqrt;  // how to normalize per-ratio video counts into placement weights
     bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines
     std::vector<SelectOption> selectOptions;
+    bool keyVideo = false;               // when true, transition fires when the longest qualifying video ends
+    float keyVideoMinLength = 0.f;       // minimum seconds for a video to qualify as the key video
 };
 
 class ConfigLoader {

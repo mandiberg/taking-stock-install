@@ -25,13 +25,13 @@ private:
     void preloadNextLayout();
     float scheduleNextTransition();
     size_t pickNextArrangementIndex();
+    bool arrangementCompatibleWithFilter(const Arrangement& arr) const;
 
     BinSorterConfig config;
     std::unique_ptr<BinSorter> binSorter;
     VideoAssetPool videoPool;
     BinSorterRenderer renderer;
     ofFbo exportFbo;
-    ofFbo fadeContentFbo;  // cached frame during FadeUp to reduce render load
     bool exportRequested = false;
     std::vector<Arrangement> arrangements;
     std::vector<size_t> pickQueue;
@@ -42,4 +42,5 @@ private:
     float nextTransitionTime = 0.f;
     size_t nextLayoutIdx = 0;  // preloaded layout index
     bool fadeHoldBlackSwapDone = false;
+    float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
 };
