@@ -6,6 +6,59 @@
 #include <set>
 #include <random>
 
+std::string ofApp::findAudioFile(const std::string& clusterNo) const {
+    if (config.audioPath.empty() || clusterNo.empty()) return "";
+    std::string resolvedPath = ofToDataPath(config.audioPath, true);
+    ofDirectory dir(resolvedPath);
+    dir.listDir();
+    for (const auto& file : dir.getFiles()) {
+        if (file.getFileName().find(clusterNo) != std::string::npos) {
+            return file.getAbsolutePath();
+        }
+    }
+    return "";
+}
+
+void ofApp::startAudioForArrangement(float initialVolume) {
+    audioPlayer.stop();
+    currentAudioFileName = "";
+    if (config.audioPath.empty()) return;
+
+    int keyIdx = config.keyVideo ? renderer.getKeyVideoSlotIndex(config.keyVideoMinLength) : -1;
+    if (keyIdx < 0) return;
+
+    const std::string& clusterNo = renderer.getSlots()[keyIdx].clusterNo;
+    std::string audioPath = findAudioFile(clusterNo);
+    if (audioPath.empty()) {
+        ofLogWarning("ofApp") << "Audio: no file found for cluster_no=" << clusterNo << " in " << config.audioPath;
+        return;
+    }
+
+    audioVolume = initialVolume;
+    currentAudioFileName = ofFile(audioPath).getFileName();
+    audioPlayer.load(audioPath);
+    audioPlayer.setLoop(true);
+    audioPlayer.setVolume(audioVolume);
+    audioPlayer.play();
+}
+
+void ofApp::beginAudioFade(float targetVolume) {
+    audioFadeStartTime = ofGetElapsedTimef();
+    audioFadeStartVolume = audioVolume;
+    audioFadeTargetVolume = targetVolume;
+}
+
+void ofApp::updateAudioFade() {
+    if (audioFadeStartTime < 0.f) return;
+    float elapsed = ofGetElapsedTimef() - audioFadeStartTime;
+    float t = (config.audioFadeDuration > 0.f)
+        ? std::min(1.f, elapsed / config.audioFadeDuration)
+        : 1.f;
+    audioVolume = audioFadeStartVolume + (audioFadeTargetVolume - audioFadeStartVolume) * t;
+    audioPlayer.setVolume(audioVolume);
+    if (t >= 1.f) audioFadeStartTime = -1.f;
+}
+
 void ofApp::setup() {
     ofSetBackgroundColor(0, 0, 0);
     if (!ConfigLoader::load("config.txt", config)) {
@@ -227,12 +280,14 @@ void ofApp::setup() {
     std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
 
     pickSelectAndApplyFilter();
+    currentSelectFilterLabel = nextSelectFilterLabel;
     size_t initialIdx = 0;
     if (!arrangements.empty()) {
         initialIdx = pickNextArrangementIndex();
         binSorter->loadArrangement(arrangements[initialIdx].bins, arrangements[initialIdx].nestedBins);
     }
     renderer.setup(binSorter.get(), &videoPool, config.videoLoop, config.keyVideo, config.keyVideoMinLength);
+    startAudioForArrangement(1.f);
 
     ofSetWindowShape(config.boxWidth, config.boxHeight);
     exportFbo.allocate(config.boxWidth, config.boxHeight, GL_RGB);
@@ -244,19 +299,27 @@ void ofApp::setup() {
         renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
     }
     if (!arrangements.empty()) {
+        ofLogNotice("ofApp") << "---";
         logArrangementInfo(initialIdx);
     }
-    float nextTimer = scheduleNextTransition();
-    if (!arrangements.empty()) {
-        ofLogNotice("ofApp") << "XXXXXXXXXXX";
-        ofLogNotice("ofApp") << "Initial layout | next_transition_timer=" << nextTimer << "s";
-        ofLogNotice("ofApp") << "XXXXXXXXXXX";
-    }
+    scheduleNextTransition();
 }
 
 void ofApp::logArrangementInfo(size_t idx) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
-    ofLogNotice("ofApp") << "Picked arrangement " << (idx + 1) << " of " << arrangements.size();
+    std::string timerStr = "";
+    if (config.keyVideo) {
+        int ki = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
+        if (ki >= 0) {
+            float dur = renderer.getSlots()[ki].duration;
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(1) << dur;
+            timerStr = " | next_transition_timer=" + oss.str() + "s";
+        }
+    }
+    ofLogNotice("ofApp") << "Picked arrangement " << (idx + 1) << " of " << arrangements.size() << timerStr;
+    if (config.selectMode && !currentSelectFilterLabel.empty())
+        ofLogNotice("ofApp") << "Select filter: " << currentSelectFilterLabel;
     const auto& slots = renderer.getSlots();
     bool hasBreakBox = !arrangements[idx].nestedBins.empty();
     ofLogNotice("ofApp") << "Window: " << config.boxWidth << " x " << config.boxHeight
@@ -307,6 +370,7 @@ void ofApp::logArrangementInfo(size_t idx) {
 void ofApp::pickSelectAndApplyFilter() {
     if (!config.selectMode || config.selectOptions.empty()) {
         videoPool.setObjectFilter({});
+        nextSelectFilterLabel = "all objects";
         ofLogNotice("ofApp") << "Select filter: all objects";
         return;
     }
@@ -315,6 +379,7 @@ void ofApp::pickSelectAndApplyFilter() {
         totalWeight += opt.weight;
     if (totalWeight <= 0.f) {
         videoPool.setObjectFilter({});
+        nextSelectFilterLabel = "all objects";
         ofLogNotice("ofApp") << "Select filter: all objects";
         return;
     }
@@ -324,10 +389,12 @@ void ofApp::pickSelectAndApplyFilter() {
         bool isWildcard = objects.empty() ||
             std::find(objects.begin(), objects.end(), "*") != objects.end();
         if (isWildcard) {
+            nextSelectFilterLabel = "all objects";
             ofLogNotice("ofApp") << "Select filter: all objects";
         } else {
             std::string objs;
             for (const auto& o : objects) objs += (objs.empty() ? "" : ", ") + o;
+            nextSelectFilterLabel = "objects=[" + objs + "]";
             ofLogNotice("ofApp") << "Select filter: objects=[" << objs << "]";
         }
     };
@@ -349,6 +416,7 @@ void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
         pickAndLoadArrangement(idx);
         return;
     }
+    currentSelectFilterLabel = nextSelectFilterLabel;
     renderer.swapToPreloaded(arrangements[idx]);
     if (!deferPlay) renderer.startPlaying();
     logArrangementInfo(idx);
@@ -364,10 +432,24 @@ void ofApp::preloadNextLayout() {
 
 void ofApp::pickAndLoadArrangement(size_t idx) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
+    ofLogNotice("ofApp") << "---";
     pickSelectAndApplyFilter();
+    currentSelectFilterLabel = nextSelectFilterLabel;
     binSorter->loadArrangement(arrangements[idx].bins, arrangements[idx].nestedBins);
-    ofLogNotice("ofApp") << "Picked arrangement " << (idx + 1) << " of " << arrangements.size();
     renderer.regenerate();
+    std::string timerStr = "";
+    if (config.keyVideo) {
+        int ki = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
+        if (ki >= 0) {
+            float dur = renderer.getSlots()[ki].duration;
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(1) << dur;
+            timerStr = " | next_transition_timer=" + oss.str() + "s";
+        }
+    }
+    ofLogNotice("ofApp") << "Picked arrangement " << (idx + 1) << " of " << arrangements.size() << timerStr;
+    if (config.selectMode && !currentSelectFilterLabel.empty())
+        ofLogNotice("ofApp") << "Select filter: " << currentSelectFilterLabel;
     const auto& slots = renderer.getSlots();
     bool hasBreakBox = !arrangements[idx].nestedBins.empty();
     ofLogNotice("ofApp") << "Window: " << config.boxWidth << " x " << config.boxHeight
@@ -445,7 +527,10 @@ float ofApp::scheduleNextTransition() {
             ofLogNotice("ofApp") << "Key video: slot " << (keyIdx + 1)
                 << " | duration=" << std::fixed << std::setprecision(1) << keyDur << "s"
                 << " | cluster_no=" << keySlot.clusterNo
-                << " | " << keySlot.path;
+                << " | " << ofFile(keySlot.path).getFileName();
+            if (!currentAudioFileName.empty())
+                ofLogNotice("ofApp") << "Audio: playing " << currentAudioFileName;
+            ofLogNotice("ofApp") << "---";
             return keyDur;
         }
         ofLogWarning("ofApp") << "KEY_VIDEO enabled but no qualifying video found "
@@ -456,6 +541,7 @@ float ofApp::scheduleNextTransition() {
     if (maxT < minT) maxT = minT;
     float delay = ofRandom(minT, maxT);
     nextTransitionTime = ofGetElapsedTimef() + delay;
+    ofLogNotice("ofApp") << "---";
     return delay;
 }
 
@@ -482,6 +568,8 @@ size_t ofApp::pickNextArrangementIndex() {
 
 void ofApp::update() {
     float now = ofGetElapsedTimef();
+    ofSoundUpdate();
+    updateAudioFade();
 
     if (transitionState == TransitionState::Idle) {
         bool trigger = arrangementPickRequested || (now >= nextTransitionTime);
@@ -502,15 +590,15 @@ void ofApp::update() {
                 arrangementPickRequested = false;
 
                 if (config.transitionType == TransitionType::Jumpcut) {
+                    ofLogNotice("ofApp") << "---";
                     swapToPreloadedAndLog(nextLayoutIdx);
+                    startAudioForArrangement(1.f);
                     preloadNextLayout();
-                    float nextTimer = scheduleNextTransition();
-                    ofLogNotice("ofApp") << "XXXXXXXXXXX";
-                    ofLogNotice("ofApp") << "Transition: type=jumpcut duration=0s next_transition_timer=" << nextTimer << "s";
-                    ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                    scheduleNextTransition();
                 } else if (config.transitionType == TransitionType::Fade) {
                     transitionState = TransitionState::FadeDown;
                     transitionStartTime = now;
+                    beginAudioFade(0.f);
                 } else {
                     transitionState = TransitionState::HoldBlack;
                     transitionStartTime = now;
@@ -528,7 +616,10 @@ void ofApp::update() {
         }
     } else if (transitionState == TransitionState::FadeHoldBlack) {
         if (!fadeHoldBlackSwapDone) {
+            ofLogNotice("ofApp") << "---";
             swapToPreloadedAndLog(nextLayoutIdx, true);
+            startAudioForArrangement(0.f);
+            beginAudioFade(1.f);
             fadeHoldBlackSwapDone = true;
         } else {
             renderer.startPlaying();
@@ -538,24 +629,19 @@ void ofApp::update() {
     } else if (transitionState == TransitionState::HoldBlack) {
         float dur = std::max(0.016f, config.transitionDurationJumpToBlack);
         if (now - transitionStartTime >= dur) {
+            ofLogNotice("ofApp") << "---";
             swapToPreloadedAndLog(nextLayoutIdx);
+            startAudioForArrangement(1.f);
             preloadNextLayout();
-            float nextTimer = scheduleNextTransition();
+            scheduleNextTransition();
             transitionState = TransitionState::Idle;
-            ofLogNotice("ofApp") << "XXXXXXXXXXX";
-            ofLogNotice("ofApp") << "Transition: type=jumpcut_to_black duration=" << dur << "s next_transition_timer=" << nextTimer << "s";
-            ofLogNotice("ofApp") << "XXXXXXXXXXX";
         }
     } else if (transitionState == TransitionState::FadeUp) {
         float dur = std::max(0.016f, config.transitionDurationFade);
         if (now - transitionStartTime >= dur) {
-            float nextTimer = scheduleNextTransition();
+            scheduleNextTransition();
             transitionState = TransitionState::Idle;
             preloadNextLayout();
-            float totalDur = config.transitionDurationFade * 2.f;
-            ofLogNotice("ofApp") << "XXXXXXXXXXX";
-            ofLogNotice("ofApp") << "Transition: type=fade duration=" << totalDur << "s next_transition_timer=" << nextTimer << "s";
-            ofLogNotice("ofApp") << "XXXXXXXXXXX";
         }
     }
 

@@ -27,6 +27,11 @@ private:
     size_t pickNextArrangementIndex();
     bool arrangementCompatibleWithFilter(const Arrangement& arr) const;
 
+    std::string findAudioFile(const std::string& clusterNo) const;
+    void startAudioForArrangement(float initialVolume = 1.f);
+    void updateAudioFade();
+    void beginAudioFade(float targetVolume);
+
     BinSorterConfig config;
     std::unique_ptr<BinSorter> binSorter;
     VideoAssetPool videoPool;
@@ -43,4 +48,13 @@ private:
     size_t nextLayoutIdx = 0;  // preloaded layout index
     bool fadeHoldBlackSwapDone = false;
     float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
+
+    ofSoundPlayer audioPlayer;
+    float audioVolume = 1.f;
+    float audioFadeStartTime = -1.f;
+    float audioFadeStartVolume = 0.f;
+    float audioFadeTargetVolume = 1.f;
+    std::string currentAudioFileName;
+    std::string currentSelectFilterLabel;
+    std::string nextSelectFilterLabel;
 };

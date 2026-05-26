@@ -55,6 +55,8 @@ struct BinSorterConfig {
     std::vector<SelectOption> selectOptions;
     bool keyVideo = false;               // when true, transition fires when the longest qualifying video ends
     float keyVideoMinLength = 0.f;       // minimum seconds for a video to qualify as the key video
+    std::string audioPath = "";          // path to audio directory (files matched by cluster_no substring)
+    float audioFadeDuration = 1.f;       // seconds for audio fade in/out (0 = instant cut)
 };
 
 class ConfigLoader {

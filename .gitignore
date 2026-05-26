@@ -13,3 +13,7 @@ takingstock_app/videos/*.csv
 
 #arrangements
 takingstock_app/arrangements/*arrangements*
+
+#audio files
+takingstock_app/audio/*.mp3
+takingstock_app/audio/*.wav

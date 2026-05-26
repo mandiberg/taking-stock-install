@@ -95,6 +95,8 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         return;
     }
     if (key == "KEY_VIDEO_MIN_LENGTH") { config.keyVideoMinLength = std::stof(value); return; }
+    if (key == "AUDIO_PATH") { config.audioPath = value; return; }
+    if (key == "AUDIO_FADE_DURATION") { config.audioFadeDuration = std::stof(value); return; }
 
     if (key == "SELECT") {
         size_t lb = value.find('[');

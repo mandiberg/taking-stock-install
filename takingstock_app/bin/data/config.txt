@@ -7,6 +7,7 @@ BOX_HEIGHT = 750
 VIDEO_ASSET_PATH = ../../videos
 VIDEOS_CSV_PATH = ../../videos/installation.csv
 ARRANGEMENTS_PATH = ../../arrangements
+AUDIO_PATH = ../../audio
 
 VIDEO_LOOP = true  # loop videos or swap to new video when finished
 
@@ -25,11 +26,15 @@ TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
 TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
 
+############# AUDIO ######################
+AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
+
+
 ############# KEY VIDEO ######################
 # When true, the transition fires when the longest qualifying video ends
 # rather than using the random TRANSITION_TIMER_MIN/MAX range.
 KEY_VIDEO = true
-KEY_VIDEO_MIN_LENGTH = 30    # min seconds for a video to qualify as key video (0 = any)
+KEY_VIDEO_MIN_LENGTH = 23    # min seconds for a video to qualify as key video (0 = any)
 
 
 ############# SELECT MODE ######################

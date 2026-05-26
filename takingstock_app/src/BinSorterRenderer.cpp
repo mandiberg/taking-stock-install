@@ -2,6 +2,7 @@
 #include "VideoAssetPool.h"
 #include "ofMain.h"
 #include <algorithm>
+#include <iomanip>
 #include <iterator>
 #include <queue>
 #include <set>
@@ -102,11 +103,18 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
             auto& slot = out[i];
             if (slot.hasVideo) {
                 if (slot.player.load(slot.path)) {
-                    ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << slot.path;
+                    float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
+                    ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "]: "
+                        << ofFile(slot.path).getFileName()
+                        << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                        << " | duration: " << (int)slot.duration << "s";
                     slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
                     if (!deferPlay) slot.player.play();
                     if (!videoLoop && !slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
-                        ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "] " << slot.nextPath;
+                        ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "]: "
+                            << ofFile(slot.nextPath).getFileName()
+                            << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                            << " | duration: " << (int)slot.duration << "s";
                         slot.nextPlayer.setLoopState(OF_LOOP_NONE);
                         slot.nextPlayer.setPosition(0);
                     }
@@ -206,15 +214,22 @@ void BinSorterRenderer::update() {
             bool isNextPlayer = p.second;
             if (slotIdx < nextSlots.size()) {
                 auto& slot = nextSlots[slotIdx];
+                float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
                 if (isNextPlayer) {
                     if (!slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
-                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement] " << slot.nextPath;
+                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement]: "
+                            << ofFile(slot.nextPath).getFileName()
+                            << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                            << " | duration: " << (int)slot.duration << "s";
                         slot.nextPlayer.setLoopState(OF_LOOP_NONE);
                         slot.nextPlayer.setPosition(0);
                     }
                 } else {
                     if (!slot.path.empty() && slot.player.load(slot.path)) {
-                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement] " << slot.path;
+                        ofLogNotice("BinSorterRenderer") << "Video load [next arrangement]: "
+                            << ofFile(slot.path).getFileName()
+                            << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                            << " | duration: " << (int)slot.duration << "s";
                         slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
                     }
                 }
@@ -248,7 +263,11 @@ void BinSorterRenderer::update() {
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
                             if (slot.player.load(newPath)) {
-                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement] " << newPath;
+                                float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
+                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement]: "
+                                    << ofFile(newPath).getFileName()
+                                    << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                                    << " | duration: " << (int)slot.duration << "s";
                                 slot.player.setLoopState(OF_LOOP_NONE);
                                 slot.player.setPosition(0);
                                 slot.path = slot.nextPath;
@@ -273,7 +292,11 @@ void BinSorterRenderer::update() {
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
                             if (slot.player.load(path)) {
-                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement] " << path;
+                                float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
+                                ofLogNotice("BinSorterRenderer") << "Video load [current arrangement]: "
+                                    << ofFile(path).getFileName()
+                                    << " | ratio: " << std::fixed << std::setprecision(3) << ratio
+                                    << " | duration: " << (int)slot.duration << "s";
                                 slot.path = path;
                                 slot.player.setLoopState(OF_LOOP_NONE);
                                 slot.player.play();
