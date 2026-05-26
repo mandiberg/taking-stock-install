@@ -10,6 +10,7 @@ ARRANGEMENTS_PATH = ../../arrangements
 AUDIO_PATH = ../../audio
 
 VIDEO_LOOP = true  # loop videos or swap to new video when finished
+MIN_VIDEO_LENGTH = 0  # discard videos shorter than this many seconds (0 = keep all)
 
 
 ############## CONTROLS ################

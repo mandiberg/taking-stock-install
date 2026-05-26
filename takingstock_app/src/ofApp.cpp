@@ -65,6 +65,7 @@ void ofApp::setup() {
         ofLogError("ofApp") << "Failed to load config.txt, using defaults";
     }
 
+    videoPool.minDuration = config.minVideoLength;
     if (!videoPool.loadFromCsv(config.videosCsvPath)) {
         ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
     }

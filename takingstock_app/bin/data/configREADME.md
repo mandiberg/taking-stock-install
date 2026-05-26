@@ -1,6 +1,6 @@
 # CONFIG README
 
-### Last updated by Tench C 04.22.26
+### Last updated by Tench C 05.26.26
 
 The config.txt file is where all config of the takingstock_app happens. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does.
 
@@ -15,12 +15,15 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 **VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
 **VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render
 **ARRANGEMENTS_PATH** = This is a path to the folder where all generated arrangements will be saved.
+**AUDIO_PATH** = This is a path to the folder which contains all the audio files used for playback. The app matches each arrangement's key video `cluster_no` value against filenames in this folder — any file whose name contains the `cluster_no` string is used as that arrangement's audio.
 
 
 
 ## LOOPS
 
 **VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio (default = true) **SET TO TRUE WHEN RUNNING FOR >12HRS**
+
+**MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
 
 
 
@@ -33,9 +36,9 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 
 The key video is the longest-playing video in an arrangement. When key video mode is enabled, the layout transition fires when the key video's full duration has elapsed, instead of using the random `TRANSITION_TIMER_MIN/MAX` range. This ensures the arrangement is always held for exactly as long as its longest video plays.
 
-**KEY_VIDEO** = Options: [true, false] When `true`, the transition timer is set to the duration of the longest loaded video that meets the minimum length requirement. If no qualifying video is found, the app falls back to the random `TRANSITION_TIMER_MIN/MAX` timer. (default = false)
+**KEY_VIDEO** = Options: [true, false] When `true`, the transition timer is set to the duration of the longest loaded video that meets the minimum length requirement. If no qualifying video is found, the app falls back to the random `TRANSITION_TIMER_MIN/MAX` timer. (default = true)
 
-**KEY_VIDEO_MIN_LENGTH** = The minimum duration in seconds a video must have to be considered the key video. For example, setting this to `30` means only videos 30 seconds or longer can be the key video. Set to `0` to allow any video to qualify. (default = 0)
+**KEY_VIDEO_MIN_LENGTH** = The minimum duration in seconds a video must have to be considered the key video. For example, setting this to `30` means only videos 30 seconds or longer can be the key video. Set to `0` to allow any video to qualify. (default = 20)
 
 
 ## TRANSITIONS
@@ -55,9 +58,28 @@ Each arrangement is held for a random amount of time between TRANSITION_TIMER_MI
 
 
 
+## AUDIO
+
+Each arrangement plays one audio file tied to its key video. The app reads the key video's `cluster_no` value from `installation.csv`, then searches `AUDIO_PATH` for any file whose name contains that string. The first match is played looping for the duration of the arrangement. If no matching file is found, the arrangement plays silently.
+
+Audio transitions follow `TRANSITION_TYPE`:
+- **jumpcut** / **jumpcut_to_black**: audio cuts immediately — the old file stops and the new one starts at full volume
+- **fade**: audio fades out at the start of the visual fade, and the new audio fades in from silence once the screen is black
+
+**AUDIO_FADE_DURATION** = Duration in seconds for the audio fade in and fade out during a **fade** transition. Set to `0` for an instant cut even when using the fade visual transition. (default = 1.0)
+
+
+
 ## SELECT MODE
 
-Select mode is currently not working, but will eventually be used to pick out more specific information about which videos are played when. It will allow you to filter which videos are selected based off columns in the instllation.csv file. ie you can only select videos from cluster 11 or only select videos with the laptop object.
+Select mode allows you to filter which videos are used in arrangements based on the `object` column in `installation.csv`. You can define multiple filter options each with a probability weight, and the app randomly picks one filter at each transition. This lets you bias arrangements toward specific object classes (e.g. only show videos tagged as object `67`) or mix them at weighted probabilities.
+
+**SELECT_MODE** = Options: [true, false] When `true`, video selection is filtered according to the `SELECT` lines below. Requires an `object` column in the CSV — if none is found, select mode is automatically disabled. (default = false)
+
+**SELECT** = Defines one filter option. Format: `SELECT = [obj1, obj2, ...], weight`
+- The object list is matched against the CSV `object` column. Use `[*]` to allow any object (equivalent to no filter).
+- `weight` is a relative probability — a weight of `0.3` alongside two other `0.3` entries means each has a 1-in-3 chance of being picked per transition.
+- Multiple `SELECT` lines are allowed; one is chosen randomly at each transition using the weights.
 
 
 

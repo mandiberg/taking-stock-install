@@ -86,6 +86,7 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
     }
 
     int rowNum = 1;
+    int discardedCount = 0;
     while (std::getline(f, line)) {
         ++rowNum;
         if (line.empty()) continue;
@@ -112,6 +113,12 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
                 ofLogWarning("VideoAssetPool") << "Row " << rowNum << ": invalid duration value, defaulting to 0";
             }
         }
+
+        if (minDuration > 0.f && entry.duration < minDuration) {
+            discardedCount++;
+            continue;
+        }
+
         entry.fullPath = ofFilePath::join(videoFolder, entry.filename);
 
         if (idxClusterNo >= 0 && entry.clusterNo.empty())
@@ -121,6 +128,10 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
 
         videos.push_back(entry);
     }
+
+    if (discardedCount > 0)
+        ofLogNotice("VideoAssetPool") << "Discarded " << discardedCount
+            << " videos shorter than " << minDuration << "s (MIN_VIDEO_LENGTH)";
 
     resetUsed();
     ofLogNotice("VideoAssetPool") << "Loaded " << videos.size() << " videos from " << fullPath

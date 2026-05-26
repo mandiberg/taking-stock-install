@@ -19,6 +19,8 @@ struct VideoEntry {
 
 class VideoAssetPool {
 public:
+    float minDuration = 0.f;  // set before loadFromCsv; entries with known duration < this are discarded
+
     bool loadFromCsv(const std::string& csvPath);
     void resetUsed();  // call when starting a new layout - makes all videos available again
     void setObjectFilter(const std::vector<std::string>& allowedObjects);  // empty or ["*"] = no filter
