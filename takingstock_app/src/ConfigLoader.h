@@ -53,6 +53,14 @@ struct BinSorterConfig {
     WeightNormalization weightNormalization = WeightNormalization::Sqrt;  // how to normalize per-ratio video counts into placement weights
     bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines
     std::vector<SelectOption> selectOptions;
+    bool keyVideo = false;               // when true, transition fires when the longest qualifying video ends
+    float keyVideoMinLength = 0.f;       // minimum seconds for a video to qualify as the key video
+    std::string audioPath = "";          // path to audio directory (files matched by cluster_no substring)
+    float audioFadeDuration = 1.f;       // seconds for audio fade in/out (0 = instant cut)
+    float minVideoLength = 0.f;          // discard videos shorter than this many seconds (0 = keep all)
+    bool secondaryWindowEnabled = false; // when true, open a secondary info window
+    int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
+    int  secondaryWindowHeight  = 300;   // height of secondary window in pixels
 };
 
 class ConfigLoader {

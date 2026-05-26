@@ -54,7 +54,7 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
     // Parse header — required: file_name, ratio; optional: object, cluster_no, pose_no
     // Legacy 'filename' column is accepted with a deprecation warning.
     std::vector<std::string> header = splitCsvLine(line);
-    int idxFilename = -1, idxRatio = -1, idxObject = -1, idxClusterNo = -1, idxPoseNo = -1;
+    int idxFilename = -1, idxRatio = -1, idxObject = -1, idxClusterNo = -1, idxPoseNo = -1, idxDuration = -1;
     for (size_t i = 0; i < header.size(); ++i) {
         std::string h = header[i];
         std::transform(h.begin(), h.end(), h.begin(), ::tolower);
@@ -71,6 +71,8 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
             idxClusterNo = (int)i;
         } else if (h == "pose_no") {
             idxPoseNo = (int)i;
+        } else if (h == "duration") {
+            idxDuration = (int)i;
         }
     }
     if (idxFilename < 0 || idxRatio < 0) {
@@ -84,6 +86,7 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
     }
 
     int rowNum = 1;
+    int discardedCount = 0;
     while (std::getline(f, line)) {
         ++rowNum;
         if (line.empty()) continue;
@@ -103,6 +106,19 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
             ofLogWarning("VideoAssetPool") << "Row " << rowNum << ": invalid ratio value, skipping";
             continue;
         }
+        if (idxDuration >= 0 && idxDuration < (int)fields.size() && !fields[idxDuration].empty()) {
+            try {
+                entry.duration = std::stof(fields[idxDuration]);
+            } catch (...) {
+                ofLogWarning("VideoAssetPool") << "Row " << rowNum << ": invalid duration value, defaulting to 0";
+            }
+        }
+
+        if (minDuration > 0.f && entry.duration < minDuration) {
+            discardedCount++;
+            continue;
+        }
+
         entry.fullPath = ofFilePath::join(videoFolder, entry.filename);
 
         if (idxClusterNo >= 0 && entry.clusterNo.empty())
@@ -112,6 +128,10 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
 
         videos.push_back(entry);
     }
+
+    if (discardedCount > 0)
+        ofLogNotice("VideoAssetPool") << "Discarded " << discardedCount
+            << " videos shorter than " << minDuration << "s (MIN_VIDEO_LENGTH)";
 
     resetUsed();
     ofLogNotice("VideoAssetPool") << "Loaded " << videos.size() << " videos from " << fullPath
@@ -140,8 +160,8 @@ bool VideoAssetPool::passesObjectFilter(const VideoEntry& entry) const {
     return objectFilter.find(entry.object) != objectFilter.end();
 }
 
-std::string VideoAssetPool::getVideoPath(int wr, int hr) {
-    if (videos.empty()) return "";
+VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr) {
+    if (videos.empty()) return {};
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
 
     std::string key = std::to_string(wr) + "_" + std::to_string(hr);
@@ -155,7 +175,6 @@ std::string VideoAssetPool::getVideoPath(int wr, int hr) {
     }
 
     if (available.empty()) {
-        // Diagnostic: log target aspect and sample of ratios in CSV to help troubleshoot
         std::string ratioSample;
         int n = 0;
         for (const auto& v : videos) {
@@ -165,7 +184,7 @@ std::string VideoAssetPool::getVideoPath(int wr, int hr) {
         ofLogWarning("VideoAssetPool") << "No video for ratio " << key
             << " (target aspect " << targetAspect << ", tolerance " << RATIO_TOLERANCE
             << "). CSV ratios sample: [" << ratioSample << "]";
-        return "";
+        return {};
     }
 
     size_t idx = (size_t)(ofRandom(0.0f, (float)available.size()));
@@ -173,7 +192,41 @@ std::string VideoAssetPool::getVideoPath(int wr, int hr) {
     size_t vidIdx = available[idx];
     available[idx] = available.back();
     available.pop_back();
-    return videos[vidIdx].fullPath;
+    return videos[vidIdx];
+}
+
+VideoEntry VideoAssetPool::getVideoEntryWithMinDuration(int wr, int hr, float minDuration) {
+    if (videos.empty()) return {};
+    float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
+    std::string key = std::to_string(wr) + "_" + std::to_string(hr);
+    std::vector<size_t>& available = availableByRatioKey[key];
+
+    if (available.empty()) {
+        for (size_t i = 0; i < videos.size(); ++i) {
+            if (std::abs(videos[i].ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(videos[i]))
+                available.push_back(i);
+        }
+    }
+
+    // Collect positions within available[] whose video meets the duration threshold
+    std::vector<size_t> qualifying;
+    for (size_t pos = 0; pos < available.size(); ++pos) {
+        if (videos[available[pos]].duration >= minDuration)
+            qualifying.push_back(pos);
+    }
+    if (qualifying.empty()) return {};  // nothing qualifies; pool is unchanged
+
+    size_t qIdx = (size_t)(ofRandom(0.0f, (float)qualifying.size()));
+    if (qIdx >= qualifying.size()) qIdx = qualifying.size() - 1;
+    size_t pos = qualifying[qIdx];
+    size_t vidIdx = available[pos];
+    available[pos] = available.back();
+    available.pop_back();
+    return videos[vidIdx];
+}
+
+std::string VideoAssetPool::getVideoPath(int wr, int hr) {
+    return getVideoEntry(wr, hr).fullPath;
 }
 
 bool VideoAssetPool::hasVideosFor(int wr, int hr) const {

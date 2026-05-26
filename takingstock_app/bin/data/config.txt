@@ -7,8 +7,10 @@ BOX_HEIGHT = 750
 VIDEO_ASSET_PATH = ../../videos
 VIDEOS_CSV_PATH = ../../videos/installation.csv
 ARRANGEMENTS_PATH = ../../arrangements
+AUDIO_PATH = ../../audio
 
-VIDEO_LOOP = false  # loop videos or swap to new video when finished
+VIDEO_LOOP = true  # loop videos or swap to new video when finished
+MIN_VIDEO_LENGTH = 0  # discard videos shorter than this many seconds (0 = keep all)
 
 
 ############## CONTROLS ################
@@ -19,19 +21,31 @@ VIDEO_LOOP = false  # loop videos or swap to new video when finished
 ############# LAYOUT TRANSITIONS ######################
 # Transition Type: jumpcut | fade | jumpcut_to_black
 TRANSITION_TYPE = fade
-TRANSITION_DURATION_FADE = 2    # seconds for fade down/up
+TRANSITION_DURATION_FADE = 1    # seconds for fade down/up
 TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
 TRANSITION_TIMER_MIN = 30    # min seconds between auto-transitions
 TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
 
+############# AUDIO ######################
+AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
+
+
+############# KEY VIDEO ######################
+# When true, the transition fires when the longest qualifying video ends
+# rather than using the random TRANSITION_TIMER_MIN/MAX range.
+KEY_VIDEO = true
+KEY_VIDEO_MIN_LENGTH = 23    # min seconds for a video to qualify as key video (0 = any)
+
+
 ############# SELECT MODE ######################
 # Select mode: filter videos by CSV object column when loading arrangements
 # Usage: SELECT = [obj1, obj2], weight   # [*] = any object
-SELECT_MODE = false
-SELECT = [1], 1
-# SELECT = [2], 0.3
-# SELECT = [*], 0.2
+SELECT_MODE = true
+#SELECT = [*], 0.3
+SELECT = [67], 0.3
+SELECT = [27], 0.3
+SELECT = [0], 0.3
 
 
 ################ LAYOUT STRUCTURE ########################
@@ -46,6 +60,7 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 
 # Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
+
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
@@ -65,3 +80,9 @@ LAYOUT_PHASES = 5            # reseeded phases to explore different regions (def
 PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
 PLACEMENT_TOP_K = 6          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
 WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)
+
+
+############# SECONDARY WINDOW ######################
+SECONDARY_WINDOW_ENABLED = true
+SECONDARY_WINDOW_WIDTH = 400
+SECONDARY_WINDOW_HEIGHT = 300

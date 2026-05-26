@@ -88,6 +88,24 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.selectMode = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "KEY_VIDEO") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.keyVideo = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
+    if (key == "KEY_VIDEO_MIN_LENGTH") { config.keyVideoMinLength = std::stof(value); return; }
+    if (key == "AUDIO_PATH") { config.audioPath = value; return; }
+    if (key == "AUDIO_FADE_DURATION") { config.audioFadeDuration = std::stof(value); return; }
+    if (key == "MIN_VIDEO_LENGTH") { config.minVideoLength = std::stof(value); return; }
+    if (key == "SECONDARY_WINDOW_ENABLED") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.secondaryWindowEnabled = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
+    if (key == "SECONDARY_WINDOW_WIDTH")  { config.secondaryWindowWidth  = std::stoi(value); return; }
+    if (key == "SECONDARY_WINDOW_HEIGHT") { config.secondaryWindowHeight = std::stoi(value); return; }
 
     if (key == "SELECT") {
         size_t lb = value.find('[');

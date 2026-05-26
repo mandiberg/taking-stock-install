@@ -17,6 +17,9 @@ public:
     void draw();
     void keyPressed(int key);
 
+    std::string getCurrentKeyVideoClusterNo() const;
+    bool isKeyVideoEnabled() const { return config.keyVideo; }
+
 private:
     void pickSelectAndApplyFilter();
     void pickAndLoadArrangement(size_t idx);
@@ -25,13 +28,18 @@ private:
     void preloadNextLayout();
     float scheduleNextTransition();
     size_t pickNextArrangementIndex();
+    bool arrangementCompatibleWithFilter(const Arrangement& arr) const;
+
+    std::string findAudioFile(const std::string& clusterNo) const;
+    void startAudioForArrangement(float initialVolume = 1.f);
+    void updateAudioFade();
+    void beginAudioFade(float targetVolume);
 
     BinSorterConfig config;
     std::unique_ptr<BinSorter> binSorter;
     VideoAssetPool videoPool;
     BinSorterRenderer renderer;
     ofFbo exportFbo;
-    ofFbo fadeContentFbo;  // cached frame during FadeUp to reduce render load
     bool exportRequested = false;
     std::vector<Arrangement> arrangements;
     std::vector<size_t> pickQueue;
@@ -42,4 +50,14 @@ private:
     float nextTransitionTime = 0.f;
     size_t nextLayoutIdx = 0;  // preloaded layout index
     bool fadeHoldBlackSwapDone = false;
+    float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
+
+    ofSoundPlayer audioPlayer;
+    float audioVolume = 1.f;
+    float audioFadeStartTime = -1.f;
+    float audioFadeStartVolume = 0.f;
+    float audioFadeTargetVolume = 1.f;
+    std::string currentAudioFileName;
+    std::string currentSelectFilterLabel;
+    std::string nextSelectFilterLabel;
 };

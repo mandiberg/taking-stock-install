@@ -13,4 +13,7 @@ takingstock_app/videos/*.csv
 
 #arrangements
 takingstock_app/arrangements/*arrangements*
-/takingstock_install/openframeworks/of_v0.12.1_osx_release
+
+#audio files
+takingstock_app/audio/*.mp3
+takingstock_app/audio/*.wav
