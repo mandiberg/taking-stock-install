@@ -10,7 +10,8 @@ ARRANGEMENTS_PATH = ../../arrangements
 AUDIO_PATH = ../../audio
 
 VIDEO_LOOP = true  # loop videos or swap to new video when finished
-MIN_VIDEO_LENGTH = 0  # discard videos shorter than this many seconds (0 = keep all)
+CYCLE_RESET_DURATION = 5  # seconds to hold black after every full cycle through all arrangements to clear backed up teardowns (0 = disabled)
+MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
 
 
 ############## CONTROLS ################

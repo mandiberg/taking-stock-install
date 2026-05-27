@@ -39,6 +39,8 @@ The secondary window shares a GL context with the main window and runs on the sa
 
 **VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio (default = true) **SET TO TRUE WHEN RUNNING FOR >12HRS**
 
+**CYCLE_RESET_DURATION** = Duration in seconds to hold a black screen after every full cycle through all arrangements. One cycle is when every arrangement has been shown at least once and the queue reshuffles. At the end of that cycle, the app fades/cuts to black normally (completing the transition to the next arrangement), then holds black for this duration before resuming. This gives AVFoundation time to complete any pending async video teardowns that have accumulated over the cycle, acting as a periodic cleanup to maintain long-run stability. Set to `0` to disable entirely. The hold occurs seamlessly within the normal transition — the next arrangement's videos are already loaded and ready when black clears. (default = 5)
+
 **MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
 
 

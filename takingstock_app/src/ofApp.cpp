@@ -557,6 +557,8 @@ size_t ofApp::pickNextArrangementIndex() {
     if (pickQueue.empty()) {
         for (size_t i = 0; i < arrangements.size(); ++i) pickQueue.push_back(i);
         std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
+        if (config.cycleResetDuration > 0.f)
+            endOfCycleResetPending = true;
     }
     if (config.selectMode) {
         for (auto it = pickQueue.begin(); it != pickQueue.end(); ++it) {
@@ -602,6 +604,14 @@ void ofApp::update() {
                     startAudioForArrangement(1.f);
                     preloadNextLayout();
                     scheduleNextTransition();
+                    if (endOfCycleResetPending) {
+                        endOfCycleResetPending = false;
+                        transitionState = TransitionState::CycleReset;
+                        transitionStartTime = now;
+                        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                        ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                    }
                 } else if (config.transitionType == TransitionType::Fade) {
                     transitionState = TransitionState::FadeDown;
                     transitionStartTime = now;
@@ -641,14 +651,40 @@ void ofApp::update() {
             startAudioForArrangement(1.f);
             preloadNextLayout();
             scheduleNextTransition();
-            transitionState = TransitionState::Idle;
+            if (endOfCycleResetPending) {
+                endOfCycleResetPending = false;
+                transitionState = TransitionState::CycleReset;
+                transitionStartTime = now;
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            } else {
+                transitionState = TransitionState::Idle;
+            }
         }
     } else if (transitionState == TransitionState::FadeUp) {
         float dur = std::max(0.016f, config.transitionDurationFade);
         if (now - transitionStartTime >= dur) {
             scheduleNextTransition();
-            transitionState = TransitionState::Idle;
             preloadNextLayout();
+            if (endOfCycleResetPending) {
+                endOfCycleResetPending = false;
+                transitionState = TransitionState::CycleReset;
+                transitionStartTime = now;
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            } else {
+                transitionState = TransitionState::Idle;
+            }
+        }
+    } else if (transitionState == TransitionState::CycleReset) {
+        if (now - transitionStartTime >= config.cycleResetDuration) {
+            scheduleNextTransition();
+            transitionState = TransitionState::Idle;
+            ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            ofLogNotice("ofApp") << "Cycle reset complete (" << config.cycleResetDuration << "s), resuming";
+            ofLogNotice("ofApp") << "XXXXXXXXXXX";
         }
     }
 
@@ -658,7 +694,7 @@ void ofApp::update() {
 void ofApp::draw() {
     ofBackground(0);
 
-    if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack) {
+    if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack || transitionState == TransitionState::CycleReset) {
         ofFill();
         ofSetColor(0);
         ofDrawRectangle(0, 0, ofGetWindowWidth(), ofGetWindowHeight());

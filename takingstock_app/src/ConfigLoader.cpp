@@ -34,6 +34,7 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.videoLoop = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "CYCLE_RESET_DURATION") { config.cycleResetDuration = std::stof(value); return; }
     if (key == "TRANSITION_TYPE") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
