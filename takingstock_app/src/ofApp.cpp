@@ -96,15 +96,23 @@ void ofApp::setup() {
     // Check whether the CSV or video files have changed since the last run.
     // If so, delete any cached arrangement file so it gets regenerated with
     // the updated ratios and weightings.
-    std::string currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
-    std::string fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
-    std::string savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
-    if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
-        ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
-        std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
-        if (!oldPath.empty()) {
-            ofFile(oldPath).remove(false);
-            ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
+    std::string currentFingerprint;
+    std::string fingerprintPath;
+    std::string savedFingerprint;
+    if (config.ignoreFingerprint) {
+        ofLogNotice("ofApp") << "IGNORE_FINGERPRINT enabled: skipping fingerprint check, reusing any matching arrangement file";
+    } else {
+        ofLogNotice("ofApp") << "IGNORE_FINGERPRINT disabled: verifying arrangement cache against input fingerprint";
+        currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
+        fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+        savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
+        if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
+            ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
+            std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+            if (!oldPath.empty()) {
+                ofFile(oldPath).remove(false);
+                ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
+            }
         }
     }
 
@@ -190,7 +198,7 @@ void ofApp::setup() {
             ofLogNotice("ofApp") << "Loaded " << arrangements.size() << " arrangements from disk" << tail;
             // First run with fingerprinting: adopt current fingerprint so future
             // runs only regenerate when inputs actually change.
-            if (savedFingerprint.empty())
+            if (!config.ignoreFingerprint && savedFingerprint.empty())
                 ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
         if (arrangements.empty()) {
@@ -273,7 +281,8 @@ void ofApp::setup() {
         if (!arrangements.empty()) {
             std::string savePath = ArrangementIO::getArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers, (int)arrangements.size());
             ArrangementIO::save(savePath, arrangements);
-            ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
+            if (!config.ignoreFingerprint)
+                ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
     }
 

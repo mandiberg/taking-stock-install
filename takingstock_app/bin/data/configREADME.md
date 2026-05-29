@@ -125,6 +125,16 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 
 
 
+### ARRANGEMENTS FINGERPRINT
+
+When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
+
+This is the correct behavior for a live installation, but it can be disruptive during testing: cutting a single video from the folder or tweaking the CSV will wipe all cached arrangements and force a full regeneration, even if the existing layouts are still perfectly usable.
+
+**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current `BOX_WIDTH`, `BOX_HEIGHT`, and `NESTING_LAYERS` values. If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
+
+
+
 ### ARRANGEMENTS ITEM PLACEMENT
 
 Arrangement generation uses a customized bin packing algorithm. For some general info on bin packing algorithms read here: https://en.wikipedia.org/wiki/Bin_packing_problem 

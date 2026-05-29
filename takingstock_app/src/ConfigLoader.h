@@ -62,6 +62,7 @@ struct BinSorterConfig {
     bool secondaryWindowEnabled = false; // when true, open a secondary info window
     int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
     int  secondaryWindowHeight  = 300;   // height of secondary window in pixels
+    bool ignoreFingerprint = false;      // when true, skip fingerprint check and reuse any matching arrangement file
 };
 
 class ConfigLoader {

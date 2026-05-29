@@ -75,6 +75,7 @@ BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to
 
 
 ################ LAYOUT GENERATION ########################
+IGNORE_FINGERPRINT = false  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
 LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)
