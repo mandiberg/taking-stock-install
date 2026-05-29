@@ -96,15 +96,23 @@ void ofApp::setup() {
     // Check whether the CSV or video files have changed since the last run.
     // If so, delete any cached arrangement file so it gets regenerated with
     // the updated ratios and weightings.
-    std::string currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
-    std::string fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
-    std::string savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
-    if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
-        ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
-        std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
-        if (!oldPath.empty()) {
-            ofFile(oldPath).remove(false);
-            ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
+    std::string currentFingerprint;
+    std::string fingerprintPath;
+    std::string savedFingerprint;
+    if (config.ignoreFingerprint) {
+        ofLogNotice("ofApp") << "IGNORE_FINGERPRINT enabled: skipping fingerprint check, reusing any matching arrangement file";
+    } else {
+        ofLogNotice("ofApp") << "IGNORE_FINGERPRINT disabled: verifying arrangement cache against input fingerprint";
+        currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
+        fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+        savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
+        if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
+            ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
+            std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+            if (!oldPath.empty()) {
+                ofFile(oldPath).remove(false);
+                ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
+            }
         }
     }
 
@@ -190,7 +198,7 @@ void ofApp::setup() {
             ofLogNotice("ofApp") << "Loaded " << arrangements.size() << " arrangements from disk" << tail;
             // First run with fingerprinting: adopt current fingerprint so future
             // runs only regenerate when inputs actually change.
-            if (savedFingerprint.empty())
+            if (!config.ignoreFingerprint && savedFingerprint.empty())
                 ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
         if (arrangements.empty()) {
@@ -273,7 +281,8 @@ void ofApp::setup() {
         if (!arrangements.empty()) {
             std::string savePath = ArrangementIO::getArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers, (int)arrangements.size());
             ArrangementIO::save(savePath, arrangements);
-            ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
+            if (!config.ignoreFingerprint)
+                ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
     }
 
@@ -557,6 +566,8 @@ size_t ofApp::pickNextArrangementIndex() {
     if (pickQueue.empty()) {
         for (size_t i = 0; i < arrangements.size(); ++i) pickQueue.push_back(i);
         std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
+        if (config.cycleResetDuration > 0.f)
+            endOfCycleResetPending = true;
     }
     if (config.selectMode) {
         for (auto it = pickQueue.begin(); it != pickQueue.end(); ++it) {
@@ -602,6 +613,14 @@ void ofApp::update() {
                     startAudioForArrangement(1.f);
                     preloadNextLayout();
                     scheduleNextTransition();
+                    if (endOfCycleResetPending) {
+                        endOfCycleResetPending = false;
+                        transitionState = TransitionState::CycleReset;
+                        transitionStartTime = now;
+                        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                        ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                        ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                    }
                 } else if (config.transitionType == TransitionType::Fade) {
                     transitionState = TransitionState::FadeDown;
                     transitionStartTime = now;
@@ -641,14 +660,40 @@ void ofApp::update() {
             startAudioForArrangement(1.f);
             preloadNextLayout();
             scheduleNextTransition();
-            transitionState = TransitionState::Idle;
+            if (endOfCycleResetPending) {
+                endOfCycleResetPending = false;
+                transitionState = TransitionState::CycleReset;
+                transitionStartTime = now;
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            } else {
+                transitionState = TransitionState::Idle;
+            }
         }
     } else if (transitionState == TransitionState::FadeUp) {
         float dur = std::max(0.016f, config.transitionDurationFade);
         if (now - transitionStartTime >= dur) {
             scheduleNextTransition();
-            transitionState = TransitionState::Idle;
             preloadNextLayout();
+            if (endOfCycleResetPending) {
+                endOfCycleResetPending = false;
+                transitionState = TransitionState::CycleReset;
+                transitionStartTime = now;
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+                ofLogNotice("ofApp") << "Cycle reset: all " << arrangements.size() << " arrangements shown, holding black for " << config.cycleResetDuration << "s";
+                ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            } else {
+                transitionState = TransitionState::Idle;
+            }
+        }
+    } else if (transitionState == TransitionState::CycleReset) {
+        if (now - transitionStartTime >= config.cycleResetDuration) {
+            scheduleNextTransition();
+            transitionState = TransitionState::Idle;
+            ofLogNotice("ofApp") << "XXXXXXXXXXX";
+            ofLogNotice("ofApp") << "Cycle reset complete (" << config.cycleResetDuration << "s), resuming";
+            ofLogNotice("ofApp") << "XXXXXXXXXXX";
         }
     }
 
@@ -658,7 +703,7 @@ void ofApp::update() {
 void ofApp::draw() {
     ofBackground(0);
 
-    if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack) {
+    if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack || transitionState == TransitionState::CycleReset) {
         ofFill();
         ofSetColor(0);
         ofDrawRectangle(0, 0, ofGetWindowWidth(), ofGetWindowHeight());

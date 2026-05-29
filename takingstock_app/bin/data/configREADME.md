@@ -39,6 +39,8 @@ The secondary window shares a GL context with the main window and runs on the sa
 
 **VIDEO_LOOP** = Options: [true, false] This decides whether videos will loop when finished or be replaced with another video of the same aspect ratio (default = true) **SET TO TRUE WHEN RUNNING FOR >12HRS**
 
+**CYCLE_RESET_DURATION** = Duration in seconds to hold a black screen after every full cycle through all arrangements. One cycle is when every arrangement has been shown at least once and the queue reshuffles. At the end of that cycle, the app fades/cuts to black normally (completing the transition to the next arrangement), then holds black for this duration before resuming. This gives AVFoundation time to complete any pending async video teardowns that have accumulated over the cycle, acting as a periodic cleanup to maintain long-run stability. Set to `0` to disable entirely. The hold occurs seamlessly within the normal transition — the next arrangement's videos are already loaded and ready when black clears. (default = 5)
+
 **MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
 
 
@@ -120,6 +122,16 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 **LAYOUT_STALE_THRESHOLD** = This is the maximum number of duplicates the program will allow before it skips to the next phase (default = 3000)
 **LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
 
+
+
+
+### ARRANGEMENTS FINGERPRINT
+
+When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
+
+This is the correct behavior for a live installation, but it can be disruptive during testing: cutting a single video from the folder or tweaking the CSV will wipe all cached arrangements and force a full regeneration, even if the existing layouts are still perfectly usable.
+
+**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current `BOX_WIDTH`, `BOX_HEIGHT`, and `NESTING_LAYERS` values. If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
 
 
 

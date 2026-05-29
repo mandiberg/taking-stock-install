@@ -34,6 +34,7 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.videoLoop = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "CYCLE_RESET_DURATION") { config.cycleResetDuration = std::stof(value); return; }
     if (key == "TRANSITION_TYPE") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
@@ -106,6 +107,12 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     }
     if (key == "SECONDARY_WINDOW_WIDTH")  { config.secondaryWindowWidth  = std::stoi(value); return; }
     if (key == "SECONDARY_WINDOW_HEIGHT") { config.secondaryWindowHeight = std::stoi(value); return; }
+    if (key == "IGNORE_FINGERPRINT") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.ignoreFingerprint = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
 
     if (key == "SELECT") {
         size_t lb = value.find('[');

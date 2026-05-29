@@ -10,7 +10,8 @@ ARRANGEMENTS_PATH = ../../arrangements
 AUDIO_PATH = ../../audio
 
 VIDEO_LOOP = true  # loop videos or swap to new video when finished
-MIN_VIDEO_LENGTH = 0  # discard videos shorter than this many seconds (0 = keep all)
+CYCLE_RESET_DURATION = 5  # seconds to hold black after every full cycle through all arrangements to clear backed up teardowns (0 = disabled)
+MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
 
 
 ############## CONTROLS ################
@@ -74,6 +75,7 @@ BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to
 
 
 ################ LAYOUT GENERATION ########################
+IGNORE_FINGERPRINT = false  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
 LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)

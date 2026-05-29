@@ -8,7 +8,7 @@
 #include "ConfigLoader.h"
 #include <memory>
 
-enum class TransitionState { Idle, FadeDown, FadeHoldBlack, HoldBlack, FadeUp };
+enum class TransitionState { Idle, FadeDown, FadeHoldBlack, HoldBlack, FadeUp, CycleReset };
 
 class ofApp : public ofBaseApp {
 public:
@@ -51,6 +51,7 @@ private:
     size_t nextLayoutIdx = 0;  // preloaded layout index
     bool fadeHoldBlackSwapDone = false;
     float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
+    bool endOfCycleResetPending = false;  // set when pickQueue refills; triggers CycleReset after next transition
 
     ofSoundPlayer audioPlayer;
     float audioVolume = 1.f;

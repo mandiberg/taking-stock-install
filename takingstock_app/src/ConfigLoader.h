@@ -25,6 +25,7 @@ struct BinSorterConfig {
     std::string videosCsvPath = "videos/videos.csv";  // path to videos.csv (replaces folder-based loading)
     std::string arrangementsPath = "arrangements";
     bool videoLoop = false;  // when false, swap to new video when finished; when true, loop
+    float cycleResetDuration = 5.f;  // seconds to hold black after every full cycle through all arrangements (0 = disabled)
     TransitionType transitionType = TransitionType::Jumpcut;
     float transitionDurationFade = 0.5f;
     float transitionDurationJumpToBlack = 0.5f;
@@ -61,6 +62,7 @@ struct BinSorterConfig {
     bool secondaryWindowEnabled = false; // when true, open a secondary info window
     int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
     int  secondaryWindowHeight  = 300;   // height of secondary window in pixels
+    bool ignoreFingerprint = false;      // when true, skip fingerprint check and reuse any matching arrangement file
 };
 
 class ConfigLoader {
