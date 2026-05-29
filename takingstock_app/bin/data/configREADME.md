@@ -90,12 +90,28 @@ Audio transitions follow `TRANSITION_TYPE`:
 
 ## SELECT MODE
 
-Select mode allows you to filter which videos are used in arrangements based on the `object` column in `installation.csv`. You can define multiple filter options each with a probability weight, and the app randomly picks one filter at each transition. This lets you bias arrangements toward specific object classes (e.g. only show videos tagged as object `67`) or mix them at weighted probabilities.
+Select mode allows you to filter which videos are used in arrangements based on the `objects` column in `installation.csv`. The `objects` column is expected to hold a Python-style list of integer IDs, e.g. `[67]`, `[67, 95]`, or `[]` for no detected objects. You can define multiple filter options each with a probability weight, and the app randomly picks one filter at each transition. This lets you bias arrangements toward specific object classes (e.g. only show videos tagged with object `67`) or mix them at weighted probabilities.
 
-**SELECT_MODE** = Options: [true, false] When `true`, video selection is filtered according to the `SELECT` lines below. Requires an `object` column in the CSV — if none is found, select mode is automatically disabled. (default = false)
+**SELECT_MODE** = Options: [true, false] When `true`, video selection is filtered according to the `SELECT` lines below. Requires an `objects` column in the CSV — if none is found, select mode is automatically disabled. (default = false)
+
+**SELECT_EXACT_MATCH** = Options: [true, false] Controls how a video's object list is matched against a `SELECT` filter. (default = false)
+- `false` (**any** mode): a video passes if its object list contains **at least one** of the IDs in the SELECT filter.
+- `true` (**exact** mode): a video passes only if its object list is **exactly equal** to the SELECT filter's list (same IDs, any order, no extras).
+
+| Mode | SELECT | CSV `objects` | Passes? |
+|------|--------|---------------|---------|
+| any  | `[67]` | `[67, 95]` | Yes — 67 found in list |
+| any  | `[67]` | `[95]` | No |
+| exact | `[67, 95]` | `[67, 95]` | Yes — sets equal |
+| exact | `[67, 95]` | `[67, 95, 100]` | No — extra element |
+| exact | `[67]` | `[67, 95]` | No — extra element |
+| either | `[]` | `[]` | Yes — empty list match |
+| either | `[*]` | anything | Yes — wildcard |
 
 **SELECT** = Defines one filter option. Format: `SELECT = [obj1, obj2, ...], weight`
-- The object list is matched against the CSV `object` column. Use `[*]` to allow any object (equivalent to no filter).
+- The object list is matched against the parsed `objects` column values using the mode set by `SELECT_EXACT_MATCH` (see above).
+- Use `[*]` to allow any video regardless of its object list (equivalent to no filter).
+- Use `[]` (empty brackets) to select only videos whose object list is empty (i.e. no detected objects).
 - `weight` is a relative probability — a weight of `0.3` alongside two other `0.3` entries means each has a 1-in-3 chance of being picked per transition.
 - Multiple `SELECT` lines are allowed; one is chosen randomly at each transition using the weights.
 

@@ -1,4 +1,5 @@
 #include "VideoAssetPool.h"
+#include "ConfigLoader.h"
 #include "ofMain.h"
 #include "ofFileUtils.h"
 #include <algorithm>
@@ -30,6 +31,24 @@ static std::vector<std::string> splitCsvLine(const std::string& line) {
     }
     fields.push_back(trim(field));
     return fields;
+}
+
+// Parse a CSV object column value like "[67, 95]" or "[]" into a list of trimmed ID strings.
+static std::vector<std::string> parseObjectList(const std::string& raw) {
+    std::vector<std::string> result;
+    size_t lb = raw.find('[');
+    size_t rb = raw.find(']');
+    if (lb == std::string::npos || rb == std::string::npos || rb <= lb) return result;
+    std::string inner = trim(raw.substr(lb + 1, rb - lb - 1));
+    if (inner.empty()) return result;
+    size_t pos = 0;
+    while (pos < inner.size()) {
+        size_t comma = inner.find(',', pos);
+        std::string item = trim(inner.substr(pos, (comma == std::string::npos ? inner.size() : comma) - pos));
+        if (!item.empty()) result.push_back(item);
+        pos = (comma == std::string::npos) ? inner.size() : comma + 1;
+    }
+    return result;
 }
 
 bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
@@ -98,6 +117,7 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
         entry.filename  = fields[idxFilename];
         entry.videoId   = entry.filename;
         entry.object    = (idxObject    >= 0 && idxObject    < (int)fields.size()) ? fields[idxObject]    : "";
+        entry.objectList = parseObjectList(entry.object);
         entry.clusterNo = (idxClusterNo >= 0 && idxClusterNo < (int)fields.size()) ? fields[idxClusterNo] : "";
         entry.poseNo    = (idxPoseNo    >= 0 && idxPoseNo    < (int)fields.size()) ? fields[idxPoseNo]    : "";
         try {
@@ -143,21 +163,46 @@ void VideoAssetPool::resetUsed() {
     availableByRatioKey.clear();
 }
 
-void VideoAssetPool::setObjectFilter(const std::vector<std::string>& allowedObjects) {
+void VideoAssetPool::setObjectFilter(const SelectOption& opt, bool exactMatch) {
     objectFilter.clear();
-    if (allowedObjects.empty()) return;
-    for (const auto& o : allowedObjects) {
-        if (o == "*") return;  // [*] or [x, *] = no filter
+    filterToEmptyList = false;
+    selectExactMatch = exactMatch;
+
+    // [*] wildcard — no filter, all videos pass
+    for (const auto& o : opt.objects) {
+        if (o == "*") return;
     }
-    for (const auto& o : allowedObjects) {
+
+    if (opt.matchEmptyList) {
+        filterToEmptyList = true;
+        return;
+    }
+
+    for (const auto& o : opt.objects) {
         if (!o.empty()) objectFilter.insert(o);
     }
 }
 
 bool VideoAssetPool::passesObjectFilter(const VideoEntry& entry) const {
-    if (objectFilter.empty()) return true;
-    if (objectFilter.find("*") != objectFilter.end()) return true;
-    return objectFilter.find(entry.object) != objectFilter.end();
+    // No active filter — all videos pass (wildcard or select mode off)
+    if (objectFilter.empty() && !filterToEmptyList) return true;
+
+    if (filterToEmptyList) return entry.objectList.empty();
+
+    if (selectExactMatch) {
+        // CSV objectList must be exactly equal to objectFilter (same elements, any order)
+        if (entry.objectList.size() != objectFilter.size()) return false;
+        for (const auto& o : entry.objectList) {
+            if (!objectFilter.count(o)) return false;
+        }
+        return true;
+    } else {
+        // ANY mode — at least one item in objectList must be in objectFilter
+        for (const auto& o : entry.objectList) {
+            if (objectFilter.count(o)) return true;
+        }
+        return false;
+    }
 }
 
 VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr) {

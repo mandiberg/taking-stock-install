@@ -82,12 +82,18 @@ void ofApp::setup() {
     }
 
     if (config.selectMode) {
-        ofLogNotice("ofApp") << "SELECT_MODE enabled";
+        ofLogNotice("ofApp") << "SELECT_MODE enabled (match=" << (config.selectExactMatch ? "exact" : "any") << ")";
         for (size_t i = 0; i < config.selectOptions.size(); ++i) {
             const auto& opt = config.selectOptions[i];
-            std::string objs;
-            for (const auto& o : opt.objects) objs += (objs.empty() ? "" : ", ") + o;
-            ofLogNotice("ofApp") << "  Option " << (i + 1) << ": objects=[" << objs << "] weight=" << opt.weight;
+            std::string label;
+            if (opt.matchEmptyList) {
+                label = "[]";
+            } else {
+                label = "[";
+                for (const auto& o : opt.objects) label += (label.size() > 1 ? ", " : "") + o;
+                label += "]";
+            }
+            ofLogNotice("ofApp") << "  Option " << (i + 1) << ": objects=" << label << " weight=" << opt.weight;
         }
     } else {
         ofLogNotice("ofApp") << "SELECT_MODE disabled";
@@ -384,8 +390,9 @@ void ofApp::logArrangementInfo(size_t idx) {
 }
 
 void ofApp::pickSelectAndApplyFilter() {
+    SelectOption wildcardOpt;  // empty objects, matchEmptyList=false → passes all videos
     if (!config.selectMode || config.selectOptions.empty()) {
-        videoPool.setObjectFilter({});
+        videoPool.setObjectFilter(wildcardOpt, false);
         nextSelectFilterLabel = "all objects";
         ofLogNotice("ofApp") << "Select filter: all objects";
         return;
@@ -394,24 +401,28 @@ void ofApp::pickSelectAndApplyFilter() {
     for (const auto& opt : config.selectOptions)
         totalWeight += opt.weight;
     if (totalWeight <= 0.f) {
-        videoPool.setObjectFilter({});
+        videoPool.setObjectFilter(wildcardOpt, false);
         nextSelectFilterLabel = "all objects";
         ofLogNotice("ofApp") << "Select filter: all objects";
         return;
     }
 
-    auto applyAndLog = [&](const std::vector<std::string>& objects) {
-        videoPool.setObjectFilter(objects);
-        bool isWildcard = objects.empty() ||
-            std::find(objects.begin(), objects.end(), "*") != objects.end();
+    auto applyAndLog = [&](const SelectOption& opt) {
+        videoPool.setObjectFilter(opt, config.selectExactMatch);
+        bool isWildcard = !opt.matchEmptyList && (opt.objects.empty() ||
+            std::find(opt.objects.begin(), opt.objects.end(), "*") != opt.objects.end());
         if (isWildcard) {
             nextSelectFilterLabel = "all objects";
             ofLogNotice("ofApp") << "Select filter: all objects";
+        } else if (opt.matchEmptyList) {
+            nextSelectFilterLabel = "objects=[]";
+            ofLogNotice("ofApp") << "Select filter: objects=[] (empty list)";
         } else {
             std::string objs;
-            for (const auto& o : objects) objs += (objs.empty() ? "" : ", ") + o;
+            for (const auto& o : opt.objects) objs += (objs.empty() ? "" : ", ") + o;
+            std::string mode = config.selectExactMatch ? " (exact)" : " (any)";
             nextSelectFilterLabel = "objects=[" + objs + "]";
-            ofLogNotice("ofApp") << "Select filter: objects=[" << objs << "]";
+            ofLogNotice("ofApp") << "Select filter: objects=[" << objs << "]" << mode;
         }
     };
 
@@ -419,11 +430,11 @@ void ofApp::pickSelectAndApplyFilter() {
     for (const auto& opt : config.selectOptions) {
         r -= opt.weight;
         if (r < 0.f) {
-            applyAndLog(opt.objects);
+            applyAndLog(opt);
             return;
         }
     }
-    applyAndLog(config.selectOptions.back().objects);
+    applyAndLog(config.selectOptions.back());
 }
 
 void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {

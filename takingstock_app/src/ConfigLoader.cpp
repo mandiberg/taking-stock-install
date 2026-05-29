@@ -89,6 +89,12 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.selectMode = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "SELECT_EXACT_MATCH") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.selectExactMatch = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
     if (key == "KEY_VIDEO") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
@@ -121,7 +127,10 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
             std::string inner = trim(value.substr(lb + 1, rb - lb - 1));
             std::string rest = trim(value.substr(rb + 1));
             SelectOption opt;
-            if (!inner.empty()) {
+            if (inner.empty()) {
+                // SELECT = [], weight  →  match videos with an empty object list
+                opt.matchEmptyList = true;
+            } else {
                 size_t pos = 0;
                 while (pos < inner.size()) {
                     size_t comma = inner.find(',', pos);

@@ -41,12 +41,13 @@ KEY_VIDEO_MIN_LENGTH = 23    # min seconds for a video to qualify as key video (
 
 ############# SELECT MODE ######################
 # Select mode: filter videos by CSV object column when loading arrangements
-# Usage: SELECT = [obj1, obj2], weight   # [*] = any object
+# Usage: SELECT = [obj1, obj2], weight   # [*] = any object, [] = empty object list
 SELECT_MODE = true
+SELECT_EXACT_MATCH = false  # false = any object in CSV list matches; true = CSV list must exactly equal SELECT list
 #SELECT = [*], 0.3
 SELECT = [67], 0.3
 SELECT = [27], 0.3
-SELECT = [0], 0.3
+SELECT = [], 0.3
 
 
 ################ LAYOUT STRUCTURE ########################
