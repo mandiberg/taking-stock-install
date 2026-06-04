@@ -316,9 +316,16 @@ void ofApp::setup() {
 
     if (arrangements.size() > 1) {
         pickSelectAndApplyFilter();
-        nextLayoutIdx = pickNextArrangementIndex();
-        videoPool.resetUsed();
-        renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
+        size_t maxAttempts = arrangements.size();
+        for (size_t attempt = 0; attempt < maxAttempts; ++attempt) {
+            nextLayoutIdx = pickNextArrangementIndex();
+            videoPool.resetUsed();
+            bool isLastAttempt = (attempt + 1 == maxAttempts);
+            if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLastAttempt))
+                break;
+            ofLogNotice("ofApp") << "Layout " << (nextLayoutIdx + 1)
+                << " skipped: would repeat a video; trying next";
+        }
     }
     if (!arrangements.empty()) {
         ofLogNotice("ofApp") << "---";
@@ -452,9 +459,18 @@ void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
 void ofApp::preloadNextLayout() {
     if (arrangements.size() <= 1) return;
     pickSelectAndApplyFilter();
-    nextLayoutIdx = pickNextArrangementIndex();
-    videoPool.resetUsed();
-    renderer.preloadFromArrangement(arrangements[nextLayoutIdx]);
+    // Retry through all arrangements to find one with no duplicate videos in a scene.
+    // On the final attempt, allow duplicates as a fallback so preload always succeeds.
+    size_t maxAttempts = arrangements.size();
+    for (size_t attempt = 0; attempt < maxAttempts; ++attempt) {
+        nextLayoutIdx = pickNextArrangementIndex();
+        videoPool.resetUsed();
+        bool isLastAttempt = (attempt + 1 == maxAttempts);
+        if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLastAttempt))
+            return;
+        ofLogNotice("ofApp") << "Layout " << (nextLayoutIdx + 1)
+            << " skipped: would repeat a video; trying next";
+    }
 }
 
 void ofApp::pickAndLoadArrangement(size_t idx) {

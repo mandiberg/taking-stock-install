@@ -7,14 +7,15 @@
 #include <queue>
 #include <set>
 
-static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool videoLoop,
+static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool videoLoop,
     const std::vector<std::vector<BinItem>>& bins,
     const std::map<std::pair<int, int>, NestedBinData>& nestedBins,
     std::vector<VideoSlot>& out, bool quiet, bool deferPlay = false,
     bool deferLoad = false, const char* arrangementContext = "current arrangement",
-    bool keyVideo = false, float keyVideoMinLength = 0.f) {
+    bool keyVideo = false, float keyVideoMinLength = 0.f,
+    bool allowDuplicates = false) {
     out.clear();
-    if (!binSorter) return;
+    if (!binSorter) return true;
 
     int boxW = binSorter->getBoxWidth();
     const int padding = 20;
@@ -97,6 +98,22 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
         }
     }
 
+    // Duplicate check: reject this layout if the same video would appear in more than one slot.
+    // The pool already removes each picked video from its ratio bucket, but refills when
+    // exhausted — so this can happen when there are more slots than unique videos for a ratio.
+    if (!allowDuplicates) {
+        std::set<std::string> seenPaths;
+        for (const auto& slot : out) {
+            if (!slot.path.empty() && !seenPaths.insert(slot.path).second) {
+                ofLogNotice("BinSorterRenderer") << "Layout rejected: duplicate video "
+                    << ofFile(slot.path).getFileName()
+                    << " [" << arrangementContext << "]";
+                out.clear();
+                return false;
+            }
+        }
+    }
+
     // Pass 3: load players (skipped when deferLoad — staggered load handles it later)
     if (!deferLoad) {
         for (size_t i = 0; i < out.size(); ++i) {
@@ -134,6 +151,7 @@ static void buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
             }
         }
     }
+    return true;
 }
 
 void BinSorterRenderer::setup(BinSorter* sorter, VideoAssetPool* pool, bool videoLoop_,
@@ -160,12 +178,16 @@ void BinSorterRenderer::buildSlotsFromArrangement(const std::vector<std::vector<
                    "current arrangement", keyVideo, keyVideoMinLength);
 }
 
-void BinSorterRenderer::preloadFromArrangement(const Arrangement& arr) {
-    if (!binSorter) return;
+bool BinSorterRenderer::preloadFromArrangement(const Arrangement& arr, bool allowDuplicates) {
+    if (!binSorter) return false;
     nextSlots.clear();
     nextSlotsLoadQueue.clear();
-    buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true, true,
-                   "next arrangement", keyVideo, keyVideoMinLength);
+    bool ok = buildSlotsImpl(binSorter, videoPool, videoLoop, arr.bins, arr.nestedBins, nextSlots, true, true, true,
+                   "next arrangement", keyVideo, keyVideoMinLength, allowDuplicates);
+    if (!ok) {
+        nextSlots.clear();
+        return false;
+    }
     for (size_t i = 0; i < nextSlots.size(); ++i) {
         if (!nextSlots[i].path.empty()) {
             nextSlotsLoadQueue.push_back({i, false});
@@ -174,6 +196,7 @@ void BinSorterRenderer::preloadFromArrangement(const Arrangement& arr) {
         }
     }
     lastNextSlotLoadTime = ofGetElapsedTimef();
+    return true;
 }
 
 void BinSorterRenderer::swapToPreloaded(const Arrangement& arr) {

@@ -28,7 +28,7 @@ public:
     void draw(float offsetX = 0, float offsetY = 0);
     void drawToFbo(ofFbo& fbo);
     void regenerate();
-    void preloadFromArrangement(const Arrangement& arr);
+    bool preloadFromArrangement(const Arrangement& arr, bool allowDuplicates = false);
     void swapToPreloaded(const Arrangement& arr);
     void startPlaying();
     std::vector<VideoSlot>& getSlots() { return slots; }
