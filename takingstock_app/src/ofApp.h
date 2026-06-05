@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 #include "BinSorter.h"
-#include <random>
 #include "VideoAssetPool.h"
 #include "BinSorterRenderer.h"
 #include "ConfigLoader.h"
@@ -22,6 +21,7 @@ public:
 
 private:
     void pickSelectAndApplyFilter();
+    void pickSelectAndApplyFilterWithFallback();  // re-rolls filter if no arrangement is compatible
     void pickAndLoadArrangement(size_t idx);
     void swapToPreloadedAndLog(size_t idx, bool deferPlay = false);
     void logArrangementInfo(size_t idx);
@@ -42,8 +42,8 @@ private:
     ofFbo exportFbo;
     bool exportRequested = false;
     std::vector<Arrangement> arrangements;
-    std::vector<size_t> pickQueue;
     bool arrangementPickRequested = false;
+    int arrangementsShownCount = 0;  // counts arrangements displayed; triggers cycle reset at cycleResetCount
 
     TransitionState transitionState = TransitionState::Idle;
     float transitionStartTime = 0.f;
@@ -51,7 +51,7 @@ private:
     size_t nextLayoutIdx = 0;  // preloaded layout index
     bool fadeHoldBlackSwapDone = false;
     float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
-    bool endOfCycleResetPending = false;  // set when pickQueue refills; triggers CycleReset after next transition
+    bool endOfCycleResetPending = false;  // set when arrangementsShownCount reaches cycleResetCount
 
     ofSoundPlayer audioPlayer;
     float audioVolume = 1.f;

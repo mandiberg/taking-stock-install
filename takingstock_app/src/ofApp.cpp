@@ -4,7 +4,6 @@
 #include <cmath>
 #include <iomanip>
 #include <set>
-#include <random>
 
 std::string ofApp::getCurrentKeyVideoClusterNo() const {
     int keyIdx = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
@@ -297,11 +296,7 @@ void ofApp::setup() {
         binSorter->sort(-1);
     }
 
-    pickQueue.clear();
-    for (size_t i = 0; i < arrangements.size(); ++i) pickQueue.push_back(i);
-    std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
-
-    pickSelectAndApplyFilter();
+    pickSelectAndApplyFilterWithFallback();
     currentSelectFilterLabel = nextSelectFilterLabel;
     size_t initialIdx = 0;
     if (!arrangements.empty()) {
@@ -315,13 +310,13 @@ void ofApp::setup() {
     exportFbo.allocate(config.boxWidth, config.boxHeight, GL_RGB);
 
     if (arrangements.size() > 1) {
-        pickSelectAndApplyFilter();
-        size_t maxAttempts = arrangements.size();
+        pickSelectAndApplyFilterWithFallback();
+        size_t maxAttempts = std::min(arrangements.size(), (size_t)20);
         for (size_t attempt = 0; attempt < maxAttempts; ++attempt) {
             nextLayoutIdx = pickNextArrangementIndex();
             videoPool.resetUsed();
-            bool isLastAttempt = (attempt + 1 == maxAttempts);
-            if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLastAttempt))
+            bool isLast = (attempt + 1 == maxAttempts);
+            if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLast))
                 break;
             ofLogNotice("ofApp") << "Layout " << (nextLayoutIdx + 1)
                 << " skipped: would repeat a video; trying next";
@@ -444,8 +439,36 @@ void ofApp::pickSelectAndApplyFilter() {
     applyAndLog(config.selectOptions.back());
 }
 
+void ofApp::pickSelectAndApplyFilterWithFallback() {
+    if (!config.selectMode || config.selectOptions.empty()) {
+        pickSelectAndApplyFilter();
+        return;
+    }
+    // Try each SELECT option (up to selectOptions.size() rolls) until one that
+    // has at least one compatible arrangement is found. If all fail, the last
+    // rolled filter is kept — pickNextArrangementIndex will fall back to "use any."
+    size_t maxTries = config.selectOptions.size();
+    for (size_t ft = 0; ft < maxTries; ++ft) {
+        pickSelectAndApplyFilter();
+        for (const auto& arr : arrangements) {
+            if (arrangementCompatibleWithFilter(arr)) return;  // found a good filter
+        }
+        ofLogNotice("ofApp") << "Filter " << nextSelectFilterLabel
+            << " has no compatible arrangements, re-rolling";
+    }
+}
+
 void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
+
+    // Count-based cycle reset: fire after every cycleResetCount arrangements shown.
+    if (config.cycleResetCount > 0 && config.cycleResetDuration > 0.f) {
+        if (++arrangementsShownCount >= config.cycleResetCount) {
+            arrangementsShownCount = 0;
+            endOfCycleResetPending = true;
+        }
+    }
+
     if (!renderer.hasPreloadedLayout()) {
         pickAndLoadArrangement(idx);
         return;
@@ -458,15 +481,15 @@ void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
 
 void ofApp::preloadNextLayout() {
     if (arrangements.size() <= 1) return;
-    pickSelectAndApplyFilter();
-    // Retry through all arrangements to find one with no duplicate videos in a scene.
-    // On the final attempt, allow duplicates as a fallback so preload always succeeds.
-    size_t maxAttempts = arrangements.size();
+    pickSelectAndApplyFilterWithFallback();
+    // Pick a random compatible arrangement. Retry up to 20 times if the duplicate-video
+    // check fires; allow duplicates on the final attempt so preload always succeeds.
+    size_t maxAttempts = std::min(arrangements.size(), (size_t)20);
     for (size_t attempt = 0; attempt < maxAttempts; ++attempt) {
         nextLayoutIdx = pickNextArrangementIndex();
         videoPool.resetUsed();
-        bool isLastAttempt = (attempt + 1 == maxAttempts);
-        if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLastAttempt))
+        bool isLast = (attempt + 1 == maxAttempts);
+        if (renderer.preloadFromArrangement(arrangements[nextLayoutIdx], isLast))
             return;
         ofLogNotice("ofApp") << "Layout " << (nextLayoutIdx + 1)
             << " skipped: would repeat a video; trying next";
@@ -476,7 +499,7 @@ void ofApp::preloadNextLayout() {
 void ofApp::pickAndLoadArrangement(size_t idx) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
     ofLogNotice("ofApp") << "---";
-    pickSelectAndApplyFilter();
+    pickSelectAndApplyFilterWithFallback();
     currentSelectFilterLabel = nextSelectFilterLabel;
     binSorter->loadArrangement(arrangements[idx].bins, arrangements[idx].nestedBins);
     renderer.regenerate();
@@ -590,25 +613,24 @@ float ofApp::scheduleNextTransition() {
 
 size_t ofApp::pickNextArrangementIndex() {
     if (arrangements.empty()) return 0;
-    if (pickQueue.empty()) {
-        for (size_t i = 0; i < arrangements.size(); ++i) pickQueue.push_back(i);
-        std::shuffle(pickQueue.begin(), pickQueue.end(), std::mt19937(std::random_device{}()));
-        if (config.cycleResetDuration > 0.f)
-            endOfCycleResetPending = true;
-    }
     if (config.selectMode) {
-        for (auto it = pickQueue.begin(); it != pickQueue.end(); ++it) {
-            if (arrangementCompatibleWithFilter(arrangements[*it])) {
-                size_t idx = *it;
-                pickQueue.erase(it);
-                return idx;
-            }
+        // Collect all arrangements compatible with the current filter, then pick randomly.
+        std::vector<size_t> compatible;
+        compatible.reserve(arrangements.size());
+        for (size_t i = 0; i < arrangements.size(); ++i) {
+            if (arrangementCompatibleWithFilter(arrangements[i]))
+                compatible.push_back(i);
+        }
+        if (!compatible.empty()) {
+            size_t pick = (size_t)ofRandom(0.f, (float)compatible.size());
+            if (pick >= compatible.size()) pick = compatible.size() - 1;
+            return compatible[pick];
         }
         ofLogWarning("ofApp") << "SELECT_MODE: no arrangement compatible with current filter, using any";
     }
-    size_t idx = pickQueue.back();
-    pickQueue.pop_back();
-    return idx;
+    size_t pick = (size_t)ofRandom(0.f, (float)arrangements.size());
+    if (pick >= arrangements.size()) pick = arrangements.size() - 1;
+    return pick;
 }
 
 void ofApp::update() {

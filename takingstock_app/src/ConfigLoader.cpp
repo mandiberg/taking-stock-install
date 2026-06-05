@@ -35,6 +35,7 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         return;
     }
     if (key == "CYCLE_RESET_DURATION") { config.cycleResetDuration = std::stof(value); return; }
+    if (key == "CYCLE_RESET_COUNT")    { config.cycleResetCount    = std::stoi(value); return; }
     if (key == "TRANSITION_TYPE") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);

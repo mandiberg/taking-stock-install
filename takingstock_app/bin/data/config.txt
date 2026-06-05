@@ -10,7 +10,8 @@ ARRANGEMENTS_PATH = ../../arrangements
 AUDIO_PATH = ../../audio
 
 VIDEO_LOOP = true  # loop videos or swap to new video when finished
-CYCLE_RESET_DURATION = 5  # seconds to hold black after every full cycle through all arrangements to clear backed up teardowns (0 = disabled)
+CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
+CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
 
 
@@ -64,6 +65,7 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 
 PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+#PACKING_STOP_AREA = 160000 #Used in 4k
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
 MAIN_BIN_FILL_CHANCE = 0.05

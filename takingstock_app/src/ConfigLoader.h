@@ -26,7 +26,8 @@ struct BinSorterConfig {
     std::string videosCsvPath = "videos/videos.csv";  // path to videos.csv (replaces folder-based loading)
     std::string arrangementsPath = "arrangements";
     bool videoLoop = false;  // when false, swap to new video when finished; when true, loop
-    float cycleResetDuration = 5.f;  // seconds to hold black after every full cycle through all arrangements (0 = disabled)
+    float cycleResetDuration = 5.f;  // seconds to hold black when a cycle reset fires (0 = no hold even if count reached)
+    int cycleResetCount = 0;         // trigger a cycle reset every N arrangements shown (0 = disabled)
     TransitionType transitionType = TransitionType::Jumpcut;
     float transitionDurationFade = 0.5f;
     float transitionDurationJumpToBlack = 0.5f;
