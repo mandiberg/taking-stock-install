@@ -302,6 +302,8 @@ void ofApp::setup() {
     if (!arrangements.empty()) {
         initialIdx = pickNextArrangementIndex();
         binSorter->loadArrangement(arrangements[initialIdx].bins, arrangements[initialIdx].nestedBins);
+        currentLayoutIdx = initialIdx;
+        hasCurrentLayout = true;
     }
     renderer.setup(binSorter.get(), &videoPool, config.videoLoop, config.keyVideo, config.keyVideoMinLength);
     startAudioForArrangement(1.f);
@@ -476,6 +478,8 @@ void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
     currentSelectFilterLabel = nextSelectFilterLabel;
     renderer.swapToPreloaded(arrangements[idx]);
     if (!deferPlay) renderer.startPlaying();
+    currentLayoutIdx = idx;
+    hasCurrentLayout = true;
     logArrangementInfo(idx);
 }
 
@@ -561,6 +565,8 @@ void ofApp::pickAndLoadArrangement(size_t idx) {
             << (outOfBounds ? " [OUT OF BOUNDS]" : "")
             << (isKeyVideo ? " [KEY VIDEO]" : "");
     }
+    currentLayoutIdx = idx;
+    hasCurrentLayout = true;
 }
 
 bool ofApp::arrangementCompatibleWithFilter(const Arrangement& arr) const {
@@ -611,25 +617,66 @@ float ofApp::scheduleNextTransition() {
     return delay;
 }
 
+// Count all leaf video items in an Arrangement (mirrors BinSorter::getTotalItemsCount).
+static int countNestedArrangementItems(const std::map<std::pair<int,int>, NestedBinData>& nestedBins) {
+    int total = 0;
+    for (const auto& kv : nestedBins) {
+        total += (int)kv.second.items.size();
+        total += countNestedArrangementItems(kv.second.nestedBins);
+    }
+    return total;
+}
+
+static int countArrangementItems(const Arrangement& arr) {
+    int total = 0;
+    for (const auto& bin : arr.bins) total += (int)bin.size();
+    return total + countNestedArrangementItems(arr.nestedBins);
+}
+
 size_t ofApp::pickNextArrangementIndex() {
     if (arrangements.empty()) return 0;
-    if (config.selectMode) {
-        // Collect all arrangements compatible with the current filter, then pick randomly.
-        std::vector<size_t> compatible;
-        compatible.reserve(arrangements.size());
-        for (size_t i = 0; i < arrangements.size(); ++i) {
-            if (arrangementCompatibleWithFilter(arrangements[i]))
-                compatible.push_back(i);
+
+    // Core pick logic (no size constraint applied here yet).
+    auto doOnePick = [&]() -> size_t {
+        if (config.selectMode) {
+            // Collect all arrangements compatible with the current filter, then pick randomly.
+            std::vector<size_t> compatible;
+            compatible.reserve(arrangements.size());
+            for (size_t i = 0; i < arrangements.size(); ++i) {
+                if (arrangementCompatibleWithFilter(arrangements[i]))
+                    compatible.push_back(i);
+            }
+            if (!compatible.empty()) {
+                size_t p = (size_t)ofRandom(0.f, (float)compatible.size());
+                if (p >= compatible.size()) p = compatible.size() - 1;
+                return compatible[p];
+            }
+            ofLogWarning("ofApp") << "SELECT_MODE: no arrangement compatible with current filter, using any";
         }
-        if (!compatible.empty()) {
-            size_t pick = (size_t)ofRandom(0.f, (float)compatible.size());
-            if (pick >= compatible.size()) pick = compatible.size() - 1;
-            return compatible[pick];
+        size_t p = (size_t)ofRandom(0.f, (float)arrangements.size());
+        if (p >= arrangements.size()) p = arrangements.size() - 1;
+        return p;
+    };
+
+    size_t pick = doOnePick();
+
+    // If the current arrangement has more than 6 items, the next must have at most 5
+    // to prevent system overwhelm at 4K video resolution.
+    if (hasCurrentLayout && currentLayoutIdx < arrangements.size()) {
+        int currentItems = countArrangementItems(arrangements[currentLayoutIdx]);
+        if (currentItems > 6) {
+            const int maxRerolls = 50;
+            for (int attempt = 0; attempt < maxRerolls; ++attempt) {
+                int pickedItems = countArrangementItems(arrangements[pick]);
+                if (pickedItems <= 5) break;
+                ofLogNotice("ofApp") << "Current arrangement has " << currentItems
+                    << " items (>6); re-rolling next arrangement (picked " << pickedItems
+                    << " items, limit is 5)";
+                pick = doOnePick();
+            }
         }
-        ofLogWarning("ofApp") << "SELECT_MODE: no arrangement compatible with current filter, using any";
     }
-    size_t pick = (size_t)ofRandom(0.f, (float)arrangements.size());
-    if (pick >= arrangements.size()) pick = arrangements.size() - 1;
+
     return pick;
 }
 

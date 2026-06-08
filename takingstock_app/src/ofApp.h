@@ -48,7 +48,9 @@ private:
     TransitionState transitionState = TransitionState::Idle;
     float transitionStartTime = 0.f;
     float nextTransitionTime = 0.f;
-    size_t nextLayoutIdx = 0;  // preloaded layout index
+    size_t nextLayoutIdx = 0;   // preloaded layout index
+    size_t currentLayoutIdx = 0; // index of the arrangement currently on screen
+    bool hasCurrentLayout = false;
     bool fadeHoldBlackSwapDone = false;
     float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
     bool endOfCycleResetPending = false;  // set when arrangementsShownCount reaches cycleResetCount
