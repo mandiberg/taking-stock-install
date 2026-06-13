@@ -1,8 +1,13 @@
 # config.txt
 
 ####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1250
-BOX_HEIGHT = 750
+BOX_WIDTH = 1920
+BOX_HEIGHT = 873
+
+#1746
+BOX_WIDTH = 3840
+BOX_HEIGHT = 1746
+
 
 VIDEO_ASSET_PATH = ../../videos
 VIDEOS_CSV_PATH = ../../videos/installation.csv
@@ -37,7 +42,7 @@ AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
 # When true, the transition fires when the longest qualifying video ends
 # rather than using the random TRANSITION_TIMER_MIN/MAX range.
 KEY_VIDEO = true
-KEY_VIDEO_MIN_LENGTH = 23    # min seconds for a video to qualify as key video (0 = any)
+KEY_VIDEO_MIN_LENGTH = 10    # min seconds for a video to qualify as key video (0 = any)
 
 
 ############# SELECT MODE ######################
@@ -46,8 +51,11 @@ KEY_VIDEO_MIN_LENGTH = 23    # min seconds for a video to qualify as key video (
 SELECT_MODE = true
 SELECT_EXACT_MATCH = false  # false = any object in CSV list matches; true = CSV list must exactly equal SELECT list
 #SELECT = [*], 0.3
-SELECT = [67], 0.3
 SELECT = [27], 0.3
+SELECT = [63], 0.3
+SELECT = [67], 0.3
+SELECT = [82], 0.3
+SELECT = [95], 0.3
 SELECT = [], 0.3
 
 
@@ -64,8 +72,8 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 # Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 
-PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
-#PACKING_STOP_AREA = 160000 #Used in 4k
+#PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+PACKING_STOP_AREA = 200000 #Used in 4k
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
 MAIN_BIN_FILL_CHANCE = 0.05
@@ -88,6 +96,6 @@ WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | 
 
 
 ############# SECONDARY WINDOW ######################
-SECONDARY_WINDOW_ENABLED = true
+SECONDARY_WINDOW_ENABLED = false 
 SECONDARY_WINDOW_WIDTH = 400
 SECONDARY_WINDOW_HEIGHT = 300

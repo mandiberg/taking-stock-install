@@ -79,6 +79,11 @@ OF_ROOT = openframeworks/of_v0.12.1_osx_release
 # TODO: should this be a default setting?
 # PROJECT_LDFLAGS=-Wl,-rpath=./libs
 
+# Basel audio override:
+PROJECT_LDFLAGS += -framework AudioToolbox
+PROJECT_LDFLAGS += -framework CoreAudio
+
+
 ################################################################################
 # PROJECT DEFINES
 #   Create a space-delimited list of DEFINES. The list will be converted into 
@@ -106,6 +111,12 @@ OF_ROOT = openframeworks/of_v0.12.1_osx_release
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 # PROJECT_CFLAGS = 
+
+# this is for the audio class workaround
+PROJECT_CFLAGS += -ObjC++
+
+# this is for the audio class workaround
+PROJECT_SOURCE_FILES += src/CoreAudioPlayer.mm
 
 ################################################################################
 # PROJECT OPTIMIZATION CFLAGS

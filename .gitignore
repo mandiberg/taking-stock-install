@@ -17,3 +17,9 @@ takingstock_app/arrangements/*arrangements*
 #audio files
 takingstock_app/audio/*.mp3
 takingstock_app/audio/*.wav
+*.wav
+*.mp4
+/takingstock_app/videos.test1080
+/basel_final_p1_videos
+/basel_final_p2_videos
+/takingstock_app/videos.stable1080

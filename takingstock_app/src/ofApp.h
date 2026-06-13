@@ -6,8 +6,10 @@
 #include "BinSorterRenderer.h"
 #include "ConfigLoader.h"
 #include <memory>
+#include "CoreAudioPlayer.h"
 
 enum class TransitionState { Idle, FadeDown, FadeHoldBlack, HoldBlack, FadeUp, CycleReset };
+
 
 class ofApp : public ofBaseApp {
 public:
@@ -20,6 +22,8 @@ public:
     bool isKeyVideoEnabled() const { return config.keyVideo; }
 
 private:
+    // ofSoundPlayer audioPlayer;
+    CoreAudioPlayer audioPlayer;
     void pickSelectAndApplyFilter();
     void pickSelectAndApplyFilterWithFallback();  // re-rolls filter if no arrangement is compatible
     void pickAndLoadArrangement(size_t idx);
@@ -55,7 +59,7 @@ private:
     float preloadWaitStartTime = -1.f;  // time when triggered transition started waiting for preload
     bool endOfCycleResetPending = false;  // set when arrangementsShownCount reaches cycleResetCount
 
-    ofSoundPlayer audioPlayer;
+    
     float audioVolume = 1.f;
     float audioFadeStartTime = -1.f;
     float audioFadeStartVolume = 0.f;

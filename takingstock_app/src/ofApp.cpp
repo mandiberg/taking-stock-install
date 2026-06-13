@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iomanip>
 #include <set>
+#include "AudioRouter.h"
 
 std::string ofApp::getCurrentKeyVideoClusterNo() const {
     int keyIdx = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
