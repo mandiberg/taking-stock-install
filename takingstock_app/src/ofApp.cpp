@@ -176,6 +176,10 @@ void ofApp::setup() {
             [this](const Arrangement& a) {
                 if (!ArrangementIO::isValidArrangement(a, config.boxWidth, config.boxHeight))
                     return true;
+                if (config.maxItems > 0) {
+                    binSorter->loadArrangement(a.bins, a.nestedBins);
+                    if (binSorter->getTotalItemsCount() > config.maxItems) return true;
+                }
                 if (config.gapFilterThreshold >= 0) {
                     binSorter->loadArrangement(a.bins, a.nestedBins);
                     int maxGap = binSorter->getLargestFittableAreaInLayout();
@@ -230,6 +234,9 @@ void ofApp::setup() {
                     arr.bins = binSorter->getBins();
                     arr.nestedBins = binSorter->getNestedBins();
                     if (!ArrangementIO::isValidArrangement(arr, config.boxWidth, config.boxHeight)) {
+                        staleCount++;
+                        if (staleCount >= config.layoutStaleThreshold) break;
+                    } else if (config.maxItems > 0 && binSorter->getTotalItemsCount() > config.maxItems) {
                         staleCount++;
                         if (staleCount >= config.layoutStaleThreshold) break;
                     } else if (config.gapFilterThreshold >= 0) {

@@ -49,6 +49,7 @@ struct BinSorterConfig {
     int layoutMaxAttempts = 50000;      // max sort() calls per phase before giving up
     int layoutStaleThreshold = 1500;   // stop phase after this many consecutive duplicates
     int layoutPhases = 5;               // number of reseeded phases to explore different regions
+    int maxItems = 0;                   // reject layouts with more total items than this (0 = no limit)
     std::vector<ExpandRange> expandRanges;                        // per-ratio-range directional expand rules (first match wins)
     std::array<float, 4> expandFallback = {0.1f, 0.1f, 0.1f, 0.1f};  // [top, right, bottom, left] used when no range matches
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items

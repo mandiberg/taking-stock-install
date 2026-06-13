@@ -85,6 +85,7 @@ LAYOUT_PHASES = 5            # reseeded phases to explore different regions (def
 PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
 PLACEMENT_TOP_K = 6          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
 WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)
+MAX_ITEMS = 5                # reject layouts with more than this many total items (0 = no limit)
 
 
 ############# SECONDARY WINDOW ######################

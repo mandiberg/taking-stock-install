@@ -139,6 +139,7 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 **LAYOUT_MAX_ATTEMPTS** = This is the maximum number of generation attempts the program will try per phase (default = 50000)
 **LAYOUT_STALE_THRESHOLD** = This is the maximum number of duplicates the program will allow before it skips to the next phase (default = 3000)
 **LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
+**MAX_ITEMS** = Maximum number of total video slots allowed in a layout. Any generated or cached arrangement whose total item count (top-level slots plus any nested sub-items) exceeds this value is discarded. Set to `0` to disable the limit and allow layouts of any size. (default = 0)
 
 
 
