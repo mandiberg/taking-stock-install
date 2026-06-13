@@ -74,6 +74,7 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "LAYOUT_MAX_ATTEMPTS") { config.layoutMaxAttempts = std::stoi(value); return; }
     if (key == "LAYOUT_STALE_THRESHOLD") { config.layoutStaleThreshold = std::stoi(value); return; }
     if (key == "LAYOUT_PHASES") { config.layoutPhases = std::stoi(value); return; }
+    if (key == "MAX_ITEMS") { config.maxItems = std::stoi(value); return; }
     if (key == "PLACEMENT_AREA_EXPONENT") { config.placementAreaExponent = std::stof(value); return; }
     if (key == "PLACEMENT_TOP_K") { config.placementTopK = std::stoi(value); return; }
     if (key == "WEIGHT_NORMALIZATION") {
