@@ -21,9 +21,9 @@ struct CoreAudioPlayer::Impl {
     static void callback(void* userData, AudioQueueRef queue, AudioQueueBufferRef buffer) {
         Impl* self = (Impl*)userData;
         if (!self->playing) {
-            memset(buffer->mAudioData, 0, buffer->mAudioDataBytesCapacity);
-            buffer->mAudioDataByteSize = buffer->mAudioDataBytesCapacity;
-            AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
+            // When not playing, do not keep feeding silence into the queue.
+            // This prevents stale silent buffers from building up between cycles.
+            buffer->mAudioDataByteSize = 0;
             return;
         }
         
@@ -57,12 +57,6 @@ struct CoreAudioPlayer::Impl {
                     break;
                 }
             }
-        }
-        
-        // apply volume
-        UInt32 totalSamples = framesPerBuffer * self->format.mChannelsPerFrame;
-        for (UInt32 i = 0; i < totalSamples; i++) {
-            out[i] *= self->volume;
         }
         
         buffer->mAudioDataByteSize = framesPerBuffer * bytesPerFrame;
@@ -177,12 +171,9 @@ bool CoreAudioPlayer::load(const std::string& path) {
         CFRelease(deviceUID);
     }
 
-    // allocate buffers
+    // allocate buffers (do not enqueue here — play() will prime them with real audio)
     for (int i = 0; i < kNumBuffers; i++) {
         AudioQueueAllocateBuffer(impl->queue, kBufferSize, &impl->buffers[i]);
-        impl->buffers[i]->mAudioDataByteSize = kBufferSize;
-        memset(impl->buffers[i]->mAudioData, 0, kBufferSize);
-        AudioQueueEnqueueBuffer(impl->queue, impl->buffers[i], 0, nullptr);
     }
 
     AudioQueueSetParameter(impl->queue, kAudioQueueParam_Volume, impl->volume);
@@ -194,8 +185,15 @@ bool CoreAudioPlayer::load(const std::string& path) {
 
 void CoreAudioPlayer::play() {
     if (!impl->queue) return;
+    // Ensure no previously queued buffers remain before priming this playback.
+    AudioQueueStop(impl->queue, true);
+    AudioQueueReset(impl->queue);
     impl->playhead = 0;
     impl->playing = true;
+    // Prime the queue with real audio before starting to avoid a silence lead-in
+    for (int i = 0; i < kNumBuffers; i++) {
+        Impl::callback(impl, impl->queue, impl->buffers[i]);
+    }
     AudioQueueStart(impl->queue, nullptr);
 }
 
@@ -203,6 +201,7 @@ void CoreAudioPlayer::stop() {
     if (!impl->queue) return;
     impl->playing = false;
     AudioQueueStop(impl->queue, true);
+    AudioQueueReset(impl->queue);
 }
 
 void CoreAudioPlayer::setLoop(bool loop) {
@@ -210,9 +209,9 @@ void CoreAudioPlayer::setLoop(bool loop) {
 }
 
 void CoreAudioPlayer::setVolume(float volume) {
-    impl->volume = volume;
+    impl->volume = std::max(0.0f, std::min(1.0f, volume));
     if (impl->queue) {
-        AudioQueueSetParameter(impl->queue, kAudioQueueParam_Volume, volume);
+        AudioQueueSetParameter(impl->queue, kAudioQueueParam_Volume, impl->volume);
     }
 }
 

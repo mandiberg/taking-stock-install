@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iomanip>
 #include <set>
-#include "AudioRouter.h"
+// #include "AudioRouter.h"
 
 std::string ofApp::getCurrentKeyVideoClusterNo() const {
     int keyIdx = renderer.getKeyVideoSlotIndex(config.keyVideoMinLength);
@@ -80,6 +80,13 @@ void ofApp::setup() {
         ofLogWarning("ofApp") << "SELECT_MODE disabled: no 'object' column found in CSV";
         config.selectMode = false;
     }
+
+    const char* transitionTypeStr = "jumpcut";
+    if (config.transitionType == TransitionType::Fade) transitionTypeStr = "fade";
+    else if (config.transitionType == TransitionType::JumpcutToBlack) transitionTypeStr = "jumpcut_to_black";
+    ofLogNotice("ofApp") << "Audio config: fadeDuration=" << config.audioFadeDuration
+        << "s, path=" << config.audioPath
+        << " | transitionType=" << transitionTypeStr;
 
     if (config.selectMode) {
         ofLogNotice("ofApp") << "SELECT_MODE enabled (match=" << (config.selectExactMatch ? "exact" : "any") << ")";
