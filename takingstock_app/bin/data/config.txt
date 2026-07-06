@@ -1,12 +1,14 @@
 # config.txt
 
-####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1920
-BOX_HEIGHT = 873
+####### WINDOW SIZE & POSITION #########
+# NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
+# Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
+BOX_WIDTH = 3432   # render canvas width; use combined width of all projectors (see configREADME)
+BOX_HEIGHT = 700  # render canvas height; use shared height of all projectors
 
-#1746
-BOX_WIDTH = 3840
-BOX_HEIGHT = 1746
+WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
+WINDOW_Y = 0   # y offset on desktop (usually 0)
+WINDOW_DECORATED = false  # false = borderless/installation, true = title bar/debug
 
 
 VIDEO_ASSET_PATH = ../../videos
@@ -18,6 +20,7 @@ VIDEO_LOOP = true  # loop videos or swap to new video when finished
 CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
 CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
+SCALE_SELECT = false  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
 
 
 ############## CONTROLS ################

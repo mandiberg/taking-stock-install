@@ -6,8 +6,39 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 
 ## WINDOW
 
-**BOX_WIDTH** Means how wide the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
-**BOX_HEIGHT** Means how tall the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
+`BOX_WIDTH` and `BOX_HEIGHT` define both the render canvas size and the OS window size. The window is created borderless and non-resizable at startup — resizing it after launch is not supported.
+
+**BOX_WIDTH** = Width in pixels of the render canvas and OS window. For a single display set this to its native width. For multiple side-by-side projectors or monitors, set this to the **combined** width of all displays (e.g. two 1920-wide projectors = `3840`). (default = 1920)
+
+**BOX_HEIGHT** = Height in pixels of the render canvas and OS window. For a single display set this to its native height. For side-by-side projectors that share the same height, this is just that shared height (e.g. `1080` for standard 1080p projectors). (default = 1080)
+
+**WINDOW_X** = X position of the window's top-left corner on the macOS extended desktop, in pixels. In **System Settings → Displays → Arrange**, the primary display's top-left is always `(0, 0)`. A second monitor arranged to the **right** of the primary starts at `x = <primary width>` (e.g. `1920` for a 1920-wide primary). A second monitor arranged to the **left** starts at a negative value (e.g. `-1920`). Set to `0` to open on the primary display. (default = 0)
+
+**WINDOW_Y** = Y position of the window's top-left corner on the macOS extended desktop. Usually `0` unless monitors are stacked vertically or offset. (default = 0)
+
+**WINDOW_DECORATED** = Options: [true, false] When `false`, the window opens without a title bar or borders — the correct mode for installation. When `true`, the window has a normal macOS title bar, which is useful for development and debugging. (default = false)
+
+### Multi-projector setup
+
+macOS treats multiple displays in Extended mode as one continuous coordinate space. A single window can span all of them by sizing it to the combined resolution and positioning it at the correct desktop offset. No secondary software is needed.
+
+> **Required macOS setting:** Multi-display spanning only works when **"Displays have separate Spaces"** is turned **off**. When it is on, macOS clips windows to whichever display they start on and prevents them from spanning to adjacent displays. To turn it off: **System Settings → Desktop & Dock → scroll to the bottom → toggle off "Displays have separate Spaces"**. A log out and back in is required for the change to take effect.
+
+**Steps:**
+1. Turn off **"Displays have separate Spaces"** as described above and log out/in.
+2. In **System Settings → Displays → Arrange**, set all displays to **Extended** (not Mirrored). Note which side each display is on relative to the primary.
+3. Set `BOX_WIDTH` to the total combined width and `BOX_HEIGHT` to the shared height.
+4. Set `WINDOW_X` to the x offset where the leftmost display in your span begins (usually `0`).
+5. Rebuild and run — macOS automatically routes the correct pixel region to each physical output.
+
+**Common configurations:**
+
+| Layout | BOX_WIDTH | BOX_HEIGHT | WINDOW_X | WINDOW_Y |
+|--------|-----------|------------|----------|----------|
+| Single 1920×1080 display | 1920 | 1080 | 0 | 0 |
+| Two 1920×1080, second to the right | 3840 | 1080 | 0 | 0 |
+| Two 1920×1080, second to the left | 3840 | 1080 | -1920 | 0 |
+| Three 1920×1080, primary in center | 5760 | 1080 | -1920 | 0 |
 
 
 
@@ -44,6 +75,12 @@ The secondary window shares a GL context with the main window and runs on the sa
 **CYCLE_RESET_COUNT** = Number of arrangements to display before triggering a cycle reset (the black-screen hold controlled by `CYCLE_RESET_DURATION`). For example, `CYCLE_RESET_COUNT = 20` triggers a reset every 20 arrangements shown. Set to `0` to disable the cycle reset entirely. Arrangements are now picked randomly from the full pool on each transition with no forced ordering, so this count-based trigger replaces the old behavior of resetting only after every arrangement had been shown exactly once. (default = 0)
 
 **MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
+
+**SCALE_SELECT** = Options: [true, false] When `true`, the app uses the `width` and `height` columns in `installation.csv` together with the `_scale_<N>` suffix in each filename to group scale variants of the same video. At slot-assignment time, it picks the **smallest scale variant whose pixel dimensions still meet or exceed the slot's pixel dimensions** — for example, a 1500×1000 slot selects the `scale_1080` file (1624×1080) rather than the larger `scale_1712` or `scale_2160` files. This reduces GPU scaling load at runtime: the video is decoded at a resolution close to how it will be drawn rather than at a much higher resolution that gets scaled down in real time. All scale variants of the same logical video are treated as a single entry in the available pool, so the same source content cannot appear more than once in one arrangement at different scales.
+
+When `false`, every row in `installation.csv` is treated as an independent video and the `width`/`height` columns are ignored for selection purposes — this is identical to the behavior before this option was added. (default = false)
+
+> **Requires:** `installation.csv` must have `width` and `height` columns, and video filenames must include a `_scale_<digits>` segment before the `.mp4` extension (e.g. `...ct8_scale_1080.mp4`, `...ct8_scale_1712.mp4`). Videos without a `_scale_` suffix in the filename are always treated as their own unique logical video and will never be grouped with other files.
 
 
 

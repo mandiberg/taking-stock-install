@@ -107,6 +107,12 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "AUDIO_PATH") { config.audioPath = value; return; }
     if (key == "AUDIO_FADE_DURATION") { config.audioFadeDuration = std::stof(value); return; }
     if (key == "MIN_VIDEO_LENGTH") { config.minVideoLength = std::stof(value); return; }
+    if (key == "SCALE_SELECT") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.scaleSelectEnabled = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
     if (key == "SECONDARY_WINDOW_ENABLED") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
@@ -115,6 +121,14 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     }
     if (key == "SECONDARY_WINDOW_WIDTH")  { config.secondaryWindowWidth  = std::stoi(value); return; }
     if (key == "SECONDARY_WINDOW_HEIGHT") { config.secondaryWindowHeight = std::stoi(value); return; }
+    if (key == "WINDOW_X") { config.windowX = std::stoi(value); return; }
+    if (key == "WINDOW_Y") { config.windowY = std::stoi(value); return; }
+    if (key == "WINDOW_DECORATED") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.windowDecorated = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
     if (key == "IGNORE_FINGERPRINT") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);

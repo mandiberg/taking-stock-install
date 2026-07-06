@@ -63,10 +63,14 @@ struct BinSorterConfig {
     std::string audioPath = "";          // path to audio directory (files matched by cluster_no substring)
     float audioFadeDuration = 1.f;       // seconds for audio fade in/out (0 = instant cut)
     float minVideoLength = 0.f;          // discard videos shorter than this many seconds (0 = keep all)
+    bool scaleSelectEnabled = false;     // when true, pick the smallest scale variant that covers the slot dimensions
     bool secondaryWindowEnabled = false; // when true, open a secondary info window
     int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
     int  secondaryWindowHeight  = 300;   // height of secondary window in pixels
     bool ignoreFingerprint = false;      // when true, skip fingerprint check and reuse any matching arrangement file
+    int  windowX = 0;                    // X position of the main window on the desktop (use to offset into a second monitor)
+    int  windowY = 0;                    // Y position of the main window on the desktop
+    bool windowDecorated = false;        // when false, window has no title bar or borders (recommended for installation)
 };
 
 class ConfigLoader {

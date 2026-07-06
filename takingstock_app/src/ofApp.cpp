@@ -72,6 +72,7 @@ void ofApp::setup() {
     }
 
     videoPool.minDuration = config.minVideoLength;
+    videoPool.scaleSelectEnabled = config.scaleSelectEnabled;
     if (!videoPool.loadFromCsv(config.videosCsvPath)) {
         ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
     }
