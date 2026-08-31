@@ -125,6 +125,37 @@ Audio transitions follow `TRANSITION_TYPE`:
 
 **AUDIO_FADE_DURATION** = Duration in seconds for the audio fade in and fade out during a **fade** transition. Set to `0` for an instant cut even when using the fade visual transition. (default = 1.0)
 
+**AUDIO_SURROUND** = Options: [true, false] When `true`, the audio engine routes output through a quad (4-channel) layout (`kAudioChannelLayoutTag_Quadraphonic`). The audio file must have at least 4 channels; if it has fewer, the app logs a warning and falls back to the file's native format automatically. When `false`, audio plays in the file's native stereo (or mono) format. (default = false)
+
+**AUDIO_CHANNEL_MAP** = Defines, for each output channel position, which **source file channel** to read from (0-based index). This lets you reorder channels without re-exporting the audio file. The number of entries should match the output channel count (2 for stereo, 4 for quad). Entries beyond the output channel count are ignored. If this setting is omitted or left empty, a pass-through identity map is used (output channel N reads from source channel N).
+
+The quad output channel order when `AUDIO_SURROUND = true` follows the WAV/FFmpeg standard:
+
+| Output index | Speaker | Abbreviation |
+|---|---|---|
+| 0 | Front Left | FL |
+| 1 | Front Right | FR |
+| 2 | Back Left | BL |
+| 3 | Back Right | BR |
+
+The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
+
+**Example** — swap back left and back right: `AUDIO_CHANNEL_MAP = [0, 1, 3, 2]`
+
+**AUDIO_CHANNEL_GAINS** = Per-output-channel gain multiplier. Each value is applied to the corresponding output channel's samples at load time (not in real time), so there is no CPU overhead during playback. Values range from `0.0` (silence) to `1.0` (full). Values above `1.0` are technically valid but may clip. The number of entries should match the output channel count; entries beyond that are ignored. If omitted, all channels play at gain `1.0`.
+
+**Example** — pull back the rear speakers slightly: `AUDIO_CHANNEL_GAINS = [1.0, 1.0, 0.8, 0.8]`
+
+**AUDIO_DEVICE** = The exact name of the audio output device to target, as shown in **Audio MIDI Setup** (open via Spotlight → "Audio MIDI Setup"). Leave empty to use the macOS system default output device. If the named device is not found at startup, the app logs a warning and falls back to the system default without crashing. The device must be configured to the correct channel count in Audio MIDI Setup before the app starts — for quad output this means the device must be set to a 4-channel format.
+
+> **Quad setup checklist:**
+> 1. Connect your 4-channel interface or amplifier.
+> 2. Open **Audio MIDI Setup**, select the device, and set the format to 4ch / your sample rate.
+> 3. Verify speaker assignments in the **Configure Speakers** sheet (FL, FR, BL, BR).
+> 4. Set `AUDIO_DEVICE` to the exact device name shown (e.g. `Focusrite USB ASIO`).
+> 5. Set `AUDIO_SURROUND = true` and configure `AUDIO_CHANNEL_MAP` / `AUDIO_CHANNEL_GAINS` as needed.
+> 6. Provide audio files with 4 channels (WAV/FFmpeg quad order: FL FR BL BR) in the `AUDIO_PATH` folder.
+
 
 
 ## SELECT MODE

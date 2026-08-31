@@ -62,6 +62,10 @@ struct BinSorterConfig {
     float keyVideoMinLength = 0.f;       // minimum seconds for a video to qualify as the key video
     std::string audioPath = "";          // path to audio directory (files matched by cluster_no substring)
     float audioFadeDuration = 1.f;       // seconds for audio fade in/out (0 = instant cut)
+    bool audioSurround = false;          // when true, route audio to 5.1 output with kAudioChannelLayoutTag_AudioUnit_5_1
+    std::vector<int> audioChannelMap;    // source channel index for each output channel; empty = pass-through
+    std::vector<float> audioChannelGains; // per-output-channel gain multiplier; empty = all 1.0
+    std::string audioDevice = "";        // target output device name (empty = macOS system default)
     float minVideoLength = 0.f;          // discard videos shorter than this many seconds (0 = keep all)
     bool scaleSelectEnabled = false;     // when true, pick the smallest scale variant that covers the slot dimensions
     bool secondaryWindowEnabled = false; // when true, open a secondary info window

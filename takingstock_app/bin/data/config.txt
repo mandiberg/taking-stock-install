@@ -39,6 +39,18 @@ TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
 ############# AUDIO ######################
 AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
+AUDIO_SURROUND = true  # true = quad (4-channel) output; false = stereo (native file format)
+
+# Channel map: for each output channel position, which source file channel to read (0-based).
+# Quad output order (WAV/FFmpeg standard): FL FR BL BR. Pass-through default: [0, 1, 2, 3]
+# Clockwise room cycle: FL(0) → FR(1) → BR(3) → BL(2)
+AUDIO_CHANNEL_MAP = [0, 1, 3, 2]
+
+# Per-output-channel gain multiplier (0.0–1.0). Useful for trimming individual speaker levels.
+AUDIO_CHANNEL_GAINS = [1.0, 1.0, 1.0, 1.0]
+
+# Output device name — must match exactly the name shown in Audio MIDI Setup (empty = system default).
+AUDIO_DEVICE =
 
 
 ############# KEY VIDEO ######################

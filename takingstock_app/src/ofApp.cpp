@@ -71,6 +71,11 @@ void ofApp::setup() {
         ofLogError("ofApp") << "Failed to load config.txt, using defaults";
     }
 
+    audioPlayer.setSurroundEnabled(config.audioSurround);
+    if (!config.audioChannelMap.empty())    audioPlayer.setChannelMap(config.audioChannelMap);
+    if (!config.audioChannelGains.empty())  audioPlayer.setChannelGains(config.audioChannelGains);
+    audioPlayer.setOutputDeviceName(config.audioDevice);
+
     videoPool.minDuration = config.minVideoLength;
     videoPool.scaleSelectEnabled = config.scaleSelectEnabled;
     if (!videoPool.loadFromCsv(config.videosCsvPath)) {

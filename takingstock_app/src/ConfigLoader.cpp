@@ -106,6 +106,35 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "KEY_VIDEO_MIN_LENGTH") { config.keyVideoMinLength = std::stof(value); return; }
     if (key == "AUDIO_PATH") { config.audioPath = value; return; }
     if (key == "AUDIO_FADE_DURATION") { config.audioFadeDuration = std::stof(value); return; }
+    if (key == "AUDIO_SURROUND") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        config.audioSurround = (v == "1" || v == "true" || v == "yes");
+        return;
+    }
+    if (key == "AUDIO_CHANNEL_MAP") {
+        size_t lb = value.find('[');
+        size_t rb = value.find(']');
+        if (lb != std::string::npos && rb != std::string::npos && rb > lb) {
+            std::istringstream iss(value.substr(lb + 1, rb - lb - 1));
+            config.audioChannelMap.clear();
+            int v; char comma;
+            while (iss >> v) { config.audioChannelMap.push_back(v); iss >> comma; }
+        }
+        return;
+    }
+    if (key == "AUDIO_CHANNEL_GAINS") {
+        size_t lb = value.find('[');
+        size_t rb = value.find(']');
+        if (lb != std::string::npos && rb != std::string::npos && rb > lb) {
+            std::istringstream iss(value.substr(lb + 1, rb - lb - 1));
+            config.audioChannelGains.clear();
+            float v; char comma;
+            while (iss >> v) { config.audioChannelGains.push_back(v); iss >> comma; }
+        }
+        return;
+    }
+    if (key == "AUDIO_DEVICE") { config.audioDevice = value; return; }
     if (key == "MIN_VIDEO_LENGTH") { config.minVideoLength = std::stof(value); return; }
     if (key == "SCALE_SELECT") {
         std::string v = value;
