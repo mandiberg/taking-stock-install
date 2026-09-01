@@ -1,220 +1,339 @@
 #import "CoreAudioPlayer.h"
+#import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <CoreAudio/CoreAudio.h>
 #import <string>
 #import <vector>
-#import <cstring>
 
-static const int kNumBuffers = 8;
-static const int kBufferSize = 131072;
+// ---------------------------------------------------------------------------
+// Helper: find an AudioDeviceID by exact device name.
+// Returns kAudioDeviceUnknown if no match is found.
+// ---------------------------------------------------------------------------
+static AudioDeviceID findDeviceByName(const std::string& name) {
+    AudioObjectPropertyAddress addr = {
+        kAudioHardwarePropertyDevices,
+        kAudioObjectPropertyScopeGlobal,
+        kAudioObjectPropertyElementMain
+    };
+    UInt32 size = 0;
+    AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &addr, 0, nullptr, &size);
+    if (size == 0) return kAudioDeviceUnknown;
 
-struct CoreAudioPlayer::Impl {
-    AudioQueueRef queue = nullptr;
-    AudioStreamBasicDescription format;
-    std::vector<float> audioData;
-    size_t playhead = 0;
-    bool loop = false;
-    float volume = 1.0f;
-    bool playing = false;
-    AudioQueueBufferRef buffers[kNumBuffers];
-    
-    static void callback(void* userData, AudioQueueRef queue, AudioQueueBufferRef buffer) {
-        Impl* self = (Impl*)userData;
-        if (!self->playing) {
-            // When not playing, do not keep feeding silence into the queue.
-            // This prevents stale silent buffers from building up between cycles.
-            buffer->mAudioDataByteSize = 0;
-            return;
-        }
-        
-        UInt32 bytesPerFrame = self->format.mBytesPerFrame;
-        UInt32 totalFrames = (UInt32)(self->audioData.size() / self->format.mChannelsPerFrame);
-        UInt32 framesPerBuffer = buffer->mAudioDataBytesCapacity / bytesPerFrame;
-        
-        float* out = (float*)buffer->mAudioData;
-        UInt32 framesWritten = 0;
-        
-        while (framesWritten < framesPerBuffer) {
-            size_t framesRemaining = totalFrames - self->playhead;
-            UInt32 framesToCopy = (UInt32)std::min((size_t)(framesPerBuffer - framesWritten), framesRemaining);
-            
-            size_t sampleStart = self->playhead * self->format.mChannelsPerFrame;
-            memcpy(out + framesWritten * self->format.mChannelsPerFrame,
-                   self->audioData.data() + sampleStart,
-                   framesToCopy * self->format.mChannelsPerFrame * sizeof(float));
-            
-            framesWritten += framesToCopy;
-            self->playhead += framesToCopy;
-            
-            if (self->playhead >= totalFrames) {
-                if (self->loop) {
-                    self->playhead = 0;
-                } else {
-                    self->playing = false;
-                    // fill remainder with silence
-                    memset(out + framesWritten * self->format.mChannelsPerFrame, 0,
-                           (framesPerBuffer - framesWritten) * self->format.mChannelsPerFrame * sizeof(float));
-                    break;
-                }
-            }
-        }
-        
-        buffer->mAudioDataByteSize = framesPerBuffer * bytesPerFrame;
-        AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
+    int count = (int)(size / sizeof(AudioDeviceID));
+    std::vector<AudioDeviceID> devices(count);
+    AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr, &size, devices.data());
+
+    NSString* target = [NSString stringWithUTF8String:name.c_str()];
+    for (AudioDeviceID devID : devices) {
+        CFStringRef cfName = nullptr;
+        AudioObjectPropertyAddress nameAddr = {
+            kAudioDevicePropertyDeviceNameCFString,
+            kAudioObjectPropertyScopeGlobal,
+            kAudioObjectPropertyElementMain
+        };
+        UInt32 propSize = sizeof(cfName);
+        OSStatus err = AudioObjectGetPropertyData(devID, &nameAddr, 0, nullptr, &propSize, &cfName);
+        if (err != noErr || !cfName) continue;
+        NSString* devName = (__bridge_transfer NSString*)cfName;
+        if ([devName isEqualToString:target]) return devID;
     }
+    return kAudioDeviceUnknown;
+}
+
+// ---------------------------------------------------------------------------
+// Impl
+// ---------------------------------------------------------------------------
+struct CoreAudioPlayer::Impl {
+    AVAudioEngine*      engine  = nil;
+    AVAudioPlayerNode*  player  = nil;
+    AVAudioPCMBuffer*   buffer  = nil;  // pre-processed buffer (channel map + gains applied)
+
+    bool  loop    = false;
+    float volume  = 1.0f;
+    bool  playing = false;
+
+    // Configuration (set before load(); persist across loads)
+    bool              surroundEnabled = false;
+    std::vector<int>  channelMap;    // source channel index for each output channel
+    std::vector<float> channelGains; // per-output-channel gain multiplier
+    std::string       deviceName;    // empty = system default
 };
 
+// ---------------------------------------------------------------------------
 CoreAudioPlayer::CoreAudioPlayer() : impl(new Impl()) {}
 
 CoreAudioPlayer::~CoreAudioPlayer() {
     stop();
-    if (impl->queue) {
-        AudioQueueDispose(impl->queue, true);
+    if (impl->engine) {
+        [impl->engine stop];
+        impl->engine = nil;
     }
     delete impl;
 }
 
+// ---------------------------------------------------------------------------
+// Configuration setters
+// ---------------------------------------------------------------------------
+void CoreAudioPlayer::setSurroundEnabled(bool surround) {
+    impl->surroundEnabled = surround;
+}
+
+void CoreAudioPlayer::setChannelMap(const std::vector<int>& map) {
+    impl->channelMap = map;
+}
+
+void CoreAudioPlayer::setChannelGains(const std::vector<float>& gains) {
+    impl->channelGains = gains;
+}
+
+void CoreAudioPlayer::setOutputDeviceName(const std::string& name) {
+    impl->deviceName = name;
+}
+
+// ---------------------------------------------------------------------------
+// load()
+// ---------------------------------------------------------------------------
 bool CoreAudioPlayer::load(const std::string& path) {
     stop();
-    if (impl->queue) {
-        AudioQueueDispose(impl->queue, true);
-        impl->queue = nullptr;
+    if (impl->engine) {
+        [impl->engine stop];
+        impl->engine = nil;
+        impl->player = nil;
+        impl->buffer = nil;
     }
-    impl->audioData.clear();
-    impl->playhead = 0;
 
+    // ---- 1. Open the audio file ----
+    NSString* nsPath = [NSString stringWithUTF8String:path.c_str()];
+    NSURL* url = [NSURL fileURLWithPath:nsPath];
+    NSError* err = nil;
+    AVAudioFile* file = [[AVAudioFile alloc] initForReading:url error:&err];
+    if (!file) {
+        NSLog(@"CoreAudioPlayer: failed to open %s: %@", path.c_str(), err);
+        return false;
+    }
+
+    // ---- 2. Read the whole file into a non-interleaved float buffer ----
+    // Build an intermediate format: same sample rate and channel count as the file,
+    // but non-interleaved float (the format AVAudioPCMBuffer uses for floatChannelData).
+    AVAudioFormat* fileFormat = file.processingFormat;
+    double sampleRate = fileFormat.sampleRate;
+    AVAudioChannelCount fileCh = fileFormat.channelCount;
+    AVAudioFrameCount  frames  = (AVAudioFrameCount)file.length;
+
+    AVAudioFormat* readFormat = [[AVAudioFormat alloc]
+        initWithCommonFormat:AVAudioPCMFormatFloat32
+                  sampleRate:sampleRate
+                    channels:fileCh
+                 interleaved:NO];
+
+    AVAudioPCMBuffer* srcBuf = [[AVAudioPCMBuffer alloc]
+        initWithPCMFormat:readFormat frameCapacity:frames];
+    srcBuf.frameLength = frames;
+
+    // Use ExtAudioFile to decode into our float non-interleaved format
+    // (AVAudioFile.readIntoBuffer uses the processingFormat; we need float non-interleaved)
     CFStringRef cfPath = CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8);
-    CFURLRef url = CFURLCreateWithFileSystemPath(nullptr, cfPath, kCFURLPOSIXPathStyle, false);
+    CFURLRef    cfURL  = CFURLCreateWithFileSystemPath(nullptr, cfPath, kCFURLPOSIXPathStyle, false);
     CFRelease(cfPath);
 
-    AudioFileID fileID;
-    OSStatus err = AudioFileOpenURL(url, kAudioFileReadPermission, 0, &fileID);
-    CFRelease(url);
-    if (err != noErr) {
-        NSLog(@"CoreAudioPlayer: failed to open file: %s (err=%d)", path.c_str(), (int)err);
+    ExtAudioFileRef extFile = nullptr;
+    OSStatus status = ExtAudioFileOpenURL(cfURL, &extFile);
+    CFRelease(cfURL);
+    if (status != noErr) {
+        NSLog(@"CoreAudioPlayer: ExtAudioFileOpenURL failed (%d) for %s", (int)status, path.c_str());
         return false;
     }
 
-    // get format
-    UInt32 size = sizeof(impl->format);
-    AudioFileGetProperty(fileID, kAudioFilePropertyDataFormat, &size, &impl->format);
+    // Configure client format: non-interleaved float, preserving channel count and sample rate
+    AudioStreamBasicDescription clientFmt;
+    memset(&clientFmt, 0, sizeof(clientFmt));
+    clientFmt.mSampleRate       = sampleRate;
+    clientFmt.mFormatID         = kAudioFormatLinearPCM;
+    clientFmt.mFormatFlags      = kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved | kAudioFormatFlagIsPacked;
+    clientFmt.mBitsPerChannel   = 32;
+    clientFmt.mChannelsPerFrame = fileCh;
+    clientFmt.mBytesPerFrame    = 4;
+    clientFmt.mFramesPerPacket  = 1;
+    clientFmt.mBytesPerPacket   = 4;
 
-    // convert to float if needed
-    AudioStreamBasicDescription floatFormat;
-    memset(&floatFormat, 0, sizeof(floatFormat));
-    floatFormat.mSampleRate       = impl->format.mSampleRate;
-    floatFormat.mFormatID         = kAudioFormatLinearPCM;
-    floatFormat.mFormatFlags      = kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked;
-    floatFormat.mChannelsPerFrame = impl->format.mChannelsPerFrame;
-    floatFormat.mBitsPerChannel   = 32;
-    floatFormat.mBytesPerFrame    = 4 * floatFormat.mChannelsPerFrame;
-    floatFormat.mFramesPerPacket  = 1;
-    floatFormat.mBytesPerPacket   = floatFormat.mBytesPerFrame;
-
-    ExtAudioFileRef extFile;
-    CFStringRef cfPath2 = CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8);
-    CFURLRef url2 = CFURLCreateWithFileSystemPath(nullptr, cfPath2, kCFURLPOSIXPathStyle, false);
-    CFRelease(cfPath2);
-    ExtAudioFileOpenURL(url2, &extFile);
-    CFRelease(url2);
     ExtAudioFileSetProperty(extFile, kExtAudioFileProperty_ClientDataFormat,
-                            sizeof(floatFormat), &floatFormat);
+                            sizeof(clientFmt), &clientFmt);
 
-    SInt64 numFrames = 0;
-    size = sizeof(numFrames);
-    ExtAudioFileGetProperty(extFile, kExtAudioFileProperty_FileLengthFrames, &size, &numFrames);
+    // Build an AudioBufferList pointing into the AVAudioPCMBuffer's channel arrays
+    AudioBufferList* abl = (AudioBufferList*)malloc(
+        sizeof(AudioBufferList) + (fileCh - 1) * sizeof(AudioBuffer));
+    abl->mNumberBuffers = fileCh;
+    for (UInt32 ch = 0; ch < fileCh; ch++) {
+        abl->mBuffers[ch].mNumberChannels = 1;
+        abl->mBuffers[ch].mDataByteSize   = frames * sizeof(float);
+        abl->mBuffers[ch].mData           = srcBuf.floatChannelData[ch];
+    }
 
-    impl->audioData.resize(numFrames * floatFormat.mChannelsPerFrame);
-    
-    AudioBufferList bufList;
-    bufList.mNumberBuffers = 1;
-    bufList.mBuffers[0].mNumberChannels = floatFormat.mChannelsPerFrame;
-    bufList.mBuffers[0].mDataByteSize = (UInt32)(impl->audioData.size() * sizeof(float));
-    bufList.mBuffers[0].mData = impl->audioData.data();
-    
-    UInt32 framesToRead = (UInt32)numFrames;
-    ExtAudioFileRead(extFile, &framesToRead, &bufList);
+    UInt32 framesToRead = frames;
+    ExtAudioFileRead(extFile, &framesToRead, abl);
+    free(abl);
     ExtAudioFileDispose(extFile);
-    AudioFileClose(fileID);
 
-    impl->format = floatFormat;
+    // ---- 3. Determine output format ----
+    // Quad layout: FL(0), FR(1), BL(2), BR(3) — WAV/FFmpeg standard quad channel order.
+    bool useSurround = impl->surroundEnabled;
+    if (useSurround && fileCh < 4) {
+        NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but file has only %u channel(s) — "
+              "falling back to native format for %s", fileCh, path.c_str());
+        useSurround = false;
+    }
 
-    // create AudioQueue targeting system default output device
-    err = AudioQueueNewOutput(&impl->format, Impl::callback, impl, nullptr, nullptr, 0, &impl->queue);
-    if (err != noErr) {
-        NSLog(@"CoreAudioPlayer: failed to create AudioQueue (err=%d)", (int)err);
+    AVAudioFormat* outFormat;
+    AVAudioChannelCount outCh;
+    if (useSurround) {
+        outCh = 4;
+        AVAudioChannelLayout* layout = [AVAudioChannelLayout
+            layoutWithLayoutTag:kAudioChannelLayoutTag_Quadraphonic];
+        outFormat = [[AVAudioFormat alloc]
+            initWithCommonFormat:AVAudioPCMFormatFloat32
+                      sampleRate:sampleRate
+                   interleaved:NO
+                   channelLayout:layout];
+    } else {
+        outCh = fileCh;
+        outFormat = readFormat;
+    }
+
+    // ---- 4. Allocate the output buffer and apply channel map + gains ----
+    AVAudioPCMBuffer* dstBuf = [[AVAudioPCMBuffer alloc]
+        initWithPCMFormat:outFormat frameCapacity:frames];
+    dstBuf.frameLength = frames;
+
+    const std::vector<int>&   map   = impl->channelMap;
+    const std::vector<float>& gains = impl->channelGains;
+
+    for (AVAudioChannelCount outIdx = 0; outIdx < outCh; outIdx++) {
+        int   srcIdx = (outIdx < (AVAudioChannelCount)map.size())
+                       ? map[(size_t)outIdx]
+                       : (int)outIdx;
+        float gain   = (outIdx < (AVAudioChannelCount)gains.size())
+                       ? gains[(size_t)outIdx]
+                       : 1.0f;
+
+        // Clamp source channel to valid range
+        if (srcIdx < 0 || srcIdx >= (int)fileCh) {
+            // Out-of-range source: fill with silence
+            memset(dstBuf.floatChannelData[outIdx], 0, frames * sizeof(float));
+            continue;
+        }
+
+        float* dst = dstBuf.floatChannelData[outIdx];
+        float* src = srcBuf.floatChannelData[srcIdx];
+        if (gain == 1.0f) {
+            memcpy(dst, src, frames * sizeof(float));
+        } else {
+            for (AVAudioFrameCount f = 0; f < frames; f++)
+                dst[f] = src[f] * gain;
+        }
+    }
+
+    impl->buffer = dstBuf;
+
+    // ---- 5. Build AVAudioEngine ----
+    impl->engine = [[AVAudioEngine alloc] init];
+    impl->player = [[AVAudioPlayerNode alloc] init];
+    [impl->engine attachNode:impl->player];
+
+    // ---- 6. Device selection (must happen before engine start) ----
+    if (!impl->deviceName.empty()) {
+        AudioDeviceID devID = findDeviceByName(impl->deviceName);
+        if (devID != kAudioDeviceUnknown) {
+            AudioUnit outputAU = impl->engine.outputNode.audioUnit;
+            OSStatus setErr = AudioUnitSetProperty(
+                outputAU,
+                kAudioOutputUnitProperty_CurrentDevice,
+                kAudioUnitScope_Global,
+                0,
+                &devID,
+                sizeof(devID));
+            if (setErr != noErr)
+                NSLog(@"CoreAudioPlayer: failed to set output device '%s' (err=%d); using system default",
+                      impl->deviceName.c_str(), (int)setErr);
+            else
+                NSLog(@"CoreAudioPlayer: output device set to '%s'", impl->deviceName.c_str());
+        } else {
+            NSLog(@"CoreAudioPlayer: device '%s' not found — using system default",
+                  impl->deviceName.c_str());
+        }
+    }
+
+    // ---- 7. Connect player → mainMixerNode ----
+    [impl->engine connect:impl->player
+                       to:impl->engine.mainMixerNode
+                   format:outFormat];
+
+    // ---- 8. Start engine ----
+    NSError* startErr = nil;
+    if (![impl->engine startAndReturnError:&startErr]) {
+        NSLog(@"CoreAudioPlayer: AVAudioEngine failed to start: %@", startErr);
+        impl->engine = nil;
+        impl->player = nil;
+        impl->buffer = nil;
         return false;
     }
 
-    // explicitly set to system default output device
-    AudioObjectPropertyAddress propAddr = {
-        kAudioHardwarePropertyDefaultOutputDevice,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMain
-    };
-    AudioDeviceID defaultDevice;
-    UInt32 propSize = sizeof(defaultDevice);
-    AudioObjectGetPropertyData(kAudioObjectSystemObject, &propAddr, 0, nullptr, &propSize, &defaultDevice);
-    
-    CFStringRef deviceUID = nullptr;
-    AudioObjectPropertyAddress uidAddr = {
-        kAudioDevicePropertyDeviceUID,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMain
-    };
-    propSize = sizeof(deviceUID);
-    AudioObjectGetPropertyData(defaultDevice, &uidAddr, 0, nullptr, &propSize, &deviceUID);
-    
-    if (deviceUID) {
-        AudioQueueSetProperty(impl->queue, kAudioQueueProperty_CurrentDevice, &deviceUID, sizeof(deviceUID));
-        NSLog(@"CoreAudioPlayer: routing to device UID: %@", deviceUID);
-        CFRelease(deviceUID);
-    }
+    // Apply initial volume
+    impl->player.volume = impl->volume;
 
-    // allocate buffers (do not enqueue here — play() will prime them with real audio)
-    for (int i = 0; i < kNumBuffers; i++) {
-        AudioQueueAllocateBuffer(impl->queue, kBufferSize, &impl->buffers[i]);
-    }
-
-    AudioQueueSetParameter(impl->queue, kAudioQueueParam_Volume, impl->volume);
-    
-    NSLog(@"CoreAudioPlayer: loaded %s (%lld frames, %d ch, %.0f Hz)",
-          path.c_str(), numFrames, floatFormat.mChannelsPerFrame, floatFormat.mSampleRate);
+    NSLog(@"CoreAudioPlayer: loaded %s (%u frames, %u ch → %u ch out, %.0f Hz%s)",
+          path.c_str(), frames, fileCh, outCh, sampleRate,
+          useSurround ? ", quad" : "");
     return true;
 }
 
+// ---------------------------------------------------------------------------
+// play()
+// ---------------------------------------------------------------------------
 void CoreAudioPlayer::play() {
-    if (!impl->queue) return;
-    // Ensure no previously queued buffers remain before priming this playback.
-    AudioQueueStop(impl->queue, true);
-    AudioQueueReset(impl->queue);
-    impl->playhead = 0;
-    impl->playing = true;
-    // Prime the queue with real audio before starting to avoid a silence lead-in
-    for (int i = 0; i < kNumBuffers; i++) {
-        Impl::callback(impl, impl->queue, impl->buffers[i]);
+    if (!impl->player || !impl->buffer) return;
+    [impl->player stop];
+
+    if (impl->loop) {
+        [impl->player scheduleBuffer:impl->buffer
+                              atTime:nil
+                             options:AVAudioPlayerNodeBufferLoops
+                   completionHandler:nil];
+    } else {
+        [impl->player scheduleBuffer:impl->buffer
+                   completionHandler:nil];
     }
-    AudioQueueStart(impl->queue, nullptr);
+    [impl->player play];
+    impl->playing = true;
 }
 
+// ---------------------------------------------------------------------------
+// stop()
+// ---------------------------------------------------------------------------
 void CoreAudioPlayer::stop() {
-    if (!impl->queue) return;
+    if (!impl->player) return;
+    [impl->player stop];
     impl->playing = false;
-    AudioQueueStop(impl->queue, true);
-    AudioQueueReset(impl->queue);
 }
 
+// ---------------------------------------------------------------------------
+// setLoop()
+// ---------------------------------------------------------------------------
 void CoreAudioPlayer::setLoop(bool loop) {
     impl->loop = loop;
 }
 
+// ---------------------------------------------------------------------------
+// setVolume()  — live adjustment, no restart required
+// ---------------------------------------------------------------------------
 void CoreAudioPlayer::setVolume(float volume) {
     impl->volume = std::max(0.0f, std::min(1.0f, volume));
-    if (impl->queue) {
-        AudioQueueSetParameter(impl->queue, kAudioQueueParam_Volume, impl->volume);
-    }
+    if (impl->player)
+        impl->player.volume = impl->volume;
 }
 
+// ---------------------------------------------------------------------------
+// isPlaying()
+// ---------------------------------------------------------------------------
 bool CoreAudioPlayer::isPlaying() {
-    return impl->playing;
+    return impl->playing && impl->player && impl->player.isPlaying;
 }

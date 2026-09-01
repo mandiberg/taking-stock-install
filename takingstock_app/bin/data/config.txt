@@ -1,12 +1,14 @@
 # config.txt
 
-####### PATHS & WINDOW SIZE #########
-BOX_WIDTH = 1920
-BOX_HEIGHT = 873
+####### WINDOW SIZE & POSITION #########
+# NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
+# Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
+BOX_WIDTH = 3432   # render canvas width; use combined width of all projectors (see configREADME)
+BOX_HEIGHT = 700  # render canvas height; use shared height of all projectors
 
-#1746
-BOX_WIDTH = 3840
-BOX_HEIGHT = 1746
+WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
+WINDOW_Y = 0   # y offset on desktop (usually 0)
+WINDOW_DECORATED = false  # false = borderless/installation, true = title bar/debug
 
 
 VIDEO_ASSET_PATH = ../../videos
@@ -18,6 +20,7 @@ VIDEO_LOOP = true  # loop videos or swap to new video when finished
 CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
 CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
+SCALE_SELECT = false  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
 
 
 ############## CONTROLS ################
@@ -36,6 +39,18 @@ TRANSITION_TIMER_MAX = 60    # max seconds between auto-transitions
 
 ############# AUDIO ######################
 AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
+AUDIO_SURROUND = true  # true = quad (4-channel) output; false = stereo (native file format)
+
+# Channel map: for each output channel position, which source file channel to read (0-based).
+# Quad output order (WAV/FFmpeg standard): FL FR BL BR. Pass-through default: [0, 1, 2, 3]
+# Clockwise room cycle: FL(0) → FR(1) → BR(3) → BL(2)
+AUDIO_CHANNEL_MAP = [0, 1, 3, 2]
+
+# Per-output-channel gain multiplier (0.0–1.0). Useful for trimming individual speaker levels.
+AUDIO_CHANNEL_GAINS = [1.0, 1.0, 1.0, 1.0]
+
+# Output device name — must match exactly the name shown in Audio MIDI Setup (empty = system default).
+AUDIO_DEVICE =
 
 
 ############# KEY VIDEO ######################

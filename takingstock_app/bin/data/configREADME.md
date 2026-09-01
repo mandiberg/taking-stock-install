@@ -6,8 +6,39 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 
 ## WINDOW
 
-**BOX_WIDTH** Means how wide the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
-**BOX_HEIGHT** Means how tall the window generated will be. You can resize the window after it loads, but any scaling up won't scale up the render, but will scale up a black box in the window.
+`BOX_WIDTH` and `BOX_HEIGHT` define both the render canvas size and the OS window size. The window is created borderless and non-resizable at startup — resizing it after launch is not supported.
+
+**BOX_WIDTH** = Width in pixels of the render canvas and OS window. For a single display set this to its native width. For multiple side-by-side projectors or monitors, set this to the **combined** width of all displays (e.g. two 1920-wide projectors = `3840`). (default = 1920)
+
+**BOX_HEIGHT** = Height in pixels of the render canvas and OS window. For a single display set this to its native height. For side-by-side projectors that share the same height, this is just that shared height (e.g. `1080` for standard 1080p projectors). (default = 1080)
+
+**WINDOW_X** = X position of the window's top-left corner on the macOS extended desktop, in pixels. In **System Settings → Displays → Arrange**, the primary display's top-left is always `(0, 0)`. A second monitor arranged to the **right** of the primary starts at `x = <primary width>` (e.g. `1920` for a 1920-wide primary). A second monitor arranged to the **left** starts at a negative value (e.g. `-1920`). Set to `0` to open on the primary display. (default = 0)
+
+**WINDOW_Y** = Y position of the window's top-left corner on the macOS extended desktop. Usually `0` unless monitors are stacked vertically or offset. (default = 0)
+
+**WINDOW_DECORATED** = Options: [true, false] When `false`, the window opens without a title bar or borders — the correct mode for installation. When `true`, the window has a normal macOS title bar, which is useful for development and debugging. (default = false)
+
+### Multi-projector setup
+
+macOS treats multiple displays in Extended mode as one continuous coordinate space. A single window can span all of them by sizing it to the combined resolution and positioning it at the correct desktop offset. No secondary software is needed.
+
+> **Required macOS setting:** Multi-display spanning only works when **"Displays have separate Spaces"** is turned **off**. When it is on, macOS clips windows to whichever display they start on and prevents them from spanning to adjacent displays. To turn it off: **System Settings → Desktop & Dock → scroll to the bottom → toggle off "Displays have separate Spaces"**. A log out and back in is required for the change to take effect.
+
+**Steps:**
+1. Turn off **"Displays have separate Spaces"** as described above and log out/in.
+2. In **System Settings → Displays → Arrange**, set all displays to **Extended** (not Mirrored). Note which side each display is on relative to the primary.
+3. Set `BOX_WIDTH` to the total combined width and `BOX_HEIGHT` to the shared height.
+4. Set `WINDOW_X` to the x offset where the leftmost display in your span begins (usually `0`).
+5. Rebuild and run — macOS automatically routes the correct pixel region to each physical output.
+
+**Common configurations:**
+
+| Layout | BOX_WIDTH | BOX_HEIGHT | WINDOW_X | WINDOW_Y |
+|--------|-----------|------------|----------|----------|
+| Single 1920×1080 display | 1920 | 1080 | 0 | 0 |
+| Two 1920×1080, second to the right | 3840 | 1080 | 0 | 0 |
+| Two 1920×1080, second to the left | 3840 | 1080 | -1920 | 0 |
+| Three 1920×1080, primary in center | 5760 | 1080 | -1920 | 0 |
 
 
 
@@ -44,6 +75,12 @@ The secondary window shares a GL context with the main window and runs on the sa
 **CYCLE_RESET_COUNT** = Number of arrangements to display before triggering a cycle reset (the black-screen hold controlled by `CYCLE_RESET_DURATION`). For example, `CYCLE_RESET_COUNT = 20` triggers a reset every 20 arrangements shown. Set to `0` to disable the cycle reset entirely. Arrangements are now picked randomly from the full pool on each transition with no forced ordering, so this count-based trigger replaces the old behavior of resetting only after every arrangement had been shown exactly once. (default = 0)
 
 **MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
+
+**SCALE_SELECT** = Options: [true, false] When `true`, the app uses the `width` and `height` columns in `installation.csv` together with the `_scale_<N>` suffix in each filename to group scale variants of the same video. At slot-assignment time, it picks the **smallest scale variant whose pixel dimensions still meet or exceed the slot's pixel dimensions** — for example, a 1500×1000 slot selects the `scale_1080` file (1624×1080) rather than the larger `scale_1712` or `scale_2160` files. This reduces GPU scaling load at runtime: the video is decoded at a resolution close to how it will be drawn rather than at a much higher resolution that gets scaled down in real time. All scale variants of the same logical video are treated as a single entry in the available pool, so the same source content cannot appear more than once in one arrangement at different scales.
+
+When `false`, every row in `installation.csv` is treated as an independent video and the `width`/`height` columns are ignored for selection purposes — this is identical to the behavior before this option was added. (default = false)
+
+> **Requires:** `installation.csv` must have `width` and `height` columns, and video filenames must include a `_scale_<digits>` segment before the `.mp4` extension (e.g. `...ct8_scale_1080.mp4`, `...ct8_scale_1712.mp4`). Videos without a `_scale_` suffix in the filename are always treated as their own unique logical video and will never be grouped with other files.
 
 
 
@@ -87,6 +124,37 @@ Audio transitions follow `TRANSITION_TYPE`:
 - **fade**: audio fades out at the start of the visual fade, and the new audio fades in from silence once the screen is black
 
 **AUDIO_FADE_DURATION** = Duration in seconds for the audio fade in and fade out during a **fade** transition. Set to `0` for an instant cut even when using the fade visual transition. (default = 1.0)
+
+**AUDIO_SURROUND** = Options: [true, false] When `true`, the audio engine routes output through a quad (4-channel) layout (`kAudioChannelLayoutTag_Quadraphonic`). The audio file must have at least 4 channels; if it has fewer, the app logs a warning and falls back to the file's native format automatically. When `false`, audio plays in the file's native stereo (or mono) format. (default = false)
+
+**AUDIO_CHANNEL_MAP** = Defines, for each output channel position, which **source file channel** to read from (0-based index). This lets you reorder channels without re-exporting the audio file. The number of entries should match the output channel count (2 for stereo, 4 for quad). Entries beyond the output channel count are ignored. If this setting is omitted or left empty, a pass-through identity map is used (output channel N reads from source channel N).
+
+The quad output channel order when `AUDIO_SURROUND = true` follows the WAV/FFmpeg standard:
+
+| Output index | Speaker | Abbreviation |
+|---|---|---|
+| 0 | Front Left | FL |
+| 1 | Front Right | FR |
+| 2 | Back Left | BL |
+| 3 | Back Right | BR |
+
+The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
+
+**Example** — swap back left and back right: `AUDIO_CHANNEL_MAP = [0, 1, 3, 2]`
+
+**AUDIO_CHANNEL_GAINS** = Per-output-channel gain multiplier. Each value is applied to the corresponding output channel's samples at load time (not in real time), so there is no CPU overhead during playback. Values range from `0.0` (silence) to `1.0` (full). Values above `1.0` are technically valid but may clip. The number of entries should match the output channel count; entries beyond that are ignored. If omitted, all channels play at gain `1.0`.
+
+**Example** — pull back the rear speakers slightly: `AUDIO_CHANNEL_GAINS = [1.0, 1.0, 0.8, 0.8]`
+
+**AUDIO_DEVICE** = The exact name of the audio output device to target, as shown in **Audio MIDI Setup** (open via Spotlight → "Audio MIDI Setup"). Leave empty to use the macOS system default output device. If the named device is not found at startup, the app logs a warning and falls back to the system default without crashing. The device must be configured to the correct channel count in Audio MIDI Setup before the app starts — for quad output this means the device must be set to a 4-channel format.
+
+> **Quad setup checklist:**
+> 1. Connect your 4-channel interface or amplifier.
+> 2. Open **Audio MIDI Setup**, select the device, and set the format to 4ch / your sample rate.
+> 3. Verify speaker assignments in the **Configure Speakers** sheet (FL, FR, BL, BR).
+> 4. Set `AUDIO_DEVICE` to the exact device name shown (e.g. `Focusrite USB ASIO`).
+> 5. Set `AUDIO_SURROUND = true` and configure `AUDIO_CHANNEL_MAP` / `AUDIO_CHANNEL_GAINS` as needed.
+> 6. Provide audio files with 4 channels (WAV/FFmpeg quad order: FL FR BL BR) in the `AUDIO_PATH` folder.
 
 
 

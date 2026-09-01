@@ -30,7 +30,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                 for (const auto& nit : itNested->second.items) {
                     int wr = 0, hr = 0;
                     binSorter->getItemRatio(nit.w, nit.h, wr, hr);
-                    VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr) : VideoEntry{};
+                    VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr, nit.w, nit.h) : VideoEntry{};
                     VideoSlot slot;
                     slot.x = (int)(baseX + it.x + nit.x);
                     slot.y = (int)(baseY + it.y + nit.y);
@@ -39,7 +39,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                     slot.ratioW = wr;
                     slot.ratioH = hr;
                     slot.path = entry.fullPath;
-                    slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr) : "";
+                    slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr, nit.w, nit.h) : "";
                     slot.clusterNo = entry.clusterNo;
                     slot.duration = entry.duration;
                     slot.hasVideo = !slot.path.empty();
@@ -48,7 +48,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
             } else {
                 int wr = 0, hr = 0;
                 binSorter->getItemRatio(it.w, it.h, wr, hr);
-                VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr) : VideoEntry{};
+                VideoEntry entry = videoPool ? videoPool->getVideoEntry(wr, hr, it.w, it.h) : VideoEntry{};
                 VideoSlot slot;
                 slot.x = (int)(baseX + it.x);
                 slot.y = (int)(baseY + it.y);
@@ -57,7 +57,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                 slot.ratioW = wr;
                 slot.ratioH = hr;
                 slot.path = entry.fullPath;
-                slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr) : "";
+                slot.nextPath = (!videoLoop && videoPool && !entry.fullPath.empty()) ? videoPool->getVideoPath(wr, hr, it.w, it.h) : "";
                 slot.clusterNo = entry.clusterNo;
                 slot.duration = entry.duration;
                 slot.hasVideo = !slot.path.empty();
@@ -78,7 +78,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
             for (size_t i = 0; i < out.size(); ++i) {
                 auto& slot = out[i];
                 if (!slot.hasVideo) continue;
-                VideoEntry qual = videoPool->getVideoEntryWithMinDuration(slot.ratioW, slot.ratioH, keyVideoMinLength);
+                VideoEntry qual = videoPool->getVideoEntryWithMinDuration(slot.ratioW, slot.ratioH, keyVideoMinLength, slot.w, slot.h);
                 if (!qual.fullPath.empty()) {
                     ofLogNotice("BinSorterRenderer") << "KEY_VIDEO: slot " << (i + 1)
                         << " swapped to qualifying video (duration=" << qual.duration << "s)"
@@ -279,7 +279,7 @@ void BinSorterRenderer::update() {
                     if (slot.nextPlayer.isLoaded()) {
                         slot.nextPlayer.play();
                         slot.player.close();
-                        std::string newPath = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH) : "";
+                        std::string newPath = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (newPath.empty()) {
                             slot.hasVideo = false;
                             ofLogWarning("BinSorterRenderer") << "Slot " << (i + 1) << ": no replacement video for ratio "
@@ -308,7 +308,7 @@ void BinSorterRenderer::update() {
                         }
                     } else {
                         slot.player.close();
-                        std::string path = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH) : "";
+                        std::string path = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (path.empty()) {
                             slot.hasVideo = false;
                             ofLogWarning("BinSorterRenderer") << "Slot " << (i + 1) << ": no replacement video for ratio "

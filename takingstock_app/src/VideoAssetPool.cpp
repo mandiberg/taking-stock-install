@@ -6,6 +6,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 
 static std::string trim(const std::string& s) {
     size_t start = s.find_first_not_of(" \t\r\n");
@@ -31,6 +32,34 @@ static std::vector<std::string> splitCsvLine(const std::string& line) {
     }
     fields.push_back(trim(field));
     return fields;
+}
+
+// Extract the base video ID from a filename by stripping "_scale_<digits>" before the extension.
+// e.g. "foo_scale_1080.mp4" → "foo.mp4", "foo_scale_2160.mp4" → "foo.mp4", "bar.mp4" → "bar.mp4"
+static std::string computeBaseVideoId(const std::string& filename) {
+    // Find last occurrence of "_scale_" followed by digits and then "."
+    size_t scalePos = std::string::npos;
+    size_t searchFrom = 0;
+    while (true) {
+        size_t pos = filename.find("_scale_", searchFrom);
+        if (pos == std::string::npos) break;
+        // Check that everything after "_scale_" up to the next "." is digits
+        size_t digitStart = pos + 7;  // len("_scale_") == 7
+        size_t dotPos = filename.find('.', digitStart);
+        if (dotPos == std::string::npos) { searchFrom = pos + 1; continue; }
+        bool allDigits = (dotPos > digitStart);
+        for (size_t i = digitStart; i < dotPos && allDigits; ++i)
+            if (!std::isdigit((unsigned char)filename[i])) allDigits = false;
+        if (allDigits) { scalePos = pos; break; }
+        searchFrom = pos + 1;
+    }
+    if (scalePos == std::string::npos) return filename;
+    // Replace "_scale_<digits>" with nothing: keep everything before scalePos + extension
+    size_t extPos = filename.rfind('.');
+    std::string base = filename.substr(0, scalePos);
+    if (extPos != std::string::npos && extPos > scalePos)
+        base += filename.substr(extPos);
+    return base;
 }
 
 // Parse a CSV object column value like "[67, 95]" or "[]" into a list of trimmed ID strings.
@@ -70,10 +99,11 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
         ofLogWarning("VideoAssetPool") << "videos.csv is empty";
         return false;
     }
-    // Parse header — required: file_name, ratio; optional: object, cluster_no, pose_no
+    // Parse header — required: file_name, ratio; optional: object, cluster_no, pose_no, width, height
     // Legacy 'filename' column is accepted with a deprecation warning.
     std::vector<std::string> header = splitCsvLine(line);
     int idxFilename = -1, idxRatio = -1, idxObject = -1, idxClusterNo = -1, idxPoseNo = -1, idxDuration = -1;
+    int idxWidth = -1, idxHeight = -1;
     for (size_t i = 0; i < header.size(); ++i) {
         std::string h = header[i];
         std::transform(h.begin(), h.end(), h.begin(), ::tolower);
@@ -92,6 +122,10 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
             idxPoseNo = (int)i;
         } else if (h == "duration") {
             idxDuration = (int)i;
+        } else if (h == "width") {
+            idxWidth = (int)i;
+        } else if (h == "height") {
+            idxHeight = (int)i;
         }
     }
     if (idxFilename < 0 || idxRatio < 0) {
@@ -133,6 +167,13 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
                 ofLogWarning("VideoAssetPool") << "Row " << rowNum << ": invalid duration value, defaulting to 0";
             }
         }
+        if (idxWidth >= 0 && idxWidth < (int)fields.size() && !fields[idxWidth].empty()) {
+            try { entry.videoWidth  = std::stoi(fields[idxWidth]);  } catch (...) {}
+        }
+        if (idxHeight >= 0 && idxHeight < (int)fields.size() && !fields[idxHeight].empty()) {
+            try { entry.videoHeight = std::stoi(fields[idxHeight]); } catch (...) {}
+        }
+        entry.baseVideoId = computeBaseVideoId(entry.filename);
 
         if (minDuration > 0.f && entry.duration < minDuration) {
             discardedCount++;
@@ -153,6 +194,19 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
         ofLogNotice("VideoAssetPool") << "Discarded " << discardedCount
             << " videos shorter than " << minDuration << "s (MIN_VIDEO_LENGTH)";
 
+    // Build scale-variant lookup: baseVideoId -> all indices in videos[]
+    scaleVariantsByBase.clear();
+    for (size_t i = 0; i < videos.size(); ++i)
+        scaleVariantsByBase[videos[i].baseVideoId].push_back(i);
+
+    if (scaleSelectEnabled) {
+        int multiCount = 0;
+        for (const auto& kv : scaleVariantsByBase)
+            if (kv.second.size() > 1) ++multiCount;
+        ofLogNotice("VideoAssetPool") << "SCALE_SELECT enabled: "
+            << multiCount << " logical video(s) with multiple scale variants";
+    }
+
     resetUsed();
     ofLogNotice("VideoAssetPool") << "Loaded " << videos.size() << " videos from " << fullPath
         << " (video folder: " << videoFolder << ")";
@@ -161,6 +215,51 @@ bool VideoAssetPool::loadFromCsv(const std::string& csvPath) {
 
 void VideoAssetPool::resetUsed() {
     availableByRatioKey.clear();
+}
+
+// Given the index of a picked video, find the optimal scale variant for slotH.
+// Returns the index of the variant with the smallest videoHeight that is >= slotH.
+// Falls back to the variant with the largest videoHeight if none are large enough.
+// Returns vidIdx unchanged if there are no multi-scale variants or no dimension data.
+size_t VideoAssetPool::pickBestScaleVariant(size_t vidIdx, int slotH) const {
+    const std::string& baseId = videos[vidIdx].baseVideoId;
+    auto it = scaleVariantsByBase.find(baseId);
+    if (it == scaleVariantsByBase.end()) return vidIdx;
+    const std::vector<size_t>& variants = it->second;
+    if (variants.size() <= 1) return vidIdx;
+
+    // Find the smallest videoHeight that covers the slot
+    size_t bestIdx = variants[0];
+    bool foundCover = false;
+    int bestHeight = 0;
+
+    for (size_t vi : variants) {
+        int h = videos[vi].videoHeight;
+        if (h <= 0) continue;  // no dimension data for this entry; skip
+        if (!foundCover) {
+            // Haven't found a covering scale yet — track the largest as fallback
+            if (h > bestHeight) { bestHeight = h; bestIdx = vi; }
+            if (h >= slotH) { foundCover = true; bestHeight = h; bestIdx = vi; }
+        } else {
+            // Already have a covering scale; prefer a smaller one that still covers
+            if (h >= slotH && h < bestHeight) { bestHeight = h; bestIdx = vi; }
+        }
+    }
+    return bestIdx;
+}
+
+// Remove all indices listed in variantIndices from the available vector (swap-erase idiom).
+void VideoAssetPool::removeVariantsFromAvailable(std::vector<size_t>& available,
+                                                  const std::vector<size_t>& variantIndices) {
+    if (variantIndices.empty()) return;
+    // Build a set for O(1) lookup
+    std::unordered_set<size_t> toRemove(variantIndices.begin(), variantIndices.end());
+    size_t write = 0;
+    for (size_t read = 0; read < available.size(); ++read) {
+        if (!toRemove.count(available[read]))
+            available[write++] = available[read];
+    }
+    available.resize(write);
 }
 
 void VideoAssetPool::setObjectFilter(const SelectOption& opt, bool exactMatch) {
@@ -205,7 +304,7 @@ bool VideoAssetPool::passesObjectFilter(const VideoEntry& entry) const {
     }
 }
 
-VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr) {
+VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr, int slotW, int slotH) {
     if (videos.empty()) return {};
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
 
@@ -235,12 +334,27 @@ VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr) {
     size_t idx = (size_t)(ofRandom(0.0f, (float)available.size()));
     if (idx >= available.size()) idx = available.size() - 1;
     size_t vidIdx = available[idx];
+
+    if (scaleSelectEnabled && slotH > 0) {
+        // Scale-aware path: pick the optimal scale variant, then remove all variants from the pool.
+        size_t bestIdx = pickBestScaleVariant(vidIdx, slotH);
+        const std::string& baseId = videos[vidIdx].baseVideoId;
+        auto varIt = scaleVariantsByBase.find(baseId);
+        if (varIt != scaleVariantsByBase.end())
+            removeVariantsFromAvailable(available, varIt->second);
+        else {
+            available[idx] = available.back();
+            available.pop_back();
+        }
+        return videos[bestIdx];
+    }
+
     available[idx] = available.back();
     available.pop_back();
     return videos[vidIdx];
 }
 
-VideoEntry VideoAssetPool::getVideoEntryWithMinDuration(int wr, int hr, float minDuration) {
+VideoEntry VideoAssetPool::getVideoEntryWithMinDuration(int wr, int hr, float minDuration, int slotW, int slotH) {
     if (videos.empty()) return {};
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
     std::string key = std::to_string(wr) + "_" + std::to_string(hr);
@@ -265,13 +379,27 @@ VideoEntry VideoAssetPool::getVideoEntryWithMinDuration(int wr, int hr, float mi
     if (qIdx >= qualifying.size()) qIdx = qualifying.size() - 1;
     size_t pos = qualifying[qIdx];
     size_t vidIdx = available[pos];
+
+    if (scaleSelectEnabled && slotH > 0) {
+        size_t bestIdx = pickBestScaleVariant(vidIdx, slotH);
+        const std::string& baseId = videos[vidIdx].baseVideoId;
+        auto varIt = scaleVariantsByBase.find(baseId);
+        if (varIt != scaleVariantsByBase.end())
+            removeVariantsFromAvailable(available, varIt->second);
+        else {
+            available[pos] = available.back();
+            available.pop_back();
+        }
+        return videos[bestIdx];
+    }
+
     available[pos] = available.back();
     available.pop_back();
     return videos[vidIdx];
 }
 
-std::string VideoAssetPool::getVideoPath(int wr, int hr) {
-    return getVideoEntry(wr, hr).fullPath;
+std::string VideoAssetPool::getVideoPath(int wr, int hr, int slotW, int slotH) {
+    return getVideoEntry(wr, hr, slotW, slotH).fullPath;
 }
 
 bool VideoAssetPool::hasVideosFor(int wr, int hr) const {
