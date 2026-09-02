@@ -14,12 +14,25 @@ std::string ofApp::getCurrentKeyVideoClusterNo() const {
 
 std::string ofApp::findAudioFile(const std::string& clusterNo) const {
     if (config.audioPath.empty() || clusterNo.empty()) return "";
+
+    std::vector<std::string> candidates;
+    std::string current = clusterNo;
+    while (!current.empty()) {
+        candidates.push_back(current);
+        size_t sep = current.rfind('_');
+        if (sep == std::string::npos) break;
+        current = current.substr(0, sep);
+    }
+
     std::string resolvedPath = ofToDataPath(config.audioPath, true);
     ofDirectory dir(resolvedPath);
     dir.listDir();
-    for (const auto& file : dir.getFiles()) {
-        if (file.getFileName().find(clusterNo) != std::string::npos) {
-            return file.getAbsolutePath();
+
+    for (const auto& candidate : candidates) {
+        for (const auto& file : dir.getFiles()) {
+            if (file.getFileName().find(candidate) != std::string::npos) {
+                return file.getAbsolutePath();
+            }
         }
     }
     return "";
