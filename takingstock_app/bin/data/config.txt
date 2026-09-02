@@ -3,8 +3,8 @@
 ####### WINDOW SIZE & POSITION #########
 # NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
 # Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
-BOX_WIDTH = 3432   # render canvas width; use combined width of all projectors (see configREADME)
-BOX_HEIGHT = 700  # render canvas height; use shared height of all projectors
+BOX_WIDTH = 800   # render canvas width; use combined width of all projectors (see configREADME)
+BOX_HEIGHT = 800  # render canvas height; use shared height of all projectors
 
 WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
 WINDOW_Y = 0   # y offset on desktop (usually 0)
@@ -57,7 +57,7 @@ AUDIO_DEVICE =
 # When true, the transition fires when the longest qualifying video ends
 # rather than using the random TRANSITION_TIMER_MIN/MAX range.
 KEY_VIDEO = true
-KEY_VIDEO_MIN_LENGTH = 10    # min seconds for a video to qualify as key video (0 = any)
+KEY_VIDEO_MIN_LENGTH = 8    # min seconds for a video to qualify as key video (0 = any)
 
 
 ############# SELECT MODE ######################
@@ -66,11 +66,16 @@ KEY_VIDEO_MIN_LENGTH = 10    # min seconds for a video to qualify as key video (
 SELECT_MODE = true
 SELECT_EXACT_MATCH = false  # false = any object in CSV list matches; true = CSV list must exactly equal SELECT list
 #SELECT = [*], 0.3
+SELECT = [1], 0.3
 SELECT = [27], 0.3
+SELECT = [32], 0.3
+SELECT = [37], 0.3
+SELECT = [39], 0.3
+SELECT = [57], 0.3
 SELECT = [63], 0.3
 SELECT = [67], 0.3
-SELECT = [82], 0.3
-SELECT = [95], 0.3
+SELECT = [84], 0.3
+SELECT = [86], 0.3
 SELECT = [], 0.3
 
 
@@ -87,8 +92,8 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 # Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 
-#PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
-PACKING_STOP_AREA = 200000 #Used in 4k
+PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+#PACKING_STOP_AREA = 200000 #Used in 4k
 NESTING_LAYERS = 0
 NESTED_MIN_SPACE_THRESHOLD = 0
 MAIN_BIN_FILL_CHANCE = 0.05
@@ -101,7 +106,7 @@ BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to
 
 
 ################ LAYOUT GENERATION ########################
-IGNORE_FINGERPRINT = false  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
+IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
 LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)

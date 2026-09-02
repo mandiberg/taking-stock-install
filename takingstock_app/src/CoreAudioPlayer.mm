@@ -2,6 +2,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <CoreAudio/CoreAudio.h>
+#import <algorithm>
+#import <cstring>
 #import <string>
 #import <vector>
 
@@ -38,6 +40,36 @@ static AudioDeviceID findDeviceByName(const std::string& name) {
         if ([devName isEqualToString:target]) return devID;
     }
     return kAudioDeviceUnknown;
+}
+
+// AVAudioFormat's channels: initializer returns nil for >2 channels. Always
+// pass an explicit layout so 4-channel (quad) files don't crash on buffer alloc.
+static AVAudioFormat* makePlanarFloatFormat(double sampleRate, AVAudioChannelCount channels,
+                                                AVAudioChannelLayout* preferredLayout) {
+    if (preferredLayout) {
+        AVAudioFormat* fmt = [[AVAudioFormat alloc]
+            initWithCommonFormat:AVAudioPCMFormatFloat32
+                      sampleRate:sampleRate
+                     interleaved:NO
+                   channelLayout:preferredLayout];
+        if (fmt && fmt.channelCount == channels) return fmt;
+    }
+    if (channels <= 2) {
+        return [[AVAudioFormat alloc]
+            initWithCommonFormat:AVAudioPCMFormatFloat32
+                      sampleRate:sampleRate
+                        channels:channels
+                     interleaved:NO];
+    }
+    AudioChannelLayoutTag tag = kAudioChannelLayoutTag_DiscreteInOrder | channels;
+    if (channels == 4) tag = kAudioChannelLayoutTag_Quadraphonic;
+    else if (channels == 6) tag = kAudioChannelLayoutTag_MPEG_5_1_A;
+    AVAudioChannelLayout* layout = [AVAudioChannelLayout layoutWithLayoutTag:tag];
+    return [[AVAudioFormat alloc]
+        initWithCommonFormat:AVAudioPCMFormatFloat32
+                  sampleRate:sampleRate
+                 interleaved:NO
+               channelLayout:layout];
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +134,8 @@ bool CoreAudioPlayer::load(const std::string& path) {
         impl->buffer = nil;
     }
 
+    NSLog(@"CoreAudioPlayer: loading %s", path.c_str());
+
     // ---- 1. Open the audio file ----
     NSString* nsPath = [NSString stringWithUTF8String:path.c_str()];
     NSURL* url = [NSURL fileURLWithPath:nsPath];
@@ -112,134 +146,39 @@ bool CoreAudioPlayer::load(const std::string& path) {
         return false;
     }
 
-    // ---- 2. Read the whole file into a non-interleaved float buffer ----
-    // Build an intermediate format: same sample rate and channel count as the file,
-    // but non-interleaved float (the format AVAudioPCMBuffer uses for floatChannelData).
+    // processingFormat is already deinterleaved float and includes a channel layout
+    // for >2ch files (the channels: initializer returns nil for those).
     AVAudioFormat* fileFormat = file.processingFormat;
     double sampleRate = fileFormat.sampleRate;
     AVAudioChannelCount fileCh = fileFormat.channelCount;
-    AVAudioFrameCount  frames  = (AVAudioFrameCount)file.length;
-
-    AVAudioFormat* readFormat = [[AVAudioFormat alloc]
-        initWithCommonFormat:AVAudioPCMFormatFloat32
-                  sampleRate:sampleRate
-                    channels:fileCh
-                 interleaved:NO];
-
-    AVAudioPCMBuffer* srcBuf = [[AVAudioPCMBuffer alloc]
-        initWithPCMFormat:readFormat frameCapacity:frames];
-    srcBuf.frameLength = frames;
-
-    // Use ExtAudioFile to decode into our float non-interleaved format
-    // (AVAudioFile.readIntoBuffer uses the processingFormat; we need float non-interleaved)
-    CFStringRef cfPath = CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8);
-    CFURLRef    cfURL  = CFURLCreateWithFileSystemPath(nullptr, cfPath, kCFURLPOSIXPathStyle, false);
-    CFRelease(cfPath);
-
-    ExtAudioFileRef extFile = nullptr;
-    OSStatus status = ExtAudioFileOpenURL(cfURL, &extFile);
-    CFRelease(cfURL);
-    if (status != noErr) {
-        NSLog(@"CoreAudioPlayer: ExtAudioFileOpenURL failed (%d) for %s", (int)status, path.c_str());
+    AVAudioFrameCount frames = (AVAudioFrameCount)file.length;
+    if (!fileFormat || fileCh == 0 || frames == 0) {
+        NSLog(@"CoreAudioPlayer: invalid format for %s (ch=%u frames=%u)",
+              path.c_str(), fileCh, frames);
         return false;
     }
 
-    // Configure client format: non-interleaved float, preserving channel count and sample rate
-    AudioStreamBasicDescription clientFmt;
-    memset(&clientFmt, 0, sizeof(clientFmt));
-    clientFmt.mSampleRate       = sampleRate;
-    clientFmt.mFormatID         = kAudioFormatLinearPCM;
-    clientFmt.mFormatFlags      = kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved | kAudioFormatFlagIsPacked;
-    clientFmt.mBitsPerChannel   = 32;
-    clientFmt.mChannelsPerFrame = fileCh;
-    clientFmt.mBytesPerFrame    = 4;
-    clientFmt.mFramesPerPacket  = 1;
-    clientFmt.mBytesPerPacket   = 4;
-
-    ExtAudioFileSetProperty(extFile, kExtAudioFileProperty_ClientDataFormat,
-                            sizeof(clientFmt), &clientFmt);
-
-    // Build an AudioBufferList pointing into the AVAudioPCMBuffer's channel arrays
-    AudioBufferList* abl = (AudioBufferList*)malloc(
-        sizeof(AudioBufferList) + (fileCh - 1) * sizeof(AudioBuffer));
-    abl->mNumberBuffers = fileCh;
-    for (UInt32 ch = 0; ch < fileCh; ch++) {
-        abl->mBuffers[ch].mNumberChannels = 1;
-        abl->mBuffers[ch].mDataByteSize   = frames * sizeof(float);
-        abl->mBuffers[ch].mData           = srcBuf.floatChannelData[ch];
+    AVAudioPCMBuffer* srcBuf = [[AVAudioPCMBuffer alloc]
+        initWithPCMFormat:fileFormat frameCapacity:frames];
+    if (!srcBuf) {
+        NSLog(@"CoreAudioPlayer: could not allocate source buffer for %s", path.c_str());
+        return false;
     }
-
-    UInt32 framesToRead = frames;
-    ExtAudioFileRead(extFile, &framesToRead, abl);
-    free(abl);
-    ExtAudioFileDispose(extFile);
-
-    // ---- 3. Determine output format ----
-    // Quad layout: FL(0), FR(1), BL(2), BR(3) — WAV/FFmpeg standard quad channel order.
-    bool useSurround = impl->surroundEnabled;
-    if (useSurround && fileCh < 4) {
-        NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but file has only %u channel(s) — "
-              "falling back to native format for %s", fileCh, path.c_str());
-        useSurround = false;
+    if (![file readIntoBuffer:srcBuf error:&err]) {
+        NSLog(@"CoreAudioPlayer: failed to read %s: %@", path.c_str(), err);
+        return false;
     }
-
-    AVAudioFormat* outFormat;
-    AVAudioChannelCount outCh;
-    if (useSurround) {
-        outCh = 4;
-        AVAudioChannelLayout* layout = [AVAudioChannelLayout
-            layoutWithLayoutTag:kAudioChannelLayoutTag_Quadraphonic];
-        outFormat = [[AVAudioFormat alloc]
-            initWithCommonFormat:AVAudioPCMFormatFloat32
-                      sampleRate:sampleRate
-                   interleaved:NO
-                   channelLayout:layout];
-    } else {
-        outCh = fileCh;
-        outFormat = readFormat;
+    if (!srcBuf.floatChannelData) {
+        NSLog(@"CoreAudioPlayer: no planar float data in %s", path.c_str());
+        return false;
     }
+    frames = srcBuf.frameLength;
 
-    // ---- 4. Allocate the output buffer and apply channel map + gains ----
-    AVAudioPCMBuffer* dstBuf = [[AVAudioPCMBuffer alloc]
-        initWithPCMFormat:outFormat frameCapacity:frames];
-    dstBuf.frameLength = frames;
-
-    const std::vector<int>&   map   = impl->channelMap;
-    const std::vector<float>& gains = impl->channelGains;
-
-    for (AVAudioChannelCount outIdx = 0; outIdx < outCh; outIdx++) {
-        int   srcIdx = (outIdx < (AVAudioChannelCount)map.size())
-                       ? map[(size_t)outIdx]
-                       : (int)outIdx;
-        float gain   = (outIdx < (AVAudioChannelCount)gains.size())
-                       ? gains[(size_t)outIdx]
-                       : 1.0f;
-
-        // Clamp source channel to valid range
-        if (srcIdx < 0 || srcIdx >= (int)fileCh) {
-            // Out-of-range source: fill with silence
-            memset(dstBuf.floatChannelData[outIdx], 0, frames * sizeof(float));
-            continue;
-        }
-
-        float* dst = dstBuf.floatChannelData[outIdx];
-        float* src = srcBuf.floatChannelData[srcIdx];
-        if (gain == 1.0f) {
-            memcpy(dst, src, frames * sizeof(float));
-        } else {
-            for (AVAudioFrameCount f = 0; f < frames; f++)
-                dst[f] = src[f] * gain;
-        }
-    }
-
-    impl->buffer = dstBuf;
-
-    // ---- 5. Build AVAudioEngine ----
+    // ---- 2. Build engine and select device so we can query hardware channel count ----
     impl->engine = [[AVAudioEngine alloc] init];
     impl->player = [[AVAudioPlayerNode alloc] init];
     [impl->engine attachNode:impl->player];
 
-    // ---- 6. Device selection (must happen before engine start) ----
     if (!impl->deviceName.empty()) {
         AudioDeviceID devID = findDeviceByName(impl->deviceName);
         if (devID != kAudioDeviceUnknown) {
@@ -262,12 +201,109 @@ bool CoreAudioPlayer::load(const std::string& path) {
         }
     }
 
-    // ---- 7. Connect player → mainMixerNode ----
-    [impl->engine connect:impl->player
-                       to:impl->engine.mainMixerNode
-                   format:outFormat];
+    AVAudioFormat* hwFormat = [impl->engine.outputNode outputFormatForBus:0];
+    AVAudioChannelCount hwCh = hwFormat ? hwFormat.channelCount : 0;
+    NSLog(@"CoreAudioPlayer: current output device reports %u ch @ %.0f Hz "
+          "(informational — quad output is not limited to this)",
+          hwCh, hwFormat ? hwFormat.sampleRate : 0.0);
 
-    // ---- 8. Start engine ----
+    // ---- 3. Determine output format ----
+    // Always emit 4 channels when AUDIO_SURROUND is on. Do not clamp to whatever
+    // this machine's current default device reports — the install uses a different
+    // 4-channel interface, and the pre-start query here is often 2ch even then.
+    bool useSurround = impl->surroundEnabled;
+    if (useSurround && fileCh < 4) {
+        NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but file has only %u channel(s) — "
+              "falling back to native format for %s", fileCh, path.c_str());
+        useSurround = false;
+    }
+
+    AVAudioChannelCount outCh = useSurround ? 4 : fileCh;
+
+    AVAudioChannelLayout* preferredLayout = nil;
+    if (useSurround && hwFormat && hwFormat.channelCount == 4 && hwFormat.channelLayout)
+        preferredLayout = hwFormat.channelLayout;
+    else if (!useSurround && fileFormat.channelCount == outCh)
+        preferredLayout = fileFormat.channelLayout;
+
+    AVAudioFormat* outFormat = makePlanarFloatFormat(sampleRate, outCh, preferredLayout);
+    if (!outFormat) {
+        NSLog(@"CoreAudioPlayer: could not create %u-channel output format for %s",
+              outCh, path.c_str());
+        impl->engine = nil;
+        impl->player = nil;
+        return false;
+    }
+
+    // ---- 4. Allocate the output buffer and apply channel map + gains ----
+    AVAudioPCMBuffer* dstBuf = [[AVAudioPCMBuffer alloc]
+        initWithPCMFormat:outFormat frameCapacity:frames];
+    if (!dstBuf || !dstBuf.floatChannelData) {
+        NSLog(@"CoreAudioPlayer: could not allocate %u-channel output buffer for %s",
+              outCh, path.c_str());
+        impl->engine = nil;
+        impl->player = nil;
+        return false;
+    }
+    dstBuf.frameLength = frames;
+
+    const std::vector<int>&   map   = impl->channelMap;
+    const std::vector<float>& gains = impl->channelGains;
+
+    for (AVAudioChannelCount outIdx = 0; outIdx < outCh; outIdx++) {
+        int   srcIdx = (outIdx < (AVAudioChannelCount)map.size())
+                       ? map[(size_t)outIdx]
+                       : (int)outIdx;
+        float gain   = (outIdx < (AVAudioChannelCount)gains.size())
+                       ? gains[(size_t)outIdx]
+                       : 1.0f;
+
+        float* dst = dstBuf.floatChannelData[outIdx];
+        if (!dst) continue;
+
+        if (srcIdx < 0 || srcIdx >= (int)fileCh) {
+            memset(dst, 0, (size_t)frames * sizeof(float));
+            continue;
+        }
+
+        float* src = srcBuf.floatChannelData[srcIdx];
+        if (!src) {
+            memset(dst, 0, (size_t)frames * sizeof(float));
+            continue;
+        }
+        if (gain == 1.0f) {
+            memcpy(dst, src, (size_t)frames * sizeof(float));
+        } else {
+            for (AVAudioFrameCount f = 0; f < frames; f++)
+                dst[f] = src[f] * gain;
+        }
+    }
+
+    impl->buffer = dstBuf;
+
+    // ---- 5. Connect player → mainMixerNode ----
+    @try {
+        [impl->engine connect:impl->player
+                           to:impl->engine.mainMixerNode
+                       format:outFormat];
+    } @catch (NSException* ex) {
+        NSLog(@"CoreAudioPlayer: connect failed (%@). Retrying with native file format.", ex);
+        @try {
+            [impl->engine connect:impl->player
+                               to:impl->engine.mainMixerNode
+                           format:fileFormat];
+            impl->buffer = srcBuf;
+            outCh = fileCh;
+        } @catch (NSException* ex2) {
+            NSLog(@"CoreAudioPlayer: connect retry failed: %@", ex2);
+            impl->engine = nil;
+            impl->player = nil;
+            impl->buffer = nil;
+            return false;
+        }
+    }
+
+    // ---- 6. Start engine ----
     NSError* startErr = nil;
     if (![impl->engine startAndReturnError:&startErr]) {
         NSLog(@"CoreAudioPlayer: AVAudioEngine failed to start: %@", startErr);
@@ -277,7 +313,6 @@ bool CoreAudioPlayer::load(const std::string& path) {
         return false;
     }
 
-    // Apply initial volume
     impl->player.volume = impl->volume;
 
     NSLog(@"CoreAudioPlayer: loaded %s (%u frames, %u ch → %u ch out, %.0f Hz%s)",
