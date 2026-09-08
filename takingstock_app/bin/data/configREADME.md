@@ -19,6 +19,16 @@ The config.txt file is where all config of the takingstock_app happens. Each lin
 
 **SYPHON_NAME** = The name of the Syphon server this app publishes. In QLab, add a Syphon input (or a camera/Syphon patch) and select this name. (default = Taking Stock)
 
+### SYPHON PIPELINE
+1. Run OF App
+2. Open QLab
+3. Go to top of screen, File -> Workspace Settings -> Video -> Video Inputs
+4. Make a new input patch
+5. Set device to taking stock app
+6. Close settings window and go to the main workspace
+7. Create a new camera cue
+8. in I/O set video input to patch 1 or patch corresponding to the input patch created in setp 4
+
 **PREVIEW_WIDTH** = Width in pixels of the OF preview window when `OUTPUT_MODE = syphon`. Ignored in window mode. The preview letterboxes the master canvas to fit. Match the canvas aspect ratio to avoid large black bars (e.g. a 3840×1080 canvas previews well at `800` × `225`). (default = 400)
 
 **PREVIEW_HEIGHT** = Height in pixels of the OF preview window when `OUTPUT_MODE = syphon`. Ignored in window mode. (default = 400)
@@ -36,6 +46,7 @@ macOS treats multiple displays in Extended mode as one continuous coordinate spa
 > **Required macOS setting:** Multi-display spanning only works when **"Displays have separate Spaces"** is turned **off**. When it is on, macOS clips windows to whichever display they start on and prevents them from spanning to adjacent displays. To turn it off: **System Settings → Desktop & Dock → scroll to the bottom → toggle off "Displays have separate Spaces"**. A log out and back in is required for the change to take effect.
 
 **Steps:**
+
 1. Set `OUTPUT_MODE = window`.
 2. Turn off **"Displays have separate Spaces"** as described above and log out/in.
 3. In **System Settings → Displays → Arrange**, set all displays to **Extended** (not Mirrored). Note which side each display is on relative to the primary.
@@ -45,18 +56,23 @@ macOS treats multiple displays in Extended mode as one continuous coordinate spa
 
 **Common configurations:**
 
-| Layout | BOX_WIDTH | BOX_HEIGHT | WINDOW_X | WINDOW_Y |
-|--------|-----------|------------|----------|----------|
-| Single 1920×1080 display | 1920 | 1080 | 0 | 0 |
-| Two 1920×1080, second to the right | 3840 | 1080 | 0 | 0 |
-| Two 1920×1080, second to the left | 3840 | 1080 | -1920 | 0 |
-| Three 1920×1080, primary in center | 5760 | 1080 | -1920 | 0 |
+
+| Layout                             | BOX_WIDTH | BOX_HEIGHT | WINDOW_X | WINDOW_Y |
+| ---------------------------------- | --------- | ---------- | -------- | -------- |
+| Single 1920×1080 display           | 1920      | 1080       | 0        | 0        |
+| Two 1920×1080, second to the right | 3840      | 1080       | 0        | 0        |
+| Two 1920×1080, second to the left  | 3840      | 1080       | -1920    | 0        |
+| Three 1920×1080, primary in center | 5760      | 1080       | -1920    | 0        |
+
+
+
 
 ### Syphon mode: QLab / projection mapping
 
 Use this when another application (typically QLab) owns the projector stages, edge blend, overlap, and masks.
 
 **Steps:**
+
 1. Set `OUTPUT_MODE = syphon`. Keep `BOX_WIDTH` / `BOX_HEIGHT` at the master image size (usually the combined content resolution). Do not bake projector overlap into the OF canvas — QLab handles blend and correction.
 2. Set `SYPHON_NAME` to a stable name and note it.
 3. Set `PREVIEW_WIDTH` / `PREVIEW_HEIGHT` to a small window you can keep on the operator display. `WINDOW_X` / `WINDOW_Y` / `WINDOW_DECORATED` place that preview.
@@ -67,8 +83,6 @@ The OF window titled **Taking Stock - Preview** is a scaled local view of the sa
 
 The window is created non-resizable at startup. Resizing it after launch is not supported.
 
-
-
 ## SECONDARY WINDOW
 
 The secondary window is an optional second OS window that displays live data about the current arrangement's key video. It is intended to eventually show spreadsheet-style metadata; for now it displays the key video's `cluster_no` value, updated automatically on every arrangement change.
@@ -77,12 +91,11 @@ The secondary window requires `KEY_VIDEO = true` to be meaningful. If the second
 
 The secondary window shares a GL context with the main window and runs on the same loop — no additional threads are involved.
 
-**SECONDARY_WINDOW_ENABLED** = Options: [true, false] When `true`, a second OS window opens alongside the main render window at startup. When `false`, no secondary window is created and the other `SECONDARY_WINDOW_*` settings are ignored. (default = false)
+**SECONDARY_WINDOW_ENABLED** = Options: [true, false] When `true`, a second OS window opens alongside the main render window at startup. When `false`, no secondary window is created and the other `SECONDARY_WINDOW_`* settings are ignored. (default = false)
 
 **SECONDARY_WINDOW_WIDTH** = Width in pixels of the secondary window. (default = 400)
 
 **SECONDARY_WINDOW_HEIGHT** = Height in pixels of the secondary window. (default = 300)
-
 
 ## PATHS
 
@@ -90,8 +103,6 @@ The secondary window shares a GL context with the main window and runs on the sa
 **VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render
 **ARRANGEMENTS_PATH** = This is a path to the folder where all generated arrangements will be saved.
 **AUDIO_PATH** = This is a path to the folder which contains all the audio files used for playback. The app matches each arrangement's key video `cluster_no` value against filenames in this folder — any file whose name contains the `cluster_no` string is used as that arrangement's audio.
-
-
 
 ## LOOPS
 
@@ -112,9 +123,9 @@ When `false`, every row in `installation.csv` is treated as an independent video
 
 
 ## CONTROLS
+
 **s**: export image 
 **r**: regenerate layout
-
 
 ## KEY VIDEO
 
@@ -124,10 +135,10 @@ The key video is the longest-playing video in an arrangement. When key video mod
 
 **KEY_VIDEO_MIN_LENGTH** = The minimum duration in seconds a video must have to be considered the key video. For example, setting this to `30` means only videos 30 seconds or longer can be the key video. Set to `0` to allow any video to qualify. (default = 20)
 
-
 ## TRANSITIONS
 
 Transitions are how the app moves between arrangements. There are three main modes: **jumpcut**, **fade**, and **jumpcut_to_black**. 
+
 - in **jumpcut** mode, arrangements will immediately cut from arrangement A to B.
 - in **fade** mode, arrangements will fade to black from arrangement A for a set number of seconds (*TRANSITION_DURATION_FADE*) and then fade up to arrangement B for a (*TRANSITION_DURATION_FADE*) number of seconds.
 - in **jumpcut_to_black** mode the arrangement will cut from A to black for a set number of seconds (*TRANSITION_DURATION_JUMP_TO_BLACK*) and then cut to arrangement B
@@ -140,13 +151,12 @@ Each arrangement is held for a random amount of time between TRANSITION_TIMER_MI
 **TRANSITION_TIMER_MIN** = This is the minimum duration in seconds for each arrangement to be held
 **TRANSITION_TIMER_MAX** = This is the maximum duration in seconds for each arrangement to be held
 
-
-
 ## AUDIO
 
 Each arrangement plays one audio file tied to its key video. The app reads the key video's `cluster_no` value from `installation.csv`, then searches `AUDIO_PATH` for any file whose name contains that string. The first match is played looping for the duration of the arrangement. If no matching file is found, the arrangement plays silently.
 
 Audio transitions follow `TRANSITION_TYPE`:
+
 - **jumpcut** / **jumpcut_to_black**: audio cuts immediately — the old file stops and the new one starts at full volume
 - **fade**: audio fades out at the start of the visual fade, and the new audio fades in from silence once the screen is black
 
@@ -158,12 +168,14 @@ Audio transitions follow `TRANSITION_TYPE`:
 
 The quad output channel order when `AUDIO_SURROUND = true` follows the WAV/FFmpeg standard:
 
-| Output index | Speaker | Abbreviation |
-|---|---|---|
-| 0 | Front Left | FL |
-| 1 | Front Right | FR |
-| 2 | Back Left | BL |
-| 3 | Back Right | BR |
+
+| Output index | Speaker     | Abbreviation |
+| ------------ | ----------- | ------------ |
+| 0            | Front Left  | FL           |
+| 1            | Front Right | FR           |
+| 2            | Back Left   | BL           |
+| 3            | Back Right  | BR           |
+
 
 The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
 
@@ -176,6 +188,7 @@ The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
 **AUDIO_DEVICE** = The exact name of the audio output device to target, as shown in **Audio MIDI Setup** (open via Spotlight → "Audio MIDI Setup"). Leave empty to use the macOS system default output device. If the named device is not found at startup, the app logs a warning and falls back to the system default without crashing. The device must be configured to the correct channel count in Audio MIDI Setup before the app starts — for quad output this means the device must be set to a 4-channel format.
 
 > **Quad setup checklist:**
+>
 > 1. Connect your 4-channel interface or amplifier.
 > 2. Open **Audio MIDI Setup**, select the device, and set the format to 4ch / your sample rate.
 > 3. Verify speaker assignments in the **Configure Speakers** sheet (FL, FR, BL, BR).
@@ -192,20 +205,24 @@ Select mode allows you to filter which videos are used in arrangements based on 
 **SELECT_MODE** = Options: [true, false] When `true`, video selection is filtered according to the `SELECT` lines below. Requires an `objects` column in the CSV — if none is found, select mode is automatically disabled. (default = false)
 
 **SELECT_EXACT_MATCH** = Options: [true, false] Controls how a video's object list is matched against a `SELECT` filter. (default = false)
+
 - `false` (**any** mode): a video passes if its object list contains **at least one** of the IDs in the SELECT filter.
 - `true` (**exact** mode): a video passes only if its object list is **exactly equal** to the SELECT filter's list (same IDs, any order, no extras).
 
-| Mode | SELECT | CSV `objects` | Passes? |
-|------|--------|---------------|---------|
-| any  | `[67]` | `[67, 95]` | Yes — 67 found in list |
-| any  | `[67]` | `[95]` | No |
-| exact | `[67, 95]` | `[67, 95]` | Yes — sets equal |
-| exact | `[67, 95]` | `[67, 95, 100]` | No — extra element |
-| exact | `[67]` | `[67, 95]` | No — extra element |
-| either | `[]` | `[]` | Yes — empty list match |
-| either | `[*]` | anything | Yes — wildcard |
+
+| Mode   | SELECT     | CSV `objects`   | Passes?                |
+| ------ | ---------- | --------------- | ---------------------- |
+| any    | `[67]`     | `[67, 95]`      | Yes — 67 found in list |
+| any    | `[67]`     | `[95]`          | No                     |
+| exact  | `[67, 95]` | `[67, 95]`      | Yes — sets equal       |
+| exact  | `[67, 95]` | `[67, 95, 100]` | No — extra element     |
+| exact  | `[67]`     | `[67, 95]`      | No — extra element     |
+| either | `[]`       | `[]`            | Yes — empty list match |
+| either | `[*]`      | anything        | Yes — wildcard         |
+
 
 **SELECT** = Defines one filter option. Format: `SELECT = [obj1, obj2, ...], weight`
+
 - The object list is matched against the parsed `objects` column values using the mode set by `SELECT_EXACT_MATCH` (see above).
 - Use `[*]` to allow any video regardless of its object list (equivalent to no filter).
 - Use `[]` (empty brackets) to select only videos whose object list is empty (i.e. no detected objects).
@@ -223,9 +240,8 @@ Arrangement generation happens with a variety of paramaters that dictate how lon
 Arrangements decide which videos to pick based on two factors, scale (area in pixels), and weight (calculated per aspect ratio by how many videos in the videos folder have that specific aspect ratio). 
 If there are 20 videos with a 2x3 aspect ratio and 5 videos with a 1x1 aspect ratio, the 2x3 aspect ratio will have a weight 4x what the 1x1 aspect ratio will have. Both weight and scale are used to decide which videos are placed in arrangements.
 
-
-
 ### ARRANGEMENTS ATTEMPTS
+
 Arrangement generation happens in a phase based system, where the program attempts to generate a certain amount of arrangements, and if they are considered valid (we'll get to that in the next step) it saves them. If it creates creates too many duplicates and stalls out it will move to the next phase, which uses a seeding system to try to fill in some different spaces. 
 
 Attempts go like this -> 
@@ -236,9 +252,6 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 **LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
 **MAX_ITEMS** = Maximum number of total video slots allowed in a layout. Any generated or cached arrangement whose total item count (top-level slots plus any nested sub-items) exceeds this value is discarded. Set to `0` to disable the limit and allow layouts of any size. (default = 0)
 
-
-
-
 ### ARRANGEMENTS FINGERPRINT
 
 When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
@@ -247,11 +260,9 @@ This is the correct behavior for a live installation, but it can be disruptive d
 
 **IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current `BOX_WIDTH`, `BOX_HEIGHT`, and `NESTING_LAYERS` values. If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
 
-
-
 ### ARRANGEMENTS ITEM PLACEMENT
 
-Arrangement generation uses a customized bin packing algorithm. For some general info on bin packing algorithms read here: https://en.wikipedia.org/wiki/Bin_packing_problem 
+Arrangement generation uses a customized bin packing algorithm. For some general info on bin packing algorithms read here: [https://en.wikipedia.org/wiki/Bin_packing_problem](https://en.wikipedia.org/wiki/Bin_packing_problem) 
 The algorithm starts by filling as much space as possible with the first video, creating a large video that typically goes the entire height of the window. It then fills in around this large item. 
 
 Back to the two factors of arrangement video picking (area and weight), these have the most impact on the first item placement, but are used in placing every item. The next two parameters are used to control how weight vs area are prioritized. Each video is given a score based on its area and weight, and the score decides which video is placed.
@@ -264,6 +275,7 @@ From that score, the algorithm will pick one out of the top candidates for the v
 **PLACEMENT_AREA_EXPONENT** = This is the exponent that is used in the weighting equation, >1 favor larger area fills with less wieght (defualt 1.4) 
 **PLACEMENT_TOP_K** = Number of candidates algorithm will pick from for item placement, vastly increases number of arrangments (default = 3) 
 **WEIGHT_NORMALIZATION** = Controls how video counts per aspect ratio are converted into placement weights. Options: [**raw**, **sqrt**, **equal**] (default = sqrt)
+
 - **raw**: weight equals the raw video count. A ratio with 177 videos has 44x the weight of one with 4 videos. Use this only when your video counts are already balanced across ratios, otherwise the packer will overwhelmingly favor the most common ratio and struggle to generate valid arrangements.
 - **sqrt**: weight equals the square root of the video count (e.g. 177 → 13.3, 4 → 2.0). Ratios with more videos are still preferred, but the imbalance is compressed enough that all ratios meaningfully compete during placement.
 - **equal**: all ratios get weight 1.0 regardless of video count. Use this to treat all aspect ratios as equally likely candidates during layout generation.
@@ -279,14 +291,17 @@ For example, if a 1:1 video is placed into a 100x110px slot and `expandBottom = 
 Expand values are defined per **aspect ratio range** using `EXPAND_RANGE`, so portrait videos, square videos, and landscape videos can all have different tolerances. A fallback applies to any ratio not matched by a range.
 
 **EXPAND_RANGE** = Defines directional expand allowances for a range of aspect ratios. Format:
+
 ```
 EXPAND_RANGE = [minRatio, maxRatio, expandTop, expandRight, expandBottom, expandLeft]
 ```
+
 - `minRatio` / `maxRatio`: the inclusive aspect ratio range (width/height, e.g. 0.667 = portrait, 1.5 = landscape)
 - `expandTop` / `expandRight` / `expandBottom` / `expandLeft`: how much each edge is allowed to stretch as a fraction of the item's size (e.g. 0.1 = up to 10%)
 - Multiple `EXPAND_RANGE` lines are allowed. **First match wins.** If two ranges overlap, a warning is logged.
 
 **EXPAND_FALLBACK** = Directional expand values used for any ratio not matched by any `EXPAND_RANGE`. Format:
+
 ```
 EXPAND_FALLBACK = [top, right, bottom, left]
 ```
@@ -297,8 +312,6 @@ EXPAND_FALLBACK = [top, right, bottom, left]
 
 **PACKING_STOP_AREA** = The bin packing algorithm stops adding items to the layout when the largest item that could still fit would be smaller than this area (pixels²). This prevents the layout from being filled with extremely tiny video slots. For example, at `40000` the algorithm stops when no item larger than roughly 200×200px can fit. (default = 40000)
 
-
-
 ### NESTING
 
 Nesting allows a single large slot in the layout to contain its own inner sub-layout of multiple smaller videos, creating a picture-in-picture effect. Nesting uses the same bin-packing algorithm recursively and is separate from the Break Box system below.
@@ -306,8 +319,6 @@ Nesting allows a single large slot in the layout to contain its own inner sub-la
 **NESTING_LAYERS** = Number of recursive nesting layers to attempt. `0` = no nesting (each slot maps to exactly one video). `1` = after the main layout is placed, the algorithm tries to subdivide one of the larger items into its own tiled inner arrangement of multiple videos. (default = 0)
 
 **NESTED_MIN_SPACE_THRESHOLD** = When nesting is active, this is the minimum area (pixels²) the nested packing algorithm uses as its stopping condition — analogous to `PACKING_STOP_AREA` for the inner layout. Higher values produce fewer, larger items inside the nested sub-layout. (default = 0)
-
-
 
 ### BREAK BOX
 
@@ -326,4 +337,3 @@ The Break Box system allows a single large slot to be replaced during layout gen
 **BREAK_BOX_FILL_ATTEMPTS** = How many times the algorithm will try to fill the break box at the current target item count before stepping down by one and trying with one fewer sub-item. If no valid arrangement is found at count N after this many tries it attempts N-1, then N-2, and so on down to `BREAK_BOX_MIN_ITEMS`. (default = 5)
 
 **BREAK_BOX_COVERAGE_THRESHOLD** = The fraction (0.0–1.0) of the original item's area that must be collectively covered by the sub-items for the break to be accepted. `0.99` means the sub-items must fill at least 99% of the original slot's area — essentially no visible gaps allowed inside the break box. (default = 0.99)
-

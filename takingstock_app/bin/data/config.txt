@@ -6,12 +6,13 @@ BOX_WIDTH = 800   # render canvas width; use combined width of all projectors (s
 BOX_HEIGHT = 800  # render canvas height; use shared height of all projectors
 
 OUTPUT_MODE = syphon  # window = span displays from this app; syphon = publish via Syphon for QLab
-SYPHON_NAME = Taking Stock  # name of the Syphon server (QLab Syphon input)
+SYPHON_NAME = Taking_Stock  # name of the Syphon server (QLab Syphon input)
 PREVIEW_WIDTH = 100   # OF preview window width when OUTPUT_MODE = syphon
 PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
 
-# Window placement applies to the spanning window (OUTPUT_MODE = window) or the preview (OUTPUT_MODE = syphon).
 # NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
+# Window placement applies to the spanning window (OUTPUT_MODE = window) or the preview (OUTPUT_MODE = syphon).
+#Not important if using syphon mode, exclusively for preview window placement in syphon mode.
 # Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
 WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
 WINDOW_Y = 0   # y offset on desktop (usually 0)
@@ -27,7 +28,7 @@ VIDEO_LOOP = true  # loop videos or swap to new video when finished
 CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
 CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
-SCALE_SELECT = false  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
+SCALE_SELECT = true  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
 
 
 ############## CONTROLS ################
@@ -118,6 +119,6 @@ MAX_ITEMS = 5                # reject layouts with more than this many total ite
 
 
 ############# SECONDARY WINDOW ######################
-SECONDARY_WINDOW_ENABLED = True 
+SECONDARY_WINDOW_ENABLED = False 
 SECONDARY_WINDOW_WIDTH = 400
 SECONDARY_WINDOW_HEIGHT = 300
