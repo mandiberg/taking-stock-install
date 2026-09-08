@@ -5,6 +5,7 @@
 #include "VideoAssetPool.h"
 #include "BinSorterRenderer.h"
 #include "ConfigLoader.h"
+#include "ofxSyphonServer.h"
 #include <memory>
 #include "CoreAudioPlayer.h"
 
@@ -22,6 +23,8 @@ public:
     bool isKeyVideoEnabled() const { return config.keyVideo; }
 
 private:
+    void drawComposition(int w, int h);
+    void publishAndPreviewSyphon();
     // ofSoundPlayer audioPlayer;
     CoreAudioPlayer audioPlayer;
     void pickSelectAndApplyFilter();
@@ -43,7 +46,8 @@ private:
     std::unique_ptr<BinSorter> binSorter;
     VideoAssetPool videoPool;
     BinSorterRenderer renderer;
-    ofFbo exportFbo;
+    ofFbo outputFbo;
+    ofxSyphonServer syphonServer;
     bool exportRequested = false;
     std::vector<Arrangement> arrangements;
     bool arrangementPickRequested = false;

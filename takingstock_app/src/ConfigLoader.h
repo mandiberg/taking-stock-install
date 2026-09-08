@@ -7,6 +7,7 @@
 
 enum class TransitionType { Jumpcut, Fade, JumpcutToBlack };
 enum class WeightNormalization { Raw, Sqrt, Equal };
+enum class OutputMode { Window, Syphon };
 
 struct SelectOption {
     std::vector<std::string> objects;  // ["*"] = any object; empty with matchEmptyList=false = wildcard
@@ -75,6 +76,10 @@ struct BinSorterConfig {
     int  windowX = 0;                    // X position of the main window on the desktop (use to offset into a second monitor)
     int  windowY = 0;                    // Y position of the main window on the desktop
     bool windowDecorated = false;        // when false, window has no title bar or borders (recommended for installation)
+    OutputMode outputMode = OutputMode::Window;  // window = span displays; syphon = FBO + Syphon + preview
+    std::string syphonName = "Taking Stock";     // Syphon server name visible to QLab
+    int  previewWidth = 400;             // OF preview window width when outputMode is Syphon
+    int  previewHeight = 400;            // OF preview window height when outputMode is Syphon
 };
 
 class ConfigLoader {

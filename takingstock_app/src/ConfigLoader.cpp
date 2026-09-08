@@ -158,6 +158,22 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.windowDecorated = (v == "1" || v == "true" || v == "yes");
         return;
     }
+    if (key == "OUTPUT_MODE") {
+        std::string v = value;
+        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+        if (v == "syphon") {
+            config.outputMode = OutputMode::Syphon;
+        } else if (v == "window") {
+            config.outputMode = OutputMode::Window;
+        } else {
+            ofLogWarning("ConfigLoader") << "Unknown OUTPUT_MODE '" << value << "', falling back to window";
+            config.outputMode = OutputMode::Window;
+        }
+        return;
+    }
+    if (key == "SYPHON_NAME") { config.syphonName = value; return; }
+    if (key == "PREVIEW_WIDTH") { config.previewWidth = std::stoi(value); return; }
+    if (key == "PREVIEW_HEIGHT") { config.previewHeight = std::stoi(value); return; }
     if (key == "IGNORE_FINGERPRINT") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);

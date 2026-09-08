@@ -1,11 +1,18 @@
 # config.txt
 
-####### WINDOW SIZE & POSITION #########
-# NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
-# Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
+####### OUTPUT #########
+# Canvas size is the master composition (arrangements, FBO, Syphon). Independent of how it is displayed.
 BOX_WIDTH = 800   # render canvas width; use combined width of all projectors (see configREADME)
 BOX_HEIGHT = 800  # render canvas height; use shared height of all projectors
 
+OUTPUT_MODE = syphon  # window = span displays from this app; syphon = publish via Syphon for QLab
+SYPHON_NAME = Taking Stock  # name of the Syphon server (QLab Syphon input)
+PREVIEW_WIDTH = 100   # OF preview window width when OUTPUT_MODE = syphon
+PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
+
+# Window placement applies to the spanning window (OUTPUT_MODE = window) or the preview (OUTPUT_MODE = syphon).
+# NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
+# Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
 WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
 WINDOW_Y = 0   # y offset on desktop (usually 0)
 WINDOW_DECORATED = false  # false = borderless/installation, true = title bar/debug
@@ -63,7 +70,7 @@ KEY_VIDEO_MIN_LENGTH = 8    # min seconds for a video to qualify as key video (0
 ############# SELECT MODE ######################
 # Select mode: filter videos by CSV object column when loading arrangements
 # Usage: SELECT = [obj1, obj2], weight   # [*] = any object, [] = empty object list
-SELECT_MODE = true
+SELECT_MODE = false
 SELECT_EXACT_MATCH = false  # false = any object in CSV list matches; true = CSV list must exactly equal SELECT list
 #SELECT = [*], 0.3
 SELECT = [86], 0.3

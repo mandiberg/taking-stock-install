@@ -4,32 +4,44 @@
 
 The config.txt file is where all config of the takingstock_app happens. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does.
 
-## WINDOW
+## OUTPUT
 
-`BOX_WIDTH` and `BOX_HEIGHT` define both the render canvas size and the OS window size. The window is created borderless and non-resizable at startup — resizing it after launch is not supported.
+`BOX_WIDTH` and `BOX_HEIGHT` define the **master composition canvas** — the resolution used for arrangement generation, the offscreen FBO, and (in Syphon mode) the image published to QLab. They are not the same thing as the OS window size once `OUTPUT_MODE = syphon`.
 
-**BOX_WIDTH** = Width in pixels of the render canvas and OS window. For a single display set this to its native width. For multiple side-by-side projectors or monitors, set this to the **combined** width of all displays (e.g. two 1920-wide projectors = `3840`). (default = 1920)
+**BOX_WIDTH** = Width in pixels of the render canvas. For a single display set this to its native width. For multiple side-by-side projectors or monitors, set this to the **combined** width of all displays (e.g. two 1920-wide projectors = `3840`). This is the master image QLab will receive in Syphon mode. (default = 1920)
 
-**BOX_HEIGHT** = Height in pixels of the render canvas and OS window. For a single display set this to its native height. For side-by-side projectors that share the same height, this is just that shared height (e.g. `1080` for standard 1080p projectors). (default = 1080)
+**BOX_HEIGHT** = Height in pixels of the render canvas. For a single display set this to its native height. For side-by-side projectors that share the same height, this is just that shared height (e.g. `1080` for standard 1080p projectors). (default = 1080)
 
-**WINDOW_X** = X position of the window's top-left corner on the macOS extended desktop, in pixels. In **System Settings → Displays → Arrange**, the primary display's top-left is always `(0, 0)`. A second monitor arranged to the **right** of the primary starts at `x = <primary width>` (e.g. `1920` for a 1920-wide primary). A second monitor arranged to the **left** starts at a negative value (e.g. `-1920`). Set to `0` to open on the primary display. (default = 0)
+**OUTPUT_MODE** = Options: [`window`, `syphon`] Controls how the master canvas is published. Unknown values log a warning and fall back to `window`. (default = window)
+
+- **window** — the app opens an OS window at `BOX_WIDTH` × `BOX_HEIGHT` and draws the composition directly into it. This is the original spanning mode: size the window to the combined projector resolution, position it with `WINDOW_X` / `WINDOW_Y`, and macOS routes each pixel region to each display. No other software is required.
+- **syphon** — the composition is rendered offscreen at `BOX_WIDTH` × `BOX_HEIGHT` and published as a single Syphon server. QLab (or any Syphon client) should take that one feed and split / warp / edge-blend it onto the projector stages. The OF window is only a local preview at `PREVIEW_WIDTH` × `PREVIEW_HEIGHT`; it is not the production output.
+
+**SYPHON_NAME** = The name of the Syphon server this app publishes. In QLab, add a Syphon input (or a camera/Syphon patch) and select this name. (default = Taking Stock)
+
+**PREVIEW_WIDTH** = Width in pixels of the OF preview window when `OUTPUT_MODE = syphon`. Ignored in window mode. The preview letterboxes the master canvas to fit. Match the canvas aspect ratio to avoid large black bars (e.g. a 3840×1080 canvas previews well at `800` × `225`). (default = 400)
+
+**PREVIEW_HEIGHT** = Height in pixels of the OF preview window when `OUTPUT_MODE = syphon`. Ignored in window mode. (default = 400)
+
+**WINDOW_X** = X position of the window's top-left corner on the macOS extended desktop, in pixels. Applies to the spanning window in `window` mode and to the preview window in `syphon` mode. In **System Settings → Displays → Arrange**, the primary display's top-left is always `(0, 0)`. A second monitor arranged to the **right** of the primary starts at `x = <primary width>` (e.g. `1920` for a 1920-wide primary). A second monitor arranged to the **left** starts at a negative value (e.g. `-1920`). Set to `0` to open on the primary display. (default = 0)
 
 **WINDOW_Y** = Y position of the window's top-left corner on the macOS extended desktop. Usually `0` unless monitors are stacked vertically or offset. (default = 0)
 
-**WINDOW_DECORATED** = Options: [true, false] When `false`, the window opens without a title bar or borders — the correct mode for installation. When `true`, the window has a normal macOS title bar, which is useful for development and debugging. (default = false)
+**WINDOW_DECORATED** = Options: [true, false] When `false`, the window opens without a title bar or borders — the correct mode for installation spanning. When `true`, the window has a normal macOS title bar, which is useful for development, debugging, and for moving the Syphon preview. (default = false)
 
-### Multi-projector setup
+### Window mode: multi-projector spanning
 
 macOS treats multiple displays in Extended mode as one continuous coordinate space. A single window can span all of them by sizing it to the combined resolution and positioning it at the correct desktop offset. No secondary software is needed.
 
 > **Required macOS setting:** Multi-display spanning only works when **"Displays have separate Spaces"** is turned **off**. When it is on, macOS clips windows to whichever display they start on and prevents them from spanning to adjacent displays. To turn it off: **System Settings → Desktop & Dock → scroll to the bottom → toggle off "Displays have separate Spaces"**. A log out and back in is required for the change to take effect.
 
 **Steps:**
-1. Turn off **"Displays have separate Spaces"** as described above and log out/in.
-2. In **System Settings → Displays → Arrange**, set all displays to **Extended** (not Mirrored). Note which side each display is on relative to the primary.
-3. Set `BOX_WIDTH` to the total combined width and `BOX_HEIGHT` to the shared height.
-4. Set `WINDOW_X` to the x offset where the leftmost display in your span begins (usually `0`).
-5. Rebuild and run — macOS automatically routes the correct pixel region to each physical output.
+1. Set `OUTPUT_MODE = window`.
+2. Turn off **"Displays have separate Spaces"** as described above and log out/in.
+3. In **System Settings → Displays → Arrange**, set all displays to **Extended** (not Mirrored). Note which side each display is on relative to the primary.
+4. Set `BOX_WIDTH` to the total combined width and `BOX_HEIGHT` to the shared height.
+5. Set `WINDOW_X` to the x offset where the leftmost display in your span begins (usually `0`).
+6. Rebuild and run — macOS automatically routes the correct pixel region to each physical output.
 
 **Common configurations:**
 
@@ -39,6 +51,21 @@ macOS treats multiple displays in Extended mode as one continuous coordinate spa
 | Two 1920×1080, second to the right | 3840 | 1080 | 0 | 0 |
 | Two 1920×1080, second to the left | 3840 | 1080 | -1920 | 0 |
 | Three 1920×1080, primary in center | 5760 | 1080 | -1920 | 0 |
+
+### Syphon mode: QLab / projection mapping
+
+Use this when another application (typically QLab) owns the projector stages, edge blend, overlap, and masks.
+
+**Steps:**
+1. Set `OUTPUT_MODE = syphon`. Keep `BOX_WIDTH` / `BOX_HEIGHT` at the master image size (usually the combined content resolution). Do not bake projector overlap into the OF canvas — QLab handles blend and correction.
+2. Set `SYPHON_NAME` to a stable name and note it.
+3. Set `PREVIEW_WIDTH` / `PREVIEW_HEIGHT` to a small window you can keep on the operator display. `WINDOW_X` / `WINDOW_Y` / `WINDOW_DECORATED` place that preview.
+4. Rebuild (`make`) and run. The app logs the Syphon server name and canvas size at launch.
+5. In QLab, add one Syphon source matching `SYPHON_NAME`. Split that single image into two (or more) stages for the projectors. Edge blend, overlap, and screen-specific masks stay in QLab.
+
+The OF window titled **Taking Stock - Preview** is a scaled local view of the same master frame that Syphon publishes. Closing or covering it does not stop the Syphon feed; the feed is rendered offscreen.
+
+The window is created non-resizable at startup. Resizing it after launch is not supported.
 
 
 

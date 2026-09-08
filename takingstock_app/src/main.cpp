@@ -8,15 +8,22 @@
 
 int main() {
     // Load config before creating any window so we can use BOX_WIDTH/BOX_HEIGHT,
-    // WINDOW_X/WINDOW_Y, and WINDOW_DECORATED to configure the render window.
+    // OUTPUT_MODE, WINDOW_X/WINDOW_Y, and WINDOW_DECORATED to configure the window.
     BinSorterConfig cfg;
     ConfigLoader::load(ofToDataPath("config.txt", true), cfg);
 
+    const bool syphonMode = (cfg.outputMode == OutputMode::Syphon);
+    const int winW = syphonMode ? cfg.previewWidth : cfg.boxWidth;
+    const int winH = syphonMode ? cfg.previewHeight : cfg.boxHeight;
+
     ofGLFWWindowSettings mainSettings;
-    mainSettings.setSize(cfg.boxWidth, cfg.boxHeight);
+    mainSettings.setSize(winW, winH);
     mainSettings.setPosition(glm::vec2(cfg.windowX, cfg.windowY));
     mainSettings.decorated = cfg.windowDecorated;
     mainSettings.resizable = false;
+    if (syphonMode) {
+        mainSettings.title = "Taking Stock - Preview";
+    }
     auto mainWindow = ofCreateWindow(mainSettings);
 
     // Log every monitor's position and resolution so WINDOW_X / WINDOW_Y can be
@@ -34,8 +41,10 @@ int main() {
                                 << "  pos=(" << mx << ", " << my << ")"
                                 << "  size=" << mode->width << "x" << mode->height;
     }
-    ofLogNotice("Displays") << "Window created at (" << cfg.windowX << ", " << cfg.windowY
-                            << ") size=" << cfg.boxWidth << "x" << cfg.boxHeight;
+    ofLogNotice("Displays") << "OUTPUT_MODE=" << (syphonMode ? "syphon" : "window")
+                            << " canvas=" << cfg.boxWidth << "x" << cfg.boxHeight
+                            << " window created at (" << cfg.windowX << ", " << cfg.windowY
+                            << ") size=" << winW << "x" << winH;
 
     auto mainApp = std::make_shared<ofApp>();
     ofRunApp(mainWindow, mainApp);

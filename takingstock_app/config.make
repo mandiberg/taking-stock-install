@@ -61,7 +61,8 @@ OF_ROOT = openframeworks/of_v0.12.1_osx_release
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-# PROJECT_EXCLUSIONS =
+# Don't compile vendored addons as project sources; they are built via addons.make
+PROJECT_EXCLUSIONS += ./addons%
 
 ################################################################################
 # PROJECT LINKER FLAGS
@@ -82,6 +83,10 @@ OF_ROOT = openframeworks/of_v0.12.1_osx_release
 # Basel audio override:
 PROJECT_LDFLAGS += -framework AudioToolbox
 PROJECT_LDFLAGS += -framework CoreAudio
+
+# Copy Syphon.framework into the Release app bundle after OF's afterplatform recreates it.
+# Hardcoded to the Release app name (make / make RunRelease). Debug: takingstock_app_debug.app.
+PROJECT_AFTER += mkdir -p bin/takingstock_app.app/Contents/Frameworks && cp -a addons/ofxSyphon/libs/Syphon/lib/osx/Syphon.framework bin/takingstock_app.app/Contents/Frameworks/
 
 
 ################################################################################

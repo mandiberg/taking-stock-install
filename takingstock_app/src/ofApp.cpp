@@ -342,8 +342,16 @@ void ofApp::setup() {
     renderer.setup(binSorter.get(), &videoPool, config.videoLoop, config.keyVideo, config.keyVideoMinLength);
     startAudioForArrangement(1.f);
 
-    ofSetWindowShape(config.boxWidth, config.boxHeight);
-    exportFbo.allocate(config.boxWidth, config.boxHeight, GL_RGB);
+    if (config.outputMode != OutputMode::Syphon) {
+        ofSetWindowShape(config.boxWidth, config.boxHeight);
+    }
+    outputFbo.allocate(config.boxWidth, config.boxHeight, GL_RGBA);
+    if (config.outputMode == OutputMode::Syphon) {
+        syphonServer.setName(config.syphonName);
+        ofLogNotice("ofApp") << "Syphon server \"" << config.syphonName << "\" publishing "
+            << config.boxWidth << "x" << config.boxHeight
+            << " | preview=" << config.previewWidth << "x" << config.previewHeight;
+    }
 
     if (arrangements.size() > 1) {
         pickSelectAndApplyFilterWithFallback();
@@ -830,13 +838,13 @@ void ofApp::update() {
     renderer.update();
 }
 
-void ofApp::draw() {
+void ofApp::drawComposition(int w, int h) {
     ofBackground(0);
 
     if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack || transitionState == TransitionState::CycleReset) {
         ofFill();
         ofSetColor(0);
-        ofDrawRectangle(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
+        ofDrawRectangle(0, 0, w, h);
     } else if (transitionState == TransitionState::FadeUp) {
         renderer.draw(0, 0);
         float dur = std::max(0.016f, config.transitionDurationFade);
@@ -845,7 +853,7 @@ void ofApp::draw() {
         ofEnableAlphaBlending();
         ofFill();
         ofSetColor(0, 0, 0, (int)((1.f - t) * 255));
-        ofDrawRectangle(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
+        ofDrawRectangle(0, 0, w, h);
         ofDisableAlphaBlending();
     } else {
         renderer.draw(0, 0);
@@ -857,15 +865,49 @@ void ofApp::draw() {
             ofEnableAlphaBlending();
             ofFill();
             ofSetColor(0, 0, 0, (int)(t * 255));
-            ofDrawRectangle(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
+            ofDrawRectangle(0, 0, w, h);
             ofDisableAlphaBlending();
         }
     }
+}
+
+void ofApp::publishAndPreviewSyphon() {
+    outputFbo.begin();
+    ofClear(0, 0, 0, 255);
+    drawComposition(config.boxWidth, config.boxHeight);
+    outputFbo.end();
+
+    ofTexture& tex = outputFbo.getTexture();
+    syphonServer.publishTexture(&tex);
+
+    ofBackground(0);
+    ofSetColor(255);
+    const float winW = ofGetWindowWidth();
+    const float winH = ofGetWindowHeight();
+    const float scale = std::min(winW / (float)config.boxWidth, winH / (float)config.boxHeight);
+    const float w = config.boxWidth * scale;
+    const float h = config.boxHeight * scale;
+    const float x = (winW - w) * 0.5f;
+    const float y = (winH - h) * 0.5f;
+    outputFbo.draw(x, y, w, h);
+}
+
+void ofApp::draw() {
+    if (config.outputMode == OutputMode::Syphon) {
+        publishAndPreviewSyphon();
+    } else {
+        drawComposition(ofGetWindowWidth(), ofGetWindowHeight());
+    }
 
     if (exportRequested) {
-        renderer.drawToFbo(exportFbo);
+        if (config.outputMode != OutputMode::Syphon) {
+            outputFbo.begin();
+            ofClear(0, 0, 0, 255);
+            drawComposition(config.boxWidth, config.boxHeight);
+            outputFbo.end();
+        }
         ofPixels pixels;
-        exportFbo.readToPixels(pixels);
+        outputFbo.readToPixels(pixels);
         ofImage img;
         img.setFromPixels(pixels);
         img.save("bin_sorter_export.png");
