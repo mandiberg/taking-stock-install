@@ -2,29 +2,22 @@
 
 ####### OUTPUT #########
 # Canvas size is the master composition (arrangements, FBO, Syphon). Independent of how it is displayed.
-BOX_WIDTH = 800   # render canvas width; use combined width of all projectors (see configREADME)
-BOX_HEIGHT = 800  # render canvas height; use shared height of all projectors
+BOX_WIDTH = 1800   # render canvas width; use combined width of all projectors (see configREADME)
+BOX_HEIGHT = 250  # render canvas height; use shared height of all projectors
 
-OUTPUT_MODE = syphon  # window = span displays from this app; syphon = publish via Syphon for QLab
+OUTPUT_MODE = window  # window = span displays from this app; syphon = publish via Syphon for QLab
 SYPHON_NAME = Taking_Stock  # name of the Syphon server (QLab Syphon input)
 PREVIEW_WIDTH = 100   # OF preview window width when OUTPUT_MODE = syphon
 PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
-
-# NOTE: multi-display spanning requires "Displays have separate Spaces" to be OFF.
-# Window placement applies to the spanning window (OUTPUT_MODE = window) or the preview (OUTPUT_MODE = syphon).
-#Not important if using syphon mode, exclusively for preview window placement in syphon mode.
-# Turn it off in: System Settings → Desktop & Dock → Displays have separate Spaces (toggle off) → log out and back in.
-WINDOW_X = 0   # x offset on desktop: 0 = primary display, 1920 = second display to right, -1920 = second to left
-WINDOW_Y = 0   # y offset on desktop (usually 0)
-WINDOW_DECORATED = false  # false = borderless/installation, true = title bar/debug
+WINDOW_DECORATED = true  # false = borderless/installation, true = title bar/debug
 
 
-VIDEO_ASSET_PATH = ../../videos
-VIDEOS_CSV_PATH = ../../videos/installation.csv
-ARRANGEMENTS_PATH = ../../arrangements
-AUDIO_PATH = ../../audio
+# Paths are relative to this config folder
+VIDEO_ASSET_PATH = ../videos
+VIDEOS_CSV_PATH = ../videos/installation.csv
+ARRANGEMENTS_PATH = ../arrangements
+AUDIO_PATH = ../audio
 
-VIDEO_LOOP = true  # loop videos or swap to new video when finished
 CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
 CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
@@ -37,12 +30,7 @@ SCALE_SELECT = true  # true = pick smallest scale variant >= slot dimensions; fa
 
 
 ############# LAYOUT TRANSITIONS ######################
-# Transition Type: jumpcut | fade | jumpcut_to_black
-TRANSITION_TYPE = fade
-TRANSITION_DURATION_FADE = 1    # seconds for fade down/up
-TRANSITION_DURATION_JUMP_TO_BLACK = 0.5  # seconds to hold black before swap
-TRANSITION_TIMER_MIN = 5    # min seconds between auto-transitions
-TRANSITION_TIMER_MAX = 13    # max seconds between auto-transitions
+VIDEO_FADE_DURATION = 1  # seconds for visual fade down/up
 
 
 ############# AUDIO ######################
@@ -62,29 +50,24 @@ AUDIO_DEVICE =
 
 
 ############# KEY VIDEO ######################
-# When true, the transition fires when the longest qualifying video ends
-# rather than using the random TRANSITION_TIMER_MIN/MAX range.
-KEY_VIDEO = true
+# The transition fires when the longest qualifying video ends
+# (falls back to a random 5-13s hold if no video qualifies).
 KEY_VIDEO_MIN_LENGTH = 8    # min seconds for a video to qualify as key video (0 = any)
 
 
 ############# SELECT MODE ######################
 # Select mode: filter videos by CSV object column when loading arrangements
 # Usage: SELECT = [obj1, obj2], weight   # [*] = any object, [] = empty object list
-SELECT_MODE = false
-SELECT_EXACT_MATCH = false  # false = any object in CSV list matches; true = CSV list must exactly equal SELECT list
-#SELECT = [*], 0.3
-SELECT = [86], 0.3
-SELECT = [32], 0.3
-SELECT = [1], 0.3
-SELECT = [37], 0.3
-SELECT = [], 0.3
+SELECT_MODE = true
+SELECT = [*], 0.3
+#SELECT = [], 0.3
+#SELECT = [86], 0.3
+#SELECT = [67], 0.3
+#SELECT = [39], 0.3
+#SELECT = [27,32,37,57,59,63,84], 0.3
 
 
 ################ LAYOUT STRUCTURE ########################
-GAP_FILTER_THRESHOLD = 0 #reject layouts where largest empty rect >= this (px²). 0 = only perfect fill
-# Reject layouts where slot drift exceeds both horizontal (expandLeft+expandRight) and vertical (expandTop+expandBottom) tolerances
-ASPECT_EXPAND_FILTER = true
 # Per-ratio-range directional expand: [minRatio, maxRatio, expandTop, expandRight, expandBottom, expandLeft]
 # Ratios are width/height (>1 = landscape, <1 = portrait). First matching range wins.
 EXPAND_RANGE = [0.60, 0.89, 0.025, 0.1, 0.025, 0.1]   # portrait-ish (0.665, 0.748, 0.798, 0.856)
@@ -94,28 +77,25 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 # Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 
-PACKING_STOP_AREA = 40000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+PACKING_STOP_AREA = 3000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
 #PACKING_STOP_AREA = 200000 #Used in 4k
-NESTING_LAYERS = 0
-NESTED_MIN_SPACE_THRESHOLD = 0
-MAIN_BIN_FILL_CHANCE = 0.05
 ITEM_BREAK_SCALE = 0.35 #How big does an object have to be to have a chance to break?
 ITEM_BREAK_CHANCE = 0.5 #what is the chance to break?
 BREAK_BOX_MIN_ITEMS = 1 #How many items to break into?
 BREAK_BOX_MAX_ITEMS = 4 #How many items to break into?
 BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number of items
-BREAK_BOX_COVERAGE_THRESHOLD = 0.99 #What percentage of the original size has to be filled to pass?
-
 
 ################ LAYOUT GENERATION ########################
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
-LAYOUT_PHASES = 5            # reseeded phases to explore different regions (default 5)
+LAYOUT_PHASES = 1            # reseeded phases to explore different regions (default 5)
 PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
-PLACEMENT_TOP_K = 6          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
+PLACEMENT_TOP_K = 11          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
 WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)
-MAX_ITEMS = 5                # reject layouts with more than this many total items (0 = no limit)
+MAX_ITEMS = 12                # reject layouts with more than this many total items (0 = no limit)
+HEAVY_LAYOUT_ITEMS = 8        # a layout with more items than this is "heavy" (0 = disable heavy/light alternation)
+AFTER_HEAVY_MAX_ITEMS = 6     # after a heavy layout, the next must have at most this many items (0 = disable)
 
 
 ############# SECONDARY WINDOW ######################

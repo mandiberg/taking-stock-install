@@ -5,6 +5,8 @@
 #include <vector>
 #include "BinSorter.h"
 
+inline constexpr const char* kConfigPath = "../../config/config.txt";  // relative to bin/data
+
 enum class TransitionType { Jumpcut, Fade, JumpcutToBlack };
 enum class WeightNormalization { Raw, Sqrt, Equal };
 enum class OutputMode { Window, Syphon };
@@ -26,40 +28,46 @@ struct BinSorterConfig {
     std::string videoAssetPath = "videos";
     std::string videosCsvPath = "videos/videos.csv";  // path to videos.csv (replaces folder-based loading)
     std::string arrangementsPath = "arrangements";
-    bool videoLoop = false;  // when false, swap to new video when finished; when true, loop
+    // Hard-coded settings (no longer read from config.txt; see config/configREADME.md "HARD-CODED SETTINGS")
+    static constexpr bool videoLoop = true;                       // videos loop instead of swapping when finished
+    static constexpr TransitionType transitionType = TransitionType::Fade;
+    static constexpr float transitionDurationJumpToBlack = 0.5f;  // unused while transitionType is Fade
+    static constexpr float transitionTimerMin = 5.f;              // fallback hold range when no key video qualifies
+    static constexpr float transitionTimerMax = 13.f;
+    static constexpr bool keyVideo = true;                        // transition fires when the longest qualifying video ends
+    static constexpr bool selectExactMatch = false;               // any overlap between CSV objects and SELECT list passes
+    static constexpr int gapFilterThreshold = 0;                  // only perfect-fill layouts are accepted
+    static constexpr bool aspectExpandFilter = true;              // reject layouts whose slots exceed expand tolerances
+    static constexpr int nestingLayers = 0;                       // nesting disabled
+    static constexpr int nestedMinSpaceThreshold = 0;
+    static constexpr float mainBinFillChance = 0.05f;             // chance the first item may fill the whole canvas
+    static constexpr float breakBoxCoverageThreshold = 0.99f;     // fraction of a broken slot the sub-items must cover
+    static constexpr int windowX = 0;                             // main window opens at the primary display's top-left
+    static constexpr int windowY = 0;
+
     float cycleResetDuration = 5.f;  // seconds to hold black when a cycle reset fires (0 = no hold even if count reached)
     int cycleResetCount = 0;         // trigger a cycle reset every N arrangements shown (0 = disabled)
-    TransitionType transitionType = TransitionType::Jumpcut;
-    float transitionDurationFade = 0.5f;
-    float transitionDurationJumpToBlack = 0.5f;
-    float transitionTimerMin = 30.f;
-    float transitionTimerMax = 90.f;
+    float transitionDurationFade = 1.f;  // VIDEO_FADE_DURATION: seconds for each half of the visual fade
     std::vector<SizeRatio> sizeRatios;
-    int gapFilterThreshold = 1000;   // reject layouts where largest empty rect >= this (px²); 0 = only perfect fill
-    bool aspectExpandFilter = true;  // reject layouts where |calc_ratio - slot_ratio| exceeds expand slack (see SIZE_RATIO expandX/Y)
     int packingStopArea = 1000;     // stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
-    int nestingLayers = 1;
-    int nestedMinSpaceThreshold = 0;
-    float mainBinFillChance = 0.05f;
     float itemBreakScale = 0.45f;
     float itemBreakChance = 0.95f;
     int breakBoxMinItems = 1;
     int breakBoxMaxItems = 4;
     int breakBoxFillAttempts = 5;
-    float breakBoxCoverageThreshold = 0.99f;
     int layoutMaxAttempts = 50000;      // max sort() calls per phase before giving up
     int layoutStaleThreshold = 1500;   // stop phase after this many consecutive duplicates
     int layoutPhases = 5;               // number of reseeded phases to explore different regions
     int maxItems = 0;                   // reject layouts with more total items than this (0 = no limit)
+    int heavyLayoutItems = 6;           // a layout with more items than this is "heavy" (0 = rule disabled)
+    int afterHeavyMaxItems = 5;         // after a heavy layout, the next must have at most this many items (0 = rule disabled)
     std::vector<ExpandRange> expandRanges;                        // per-ratio-range directional expand rules (first match wins)
     std::array<float, 4> expandFallback = {0.1f, 0.1f, 0.1f, 0.1f};  // [top, right, bottom, left] used when no range matches
     float placementAreaExponent = 1.2f;  // score = area^exp * weight; >1 favors larger items
     int placementTopK = 3;              // randomly pick from top K candidates for variation (1=always best)
     WeightNormalization weightNormalization = WeightNormalization::Sqrt;  // how to normalize per-ratio video counts into placement weights
     bool selectMode = false;             // when true, filter videos by CSV object column per SELECT lines
-    bool selectExactMatch = false;       // when true, CSV object list must exactly equal SELECT list; when false, any overlap passes
     std::vector<SelectOption> selectOptions;
-    bool keyVideo = false;               // when true, transition fires when the longest qualifying video ends
     float keyVideoMinLength = 0.f;       // minimum seconds for a video to qualify as the key video
     std::string audioPath = "";          // path to audio directory (files matched by cluster_no substring)
     float audioFadeDuration = 1.f;       // seconds for audio fade in/out (0 = instant cut)
@@ -73,8 +81,6 @@ struct BinSorterConfig {
     int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
     int  secondaryWindowHeight  = 300;   // height of secondary window in pixels
     bool ignoreFingerprint = false;      // when true, skip fingerprint check and reuse any matching arrangement file
-    int  windowX = 0;                    // X position of the main window on the desktop (use to offset into a second monitor)
-    int  windowY = 0;                    // Y position of the main window on the desktop
     bool windowDecorated = false;        // when false, window has no title bar or borders (recommended for installation)
     OutputMode outputMode = OutputMode::Window;  // window = span displays; syphon = FBO + Syphon + preview
     std::string syphonName = "Taking Stock";     // Syphon server name visible to QLab

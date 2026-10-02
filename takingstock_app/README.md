@@ -23,7 +23,7 @@ When executing `make RunRelease`, it may take 1-5 minutes to generate valid arra
 
 ## Config:
 
-This app has many config options in terms of how videos are processed and developed. all config can be altered in the file **bin/data/config.txt** There is additionally a configReadMe.md file in the same folder (**bin/data/**) that explains all of the different options listed in the config.txt file.
+This app has many config options in terms of how videos are processed and developed. all config can be altered in the file **config/config.txt** There is additionally a configREADME.md file in the same folder (**config/**) that explains all of the different options listed in the config.txt file.
 
 ## Arrangements:
 

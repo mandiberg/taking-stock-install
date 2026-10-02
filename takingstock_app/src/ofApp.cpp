@@ -80,8 +80,8 @@ void ofApp::updateAudioFade() {
 
 void ofApp::setup() {
     ofSetBackgroundColor(0, 0, 0);
-    if (!ConfigLoader::load("config.txt", config)) {
-        ofLogError("ofApp") << "Failed to load config.txt, using defaults";
+    if (!ConfigLoader::load(kConfigPath, config)) {
+        ofLogError("ofApp") << "Failed to load " << kConfigPath << ", using defaults";
     }
 
     audioPlayer.setSurroundEnabled(config.audioSurround);
@@ -702,18 +702,21 @@ size_t ofApp::pickNextArrangementIndex() {
 
     size_t pick = doOnePick();
 
-    // If the current arrangement has more than 6 items, the next must have at most 5
-    // to prevent system overwhelm at 4K video resolution.
-    if (hasCurrentLayout && currentLayoutIdx < arrangements.size()) {
+    // If the current arrangement is heavy (more than HEAVY_LAYOUT_ITEMS), the next must have
+    // at most AFTER_HEAVY_MAX_ITEMS to prevent system overwhelm at 4K video resolution.
+    const int heavyItems = config.heavyLayoutItems;
+    const int afterHeavyMax = config.afterHeavyMaxItems;
+    if (heavyItems > 0 && afterHeavyMax > 0 &&
+        hasCurrentLayout && currentLayoutIdx < arrangements.size()) {
         int currentItems = countArrangementItems(arrangements[currentLayoutIdx]);
-        if (currentItems > 6) {
+        if (currentItems > heavyItems) {
             const int maxRerolls = 50;
             for (int attempt = 0; attempt < maxRerolls; ++attempt) {
                 int pickedItems = countArrangementItems(arrangements[pick]);
-                if (pickedItems <= 5) break;
+                if (pickedItems <= afterHeavyMax) break;
                 ofLogNotice("ofApp") << "Current arrangement has " << currentItems
-                    << " items (>6); re-rolling next arrangement (picked " << pickedItems
-                    << " items, limit is 5)";
+                    << " items (>" << heavyItems << "); re-rolling next arrangement (picked " << pickedItems
+                    << " items, limit is " << afterHeavyMax << ")";
                 pick = doOnePick();
             }
         }
@@ -838,25 +841,25 @@ void ofApp::update() {
     renderer.update();
 }
 
-void ofApp::drawComposition(int w, int h) {
+void ofApp::drawComposition(int w, int h, float x, float y) {
     ofBackground(0);
 
     if (transitionState == TransitionState::HoldBlack || transitionState == TransitionState::FadeHoldBlack || transitionState == TransitionState::CycleReset) {
         ofFill();
         ofSetColor(0);
-        ofDrawRectangle(0, 0, w, h);
+        ofDrawRectangle(x, y, w, h);
     } else if (transitionState == TransitionState::FadeUp) {
-        renderer.draw(0, 0);
+        renderer.draw(x, y);
         float dur = std::max(0.016f, config.transitionDurationFade);
         float elapsed = ofGetElapsedTimef() - transitionStartTime;
         float t = std::min(1.f, elapsed / dur);
         ofEnableAlphaBlending();
         ofFill();
         ofSetColor(0, 0, 0, (int)((1.f - t) * 255));
-        ofDrawRectangle(0, 0, w, h);
+        ofDrawRectangle(x, y, w, h);
         ofDisableAlphaBlending();
     } else {
-        renderer.draw(0, 0);
+        renderer.draw(x, y);
 
         if (transitionState == TransitionState::FadeDown) {
             float dur = std::max(0.016f, config.transitionDurationFade);
@@ -865,7 +868,7 @@ void ofApp::drawComposition(int w, int h) {
             ofEnableAlphaBlending();
             ofFill();
             ofSetColor(0, 0, 0, (int)(t * 255));
-            ofDrawRectangle(0, 0, w, h);
+            ofDrawRectangle(x, y, w, h);
             ofDisableAlphaBlending();
         }
     }
@@ -896,7 +899,10 @@ void ofApp::draw() {
     if (config.outputMode == OutputMode::Syphon) {
         publishAndPreviewSyphon();
     } else {
-        drawComposition(ofGetWindowWidth(), ofGetWindowHeight());
+        // Canvas is drawn 1:1 at BOX_WIDTH x BOX_HEIGHT, centered; a resized window only adds black borders.
+        const float x = std::floor((ofGetWindowWidth()  - config.boxWidth)  * 0.5f);
+        const float y = std::floor((ofGetWindowHeight() - config.boxHeight) * 0.5f);
+        drawComposition(config.boxWidth, config.boxHeight, x, y);
     }
 
     if (exportRequested) {

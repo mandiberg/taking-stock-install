@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 
 std::string ConfigLoader::trim(const std::string& s) {
     size_t start = s.find_first_not_of(" \t\r\n");
@@ -28,53 +29,21 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "VIDEO_ASSET_PATH") { config.videoAssetPath = value; return; }
     if (key == "VIDEOS_CSV_PATH") { config.videosCsvPath = value; return; }
     if (key == "ARRANGEMENTS_PATH") { config.arrangementsPath = value; return; }
-    if (key == "VIDEO_LOOP") {
-        std::string v = value;
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        config.videoLoop = (v == "1" || v == "true" || v == "yes");
-        return;
-    }
     if (key == "CYCLE_RESET_DURATION") { config.cycleResetDuration = std::stof(value); return; }
     if (key == "CYCLE_RESET_COUNT")    { config.cycleResetCount    = std::stoi(value); return; }
-    if (key == "TRANSITION_TYPE") {
-        std::string v = value;
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        if (v == "fade") config.transitionType = TransitionType::Fade;
-        else if (v == "jumpcut_to_black") config.transitionType = TransitionType::JumpcutToBlack;
-        else config.transitionType = TransitionType::Jumpcut;
-        return;
-    }
-    if (key == "TRANSITION_DURATION_FADE") { config.transitionDurationFade = std::stof(value); return; }
-    if (key == "TRANSITION_DURATION_JUMP_TO_BLACK") { config.transitionDurationJumpToBlack = std::stof(value); return; }
-    if (key == "TRANSITION_TIMER_MIN") { config.transitionTimerMin = std::stof(value); return; }
-    if (key == "TRANSITION_TIMER_MAX") { config.transitionTimerMax = std::stof(value); return; }
-    if (key == "MIN_SPACE_THRESHOLD") {
-        int v = std::stoi(value);
-        config.gapFilterThreshold = v;
-        config.packingStopArea = v;
-        return;
-    }
-    if (key == "GAP_FILTER_THRESHOLD") { config.gapFilterThreshold = std::stoi(value); return; }
-    if (key == "ASPECT_EXPAND_FILTER") {
-        std::string v = value;
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        config.aspectExpandFilter = (v == "1" || v == "true" || v == "yes");
-        return;
-    }
+    if (key == "VIDEO_FADE_DURATION") { config.transitionDurationFade = std::stof(value); return; }
     if (key == "PACKING_STOP_AREA") { config.packingStopArea = std::stoi(value); return; }
-    if (key == "NESTING_LAYERS") { config.nestingLayers = std::stoi(value); return; }
-    if (key == "NESTED_MIN_SPACE_THRESHOLD") { config.nestedMinSpaceThreshold = std::stoi(value); return; }
-    if (key == "MAIN_BIN_FILL_CHANCE") { config.mainBinFillChance = std::stof(value); return; }
     if (key == "ITEM_BREAK_SCALE") { config.itemBreakScale = std::stof(value); return; }
     if (key == "ITEM_BREAK_CHANCE") { config.itemBreakChance = std::stof(value); return; }
     if (key == "BREAK_BOX_MIN_ITEMS") { config.breakBoxMinItems = std::stoi(value); return; }
     if (key == "BREAK_BOX_MAX_ITEMS") { config.breakBoxMaxItems = std::stoi(value); return; }
     if (key == "BREAK_BOX_FILL_ATTEMPTS") { config.breakBoxFillAttempts = std::stoi(value); return; }
-    if (key == "BREAK_BOX_COVERAGE_THRESHOLD") { config.breakBoxCoverageThreshold = std::stof(value); return; }
     if (key == "LAYOUT_MAX_ATTEMPTS") { config.layoutMaxAttempts = std::stoi(value); return; }
     if (key == "LAYOUT_STALE_THRESHOLD") { config.layoutStaleThreshold = std::stoi(value); return; }
     if (key == "LAYOUT_PHASES") { config.layoutPhases = std::stoi(value); return; }
     if (key == "MAX_ITEMS") { config.maxItems = std::stoi(value); return; }
+    if (key == "HEAVY_LAYOUT_ITEMS") { config.heavyLayoutItems = std::stoi(value); return; }
+    if (key == "AFTER_HEAVY_MAX_ITEMS") { config.afterHeavyMaxItems = std::stoi(value); return; }
     if (key == "PLACEMENT_AREA_EXPONENT") { config.placementAreaExponent = std::stof(value); return; }
     if (key == "PLACEMENT_TOP_K") { config.placementTopK = std::stoi(value); return; }
     if (key == "WEIGHT_NORMALIZATION") {
@@ -89,18 +58,6 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
         config.selectMode = (v == "1" || v == "true" || v == "yes");
-        return;
-    }
-    if (key == "SELECT_EXACT_MATCH") {
-        std::string v = value;
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        config.selectExactMatch = (v == "1" || v == "true" || v == "yes");
-        return;
-    }
-    if (key == "KEY_VIDEO") {
-        std::string v = value;
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        config.keyVideo = (v == "1" || v == "true" || v == "yes");
         return;
     }
     if (key == "KEY_VIDEO_MIN_LENGTH") { config.keyVideoMinLength = std::stof(value); return; }
@@ -150,8 +107,6 @@ void ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     }
     if (key == "SECONDARY_WINDOW_WIDTH")  { config.secondaryWindowWidth  = std::stoi(value); return; }
     if (key == "SECONDARY_WINDOW_HEIGHT") { config.secondaryWindowHeight = std::stoi(value); return; }
-    if (key == "WINDOW_X") { config.windowX = std::stoi(value); return; }
-    if (key == "WINDOW_Y") { config.windowY = std::stoi(value); return; }
     if (key == "WINDOW_DECORATED") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);
@@ -265,6 +220,13 @@ bool ConfigLoader::load(const std::string& path, BinSorterConfig& out) {
         line = trim(line);
         if (line.empty() || line[0] == '#') continue;
         parseLine(line, out);
+    }
+
+    // Paths in config.txt are relative to the config file's own folder
+    const std::filesystem::path configDir = std::filesystem::path(fullPath).parent_path();
+    for (std::string* p : {&out.videoAssetPath, &out.videosCsvPath, &out.arrangementsPath, &out.audioPath}) {
+        if (!p->empty() && std::filesystem::path(*p).is_relative())
+            *p = (configDir / *p).lexically_normal().string();
     }
 
     // Warn about overlapping EXPAND_RANGEs (first match wins, but overlap is likely a mistake)

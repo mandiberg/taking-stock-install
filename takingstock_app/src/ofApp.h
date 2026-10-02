@@ -23,7 +23,7 @@ public:
     bool isKeyVideoEnabled() const { return config.keyVideo; }
 
 private:
-    void drawComposition(int w, int h);
+    void drawComposition(int w, int h, float x = 0.f, float y = 0.f);
     void publishAndPreviewSyphon();
     // ofSoundPlayer audioPlayer;
     CoreAudioPlayer audioPlayer;
