@@ -4,15 +4,16 @@
 
 ############# WINDOW CONFIG ######################
 # canonical_configs/ = shipped templates, custom_configs/ = user-made variations
-WINDOW_CONFIG = canonical_configs/window_config.txt
+WINDOW_CONFIG = canonical_configs/window_config_16_9.txt
 
 
 ####### OUTPUT #########
 OUTPUT_MODE = window  # window = span displays from this app; syphon = publish via Syphon for QLab
+WINDOW_DECORATED = true  # false = borderless/installation, true = title bar/debug
 SYPHON_NAME = Taking_Stock  # name of the Syphon server (QLab Syphon input)
 PREVIEW_WIDTH = 100   # OF preview window width when OUTPUT_MODE = syphon
 PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
-WINDOW_DECORATED = true  # false = borderless/installation, true = title bar/debug
+
 
 
 ############# PATHS ######################
@@ -21,8 +22,12 @@ VIDEOS_CSV_PATH = ../videos/installation.csv
 ARRANGEMENTS_PATH = ../arrangements
 AUDIO_PATH = ../audio
 
+########### CYCLE INFO #############
 CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
 CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
+
+
+######## VIDEO SELECTION ######### 
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
 SCALE_SELECT = true  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
 
