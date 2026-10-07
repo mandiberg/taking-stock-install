@@ -93,6 +93,7 @@ void ofApp::setup() {
 
     videoPool.minDuration = config.minVideoLength;
     videoPool.scaleSelectEnabled = config.scaleSelectEnabled;
+    videoPool.ratioRoundDecimals = config.ratioRoundDecimals;
     if (!videoPool.loadFromCsv(config.videosCsvPath)) {
         ofLogWarning("ofApp") << "No video assets found (check VIDEOS_CSV_PATH), will use colored rects";
     }
@@ -145,7 +146,8 @@ void ofApp::setup() {
         << ";weightNormalization=" << (int)config.weightNormalization
         << ";layoutMaxAttempts=" << config.layoutMaxAttempts
         << ";layoutStaleThreshold=" << config.layoutStaleThreshold
-        << ";layoutPhases=" << config.layoutPhases;
+        << ";layoutPhases=" << config.layoutPhases
+        << ";ratioRoundDecimals=" << config.ratioRoundDecimals;
     const std::string settingsHash = ArrangementIO::hashSettings(settingsKey.str());
     ofLogNotice("ofApp") << "Generation settings hash " << settingsHash << " (" << settingsKey.str() << ")";
 
@@ -173,10 +175,13 @@ void ofApp::setup() {
     auto ratioCounts = videoPool.getRatioCounts();
     int totalVideos = 0;
     for (auto& [ratio, count] : ratioCounts) totalVideos += count;
-    ofLogNotice("ofApp") << "Videos loaded: " << totalVideos << " total, " << ratioCounts.size() << " ratio(s)";
+    int ratioScale = 1;
+    for (int i = 0; i < config.ratioRoundDecimals; ++i) ratioScale *= 10;
+    ofLogNotice("ofApp") << "Videos loaded: " << totalVideos << " total, " << ratioCounts.size()
+        << " ratio(s), floored to " << config.ratioRoundDecimals << " decimal places";
     for (auto& [ratio, count] : ratioCounts) {
         std::ostringstream oss;
-        oss << std::fixed << std::setprecision(3) << ratio;
+        oss << std::fixed << std::setprecision(config.ratioRoundDecimals) << ratio;
         ofLogNotice("ofApp") << "  ratio " << oss.str() << " -> " << count << " videos";
         float w_norm;
         switch (config.weightNormalization) {
@@ -185,7 +190,7 @@ void ofApp::setup() {
             case WeightNormalization::Sqrt:
             default:                         w_norm = std::sqrt((float)count); break;
         }
-        int w = (int)std::round(ratio * 1000.f);
+        int w = (int)std::floor(static_cast<double>(ratio) * ratioScale + 1e-9);
 
         const auto& fb = config.expandFallback;
         float eTop = fb[0], eRight = fb[1], eBot = fb[2], eLeft = fb[3];
@@ -201,12 +206,12 @@ void ofApp::setup() {
                 << " EXPAND_RANGEs; using first match — consider fixing overlapping ranges";
         }
 
-        config.sizeRatios.push_back(SizeRatio(w, 1000, w_norm, eTop, eRight, eBot, eLeft));
+        config.sizeRatios.push_back(SizeRatio(w, ratioScale, w_norm, eTop, eRight, eBot, eLeft));
     }
     if (config.sizeRatios.empty()) {
         ofLogWarning("ofApp") << "No ratios found in CSV, falling back to 1:1";
         const auto& fb = config.expandFallback;
-        config.sizeRatios.push_back(SizeRatio(1000, 1000, 1.0f, fb[0], fb[1], fb[2], fb[3]));
+        config.sizeRatios.push_back(SizeRatio(ratioScale, ratioScale, 1.0f, fb[0], fb[1], fb[2], fb[3]));
     }
 
     binSorter = std::make_unique<BinSorter>(config.boxWidth, config.boxHeight, config.sizeRatios,

@@ -282,6 +282,26 @@ void VideoAssetPool::setObjectFilter(const SelectOption& opt, bool exactMatch) {
     }
 }
 
+int VideoAssetPool::ratioScale() const {
+    int decimals = ratioRoundDecimals;
+    if (decimals < 0) decimals = 0;
+    if (decimals > 6) decimals = 6;
+    int scale = 1;
+    for (int i = 0; i < decimals; ++i) scale *= 10;
+    return scale;
+}
+
+int VideoAssetPool::ratioBucket(float ratio) const {
+    // Floor, with a tiny nudge so a value that is already exact at this precision
+    // does not drop a bucket because of binary float error.
+    double scaled = static_cast<double>(ratio) * ratioScale();
+    return (int)std::floor(scaled + 1e-9);
+}
+
+bool VideoAssetPool::ratioMatches(float videoRatio, float targetAspect) const {
+    return ratioBucket(videoRatio) == ratioBucket(targetAspect);
+}
+
 bool VideoAssetPool::passesObjectFilter(const VideoEntry& entry) const {
     // No active filter — all videos pass (wildcard or select mode off)
     if (objectFilter.empty() && !filterToEmptyList) return true;
@@ -313,7 +333,7 @@ VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr, int slotW, int slotH) {
 
     if (available.empty()) {
         for (size_t i = 0; i < videos.size(); ++i) {
-            if (std::abs(videos[i].ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(videos[i]))
+            if (ratioMatches(videos[i].ratio, targetAspect) && passesObjectFilter(videos[i]))
                 available.push_back(i);
         }
     }
@@ -326,8 +346,8 @@ VideoEntry VideoAssetPool::getVideoEntry(int wr, int hr, int slotW, int slotH) {
         }
         if (videos.size() > 5) ratioSample += ", ...";
         ofLogWarning("VideoAssetPool") << "No video for ratio " << key
-            << " (target aspect " << targetAspect << ", tolerance " << RATIO_TOLERANCE
-            << "). CSV ratios sample: [" << ratioSample << "]";
+            << " (target aspect " << targetAspect << ", floored to " << ratioRoundDecimals
+            << " decimal places). CSV ratios sample: [" << ratioSample << "]";
         return {};
     }
 
@@ -362,7 +382,7 @@ VideoEntry VideoAssetPool::getVideoEntryWithMinDuration(int wr, int hr, float mi
 
     if (available.empty()) {
         for (size_t i = 0; i < videos.size(); ++i) {
-            if (std::abs(videos[i].ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(videos[i]))
+            if (ratioMatches(videos[i].ratio, targetAspect) && passesObjectFilter(videos[i]))
                 available.push_back(i);
         }
     }
@@ -406,7 +426,7 @@ bool VideoAssetPool::hasVideosFor(int wr, int hr) const {
     if (videos.empty()) return false;
     float targetAspect = (hr > 0) ? (float)wr / hr : 0.f;
     for (const auto& v : videos) {
-        if (std::abs(v.ratio - targetAspect) < RATIO_TOLERANCE && passesObjectFilter(v))
+        if (ratioMatches(v.ratio, targetAspect) && passesObjectFilter(v))
             return true;
     }
     return false;
@@ -414,8 +434,9 @@ bool VideoAssetPool::hasVideosFor(int wr, int hr) const {
 
 std::map<float, int> VideoAssetPool::getRatioCounts() const {
     std::map<float, int> counts;
+    double scale = ratioScale();
     for (const auto& v : videos) {
-        float rounded = std::round(v.ratio * 1000.f) / 1000.f;
+        float rounded = (float)(std::floor(static_cast<double>(v.ratio) * scale + 1e-9) / scale);
         counts[rounded]++;
     }
     return counts;

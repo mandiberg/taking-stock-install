@@ -30,6 +30,7 @@ CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 
 ######## VIDEO SELECTION ######### 
 MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
 SCALE_SELECT = true  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
+RATIO_ROUND_DECIMALS = 2  # decimal places to floor installation.csv ratios to before grouping (2 = hundredths, 3 = thousandths). Always floors; does not round up.
 
 
 ############## CONTROLS ################

@@ -100,6 +100,15 @@ bool ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
         config.scaleSelectEnabled = (v == "1" || v == "true" || v == "yes");
         return true;
     }
+    if (key == "RATIO_ROUND_DECIMALS") {
+        int decimals = std::stoi(value);
+        if (decimals < 0 || decimals > 6) {
+            ofLogWarning("ConfigLoader") << "RATIO_ROUND_DECIMALS must be from 0 to 6; using 2";
+            decimals = 2;
+        }
+        config.ratioRoundDecimals = decimals;
+        return true;
+    }
     if (key == "SECONDARY_WINDOW_ENABLED") {
         std::string v = value;
         std::transform(v.begin(), v.end(), v.begin(), ::tolower);

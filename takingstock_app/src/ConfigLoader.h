@@ -77,6 +77,7 @@ struct BinSorterConfig {
     std::string audioDevice = "";        // target output device name (empty = macOS system default)
     float minVideoLength = 0.f;          // discard videos shorter than this many seconds (0 = keep all)
     bool scaleSelectEnabled = false;     // when true, pick the smallest scale variant that covers the slot dimensions
+    int ratioRoundDecimals = 2;          // decimal places to floor CSV ratios to before grouping (2 = hundredths)
     bool secondaryWindowEnabled = false; // when true, open a secondary info window
     int  secondaryWindowWidth   = 400;   // width of secondary window in pixels
     int  secondaryWindowHeight  = 300;   // height of secondary window in pixels

@@ -28,6 +28,7 @@ class VideoAssetPool {
 public:
     float minDuration = 0.f;        // set before loadFromCsv; entries with known duration < this are discarded
     bool scaleSelectEnabled = false; // set before loadFromCsv; when true, pick optimal scale variant per slot size
+    int ratioRoundDecimals = 2;     // decimal places CSV ratios are floored to when grouping (2 = hundredths)
 
     bool loadFromCsv(const std::string& csvPath);
     void resetUsed();  // call when starting a new layout - makes all videos available again
@@ -39,7 +40,7 @@ public:
     VideoEntry getVideoEntryWithMinDuration(int wr, int hr, float minDuration, int slotW = 0, int slotH = 0);
     std::string getVideoPath(int wr, int hr, int slotW = 0, int slotH = 0);  // picks from unused; reuses only when none left
     bool hasVideosFor(int wr, int hr) const;
-    // Returns a map of ratio (rounded to nearest 0.001) -> count of videos with that ratio
+    // Returns a map of ratio (floored to ratioRoundDecimals) -> count of videos with that ratio
     std::map<float, int> getRatioCounts() const;
     bool hasObjectColumn() const { return objectColumnFound; }
 private:
@@ -51,7 +52,9 @@ private:
     static void removeVariantsFromAvailable(std::vector<size_t>& available,
                                             const std::vector<size_t>& variantIndices);
 
-    static constexpr float RATIO_TOLERANCE = 0.01f;  // forgiving for "1" vs "1.000", 0.667 vs 0.6667, etc.
+    int ratioScale() const;
+    int ratioBucket(float ratio) const;
+    bool ratioMatches(float videoRatio, float targetAspect) const;
 
     bool objectColumnFound = false;
 

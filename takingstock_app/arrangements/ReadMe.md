@@ -8,7 +8,7 @@ The files are formatted as such:
 aspect ratio(w/h)_s(generation settings hash)_arrangements_(number of arrangements)
 ie 1.333_s3fa9c2d1_arrangements_393
 
-The settings hash is built from the generation settings in the selected window config (set by WINDOW_CONFIG in config/system_config.txt) (PACKING_STOP_AREA, ITEM_BREAK_SCALE, ITEM_BREAK_CHANCE, BREAK_BOX_MIN_ITEMS, BREAK_BOX_MAX_ITEMS, BREAK_BOX_FILL_ATTEMPTS, PLACEMENT_AREA_EXPONENT, PLACEMENT_TOP_K, WEIGHT_NORMALIZATION, LAYOUT_MAX_ATTEMPTS, LAYOUT_STALE_THRESHOLD, LAYOUT_PHASES). On startup the app only reuses a file whose aspect ratio and settings hash both match the current config; if any of those settings change, new arrangements are generated automatically. The current hash is printed in the startup log.
+The settings hash is built from the generation settings in the selected window config (set by WINDOW_CONFIG in config/system_config.txt) (PACKING_STOP_AREA, ITEM_BREAK_SCALE, ITEM_BREAK_CHANCE, BREAK_BOX_MIN_ITEMS, BREAK_BOX_MAX_ITEMS, BREAK_BOX_FILL_ATTEMPTS, PLACEMENT_AREA_EXPONENT, PLACEMENT_TOP_K, WEIGHT_NORMALIZATION, LAYOUT_MAX_ATTEMPTS, LAYOUT_STALE_THRESHOLD, LAYOUT_PHASES) and from RATIO_ROUND_DECIMALS in system_config.txt. On startup the app only reuses a file whose aspect ratio and settings hash both match the current config; if any of those settings change, new arrangements are generated automatically. The current hash is printed in the startup log.
 
 When a new set of arrangements is saved, every other arrangement file for the same aspect ratio is deleted (including files made with different settings and older files named like 1.333_nest0_arrangements_393). Files for other aspect ratios are left alone.
 

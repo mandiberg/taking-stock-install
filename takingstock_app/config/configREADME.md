@@ -35,7 +35,7 @@ config/
 
 | File              | Settings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| system_config.txt | `WINDOW_CONFIG`, `OUTPUT_MODE`, `SYPHON_NAME`, `PREVIEW_WIDTH`, `PREVIEW_HEIGHT`, `WINDOW_DECORATED`, `VIDEO_ASSET_PATH`, `VIDEOS_CSV_PATH`, `ARRANGEMENTS_PATH`, `AUDIO_PATH`, `CYCLE_RESET_DURATION`, `CYCLE_RESET_COUNT`, `MIN_VIDEO_LENGTH`, `SCALE_SELECT`, `AUDIO_DEVICE`, `SECONDARY_WINDOW_ENABLED`, `SECONDARY_WINDOW_WIDTH`, `SECONDARY_WINDOW_HEIGHT`                                                                                                                                                                                                                           |
+| system_config.txt | `WINDOW_CONFIG`, `OUTPUT_MODE`, `SYPHON_NAME`, `PREVIEW_WIDTH`, `PREVIEW_HEIGHT`, `WINDOW_DECORATED`, `VIDEO_ASSET_PATH`, `VIDEOS_CSV_PATH`, `ARRANGEMENTS_PATH`, `AUDIO_PATH`, `CYCLE_RESET_DURATION`, `CYCLE_RESET_COUNT`, `MIN_VIDEO_LENGTH`, `SCALE_SELECT`, `RATIO_ROUND_DECIMALS`, `AUDIO_DEVICE`, `SECONDARY_WINDOW_ENABLED`, `SECONDARY_WINDOW_WIDTH`, `SECONDARY_WINDOW_HEIGHT`                                                                                                                                                                                                                           |
 | window config     | `BOX_WIDTH`, `BOX_HEIGHT`, `VIDEO_FADE_DURATION`, `AUDIO_FADE_DURATION`, `AUDIO_SURROUND`, `AUDIO_CHANNEL_MAP`, `AUDIO_CHANNEL_GAINS`, `KEY_VIDEO_MIN_LENGTH`, `SELECT_MODE`, `SELECT`, `EXPAND_RANGE`, `EXPAND_FALLBACK`, `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `IGNORE_FINGERPRINT`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, `LAYOUT_PHASES`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `MAX_ITEMS`, `HEAVY_LAYOUT_ITEMS`, `AFTER_HEAVY_MAX_ITEMS` |
 
 
@@ -43,7 +43,7 @@ Technically any setting is read from either file; the table is the intended layo
 
 ## SYSTEM CONFIG
 
-These settings belong in `system_config.txt`. Section order below matches that file: which window config to load, how the canvas is displayed, asset paths and the video pool, keyboard controls, the audio output device, and the secondary window.
+These settings belong in `system_config.txt`. Section order below matches that file: which window config to load, how the canvas is displayed, asset paths, cycle reset, video selection, keyboard controls, the audio output device, and the secondary window.
 
 ### WINDOW CONFIG
 
@@ -104,13 +104,15 @@ All paths are relative to the `config/` folder that holds system_config.txt. Sin
 **ARRANGEMENTS_PATH** = This is a path to the folder where all generated arrangements will be saved.
 **AUDIO_PATH** = This is a path to the folder which contains all the audio files used for playback. The app matches each arrangement's key video `cluster_no` value against filenames in this folder — any file whose name contains the `cluster_no` string is used as that arrangement's audio.
 
-### LOOPS
+### CYCLE INFO
 
 Videos always loop for as long as their arrangement is on screen (formerly `VIDEO_LOOP`, now hard-coded to `true`).
 
 **CYCLE_RESET_DURATION** = Duration in seconds to hold a black screen when a cycle reset fires (see `CYCLE_RESET_COUNT`). The app fades/cuts to black normally as part of the transition to the next arrangement, then holds black for this duration before resuming. This gives AVFoundation time to complete any pending async video teardowns that have accumulated, acting as a periodic cleanup to maintain long-run stability. Set to `0` to disable the black hold even if `CYCLE_RESET_COUNT` is set. The hold occurs seamlessly — the next arrangement's videos are already loaded and ready when black clears. (default = 5)
 
 **CYCLE_RESET_COUNT** = Number of arrangements to display before triggering a cycle reset (the black-screen hold controlled by `CYCLE_RESET_DURATION`). For example, `CYCLE_RESET_COUNT = 20` triggers a reset every 20 arrangements shown. Set to `0` to disable the cycle reset entirely. Arrangements are now picked randomly from the full pool on each transition with no forced ordering, so this count-based trigger replaces the old behavior of resetting only after every arrangement had been shown exactly once. (default = 0)
+
+### VIDEO SELECTION
 
 **MIN_VIDEO_LENGTH** = Minimum duration in seconds a video must have to be accepted into the pool. Any video in the CSV with a duration shorter than this value — including videos with no duration data — is discarded at load time and will never appear in any arrangement. Set to `0` to keep all videos regardless of length. (default = 0)
 
@@ -119,6 +121,8 @@ Videos always loop for as long as their arrangement is on screen (formerly `VIDE
 When `false`, every row in `installation.csv` is treated as an independent video and the `width`/`height` columns are ignored for selection purposes. (default = false)
 
 > **Requires:** `installation.csv` must have `width` and `height` columns, and video filenames must include a `_scale_<digits>` segment before the `.mp4` extension (e.g. `...ct8_scale_1080.mp4`, `...ct8_scale_1712.mp4`). Videos without a `_scale_` suffix in the filename are always treated as their own unique logical video and will never be grouped with other files.
+
+**RATIO_ROUND_DECIMALS** = How many decimal places to keep when grouping the `ratio` column in `installation.csv`. The value is always floored, never rounded up. Videos whose ratios floor to the same value are treated as one aspect ratio for layout generation and for picking a video into a slot. `2` floors to the hundredth (`0.665` and `0.669` both become `0.66`; `0.670` stays `0.67`). `3` floors to the thousandth (`0.6659` becomes `0.665`). Allowed values are `0` through `6`; anything else logs a warning and uses `2`. Changing this changes which ratios the packer sees, so cached arrangements are regenerated. (default = 2)
 
 ### CONTROLS
 
@@ -230,7 +234,7 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 On startup the app looks in `arrangements/` for a cached file whose name matches **all** of the following:
 
 - the canvas aspect ratio (`BOX_WIDTH` / `BOX_HEIGHT`, rounded to 3 decimals)
-- a hash of the generation settings: `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, and `LAYOUT_PHASES` (plus the hard-coded break-box coverage threshold)
+- a hash of the generation settings: `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, `LAYOUT_PHASES`, and `RATIO_ROUND_DECIMALS` (plus the hard-coded break-box coverage threshold)
 
 Changing any of those settings means no file matches, so new arrangements are generated. The startup log prints the current hash and the values it was built from.
 
