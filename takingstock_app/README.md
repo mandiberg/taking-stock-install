@@ -23,7 +23,7 @@ When executing `make RunRelease`, it may take 1-5 minutes to generate valid arra
 
 ## Config:
 
-This app has many config options in terms of how videos are processed and developed. all config can be altered in the file **config/config.txt** There is additionally a configREADME.md file in the same folder (**config/**) that explains all of the different options listed in the config.txt file.
+This app has many config options in terms of how videos are processed and developed. all config lives in the **config/** folder and is split into two files: **config/system_config.txt**, which holds machine/installation settings and is always loaded, and a window config (for example **config/canonical_configs/window_config.txt**) that holds the settings for one display template. The `WINDOW_CONFIG` option in system_config.txt chooses which window config is used; canonical templates live in **config/canonical_configs/** and your own variations go in **config/custom_configs/**. The old **config/config.txt** is kept for reference only and is no longer read. There is additionally a configREADME.md file in the **config/** folder that explains how the files fit together and all of the different options.
 
 ## Arrangements:
 
@@ -32,5 +32,7 @@ Arrangements is the term used to describe the different layouts the app generate
 If for any reason you need to regenerate arrangements, you can go to the arrangements folder inside the current folder (takingstock_app) and delete the arrangements files directly. 
 
 Arrangements files are named based on this format: 
-    aspect ratio(w/h)_number of nesting layers_num_arrangements_xxx
-    an example: 1.333_n0_num_arrangements_393
+    aspect ratio(w/h)_s(generation settings hash)_arrangements_(number of arrangements)
+    an example: 1.333_s3fa9c2d1_arrangements_393
+
+The settings hash changes whenever any generation setting in the selected window config changes (see "ARRANGEMENTS CACHE" in config/configREADME.md), which forces new arrangements to be generated. When a new set is saved, older files for the same aspect ratio are deleted automatically.

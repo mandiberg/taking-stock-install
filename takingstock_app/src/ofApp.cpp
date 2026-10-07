@@ -81,7 +81,9 @@ void ofApp::updateAudioFade() {
 void ofApp::setup() {
     ofSetBackgroundColor(0, 0, 0);
     if (!ConfigLoader::load(kConfigPath, config)) {
-        ofLogError("ofApp") << "Failed to load " << kConfigPath << ", using defaults";
+        ofLogFatalError("ofApp") << "Failed to load " << kConfigPath << ". Stopping.";
+        ofExit(1);
+        return;
     }
 
     audioPlayer.setSurroundEnabled(config.audioSurround);
@@ -128,6 +130,25 @@ void ofApp::setup() {
     // Check whether the CSV or video files have changed since the last run.
     // If so, delete any cached arrangement file so it gets regenerated with
     // the updated ratios and weightings.
+    // Settings that change how arrangements are generated; a cached file is only reused when they all match.
+    std::ostringstream settingsKey;
+    settingsKey << std::fixed << std::setprecision(4)
+        << "packingStopArea=" << config.packingStopArea
+        << ";itemBreakScale=" << config.itemBreakScale
+        << ";itemBreakChance=" << config.itemBreakChance
+        << ";breakBoxMinItems=" << config.breakBoxMinItems
+        << ";breakBoxMaxItems=" << config.breakBoxMaxItems
+        << ";breakBoxFillAttempts=" << config.breakBoxFillAttempts
+        << ";breakBoxCoverageThreshold=" << config.breakBoxCoverageThreshold
+        << ";placementAreaExponent=" << config.placementAreaExponent
+        << ";placementTopK=" << config.placementTopK
+        << ";weightNormalization=" << (int)config.weightNormalization
+        << ";layoutMaxAttempts=" << config.layoutMaxAttempts
+        << ";layoutStaleThreshold=" << config.layoutStaleThreshold
+        << ";layoutPhases=" << config.layoutPhases;
+    const std::string settingsHash = ArrangementIO::hashSettings(settingsKey.str());
+    ofLogNotice("ofApp") << "Generation settings hash " << settingsHash << " (" << settingsKey.str() << ")";
+
     std::string currentFingerprint;
     std::string fingerprintPath;
     std::string savedFingerprint;
@@ -136,11 +157,11 @@ void ofApp::setup() {
     } else {
         ofLogNotice("ofApp") << "IGNORE_FINGERPRINT disabled: verifying arrangement cache against input fingerprint";
         currentFingerprint = ArrangementIO::computeInputsFingerprint(config.videosCsvPath);
-        fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+        fingerprintPath = ArrangementIO::getFingerprintPath(config.arrangementsPath, config.boxWidth, config.boxHeight);
         savedFingerprint = ArrangementIO::loadFingerprint(fingerprintPath);
         if (!savedFingerprint.empty() && savedFingerprint != currentFingerprint) {
             ofLogNotice("ofApp") << "Input files have changed (videos or CSV), clearing cached arrangements";
-            std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+            std::string oldPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, settingsHash);
             if (!oldPath.empty()) {
                 ofFile(oldPath).remove(false);
                 ofLogNotice("ofApp") << "Deleted stale arrangement cache: " << oldPath;
@@ -196,7 +217,9 @@ void ofApp::setup() {
                          config.breakBoxFillAttempts, config.breakBoxCoverageThreshold,
                          config.placementAreaExponent, config.placementTopK);
 
-    std::string arrangementPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers);
+    std::string arrangementPath = ArrangementIO::findArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, settingsHash);
+    if (arrangementPath.empty())
+        ofLogNotice("ofApp") << "No cached arrangements match the current canvas ratio and generation settings";
 
     if (!arrangementPath.empty() && ArrangementIO::load(arrangementPath, arrangements)) {
         auto it = std::remove_if(arrangements.begin(), arrangements.end(),
@@ -318,8 +341,9 @@ void ofApp::setup() {
         ofLogNotice("ofApp") << "Finished: " << arrangements.size() << " unique arrangements";
 
         if (!arrangements.empty()) {
-            std::string savePath = ArrangementIO::getArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, config.nestingLayers, (int)arrangements.size());
-            ArrangementIO::save(savePath, arrangements);
+            std::string savePath = ArrangementIO::getArrangementPath(config.arrangementsPath, config.boxWidth, config.boxHeight, settingsHash, (int)arrangements.size());
+            if (ArrangementIO::save(savePath, arrangements))
+                ArrangementIO::deleteOtherArrangementFiles(config.arrangementsPath, config.boxWidth, config.boxHeight, savePath);
             if (!config.ignoreFingerprint)
                 ArrangementIO::saveFingerprint(fingerprintPath, currentFingerprint);
         }
@@ -391,7 +415,6 @@ void ofApp::logArrangementInfo(size_t idx) {
     const auto& slots = renderer.getSlots();
     bool hasBreakBox = !arrangements[idx].nestedBins.empty();
     ofLogNotice("ofApp") << "Window: " << config.boxWidth << " x " << config.boxHeight
-        << " | nestingLayers=" << config.nestingLayers
         << " | breakBox=" << (hasBreakBox ? "yes" : "no");
     if (hasBreakBox) {
         const auto& bins = arrangements[idx].bins;
@@ -565,7 +588,6 @@ void ofApp::pickAndLoadArrangement(size_t idx) {
     const auto& slots = renderer.getSlots();
     bool hasBreakBox = !arrangements[idx].nestedBins.empty();
     ofLogNotice("ofApp") << "Window: " << config.boxWidth << " x " << config.boxHeight
-        << " | nestingLayers=" << config.nestingLayers
         << " | breakBox=" << (hasBreakBox ? "yes" : "no");
     if (hasBreakBox) {
         const auto& bins = arrangements[idx].bins;

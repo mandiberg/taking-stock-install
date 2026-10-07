@@ -1,0 +1,43 @@
+# system_config.txt
+# Always loaded. Selects a window config with WINDOW_CONFIG; if a setting appears in both files, this file wins.
+# All paths in this file (including WINDOW_CONFIG) are relative to this config folder.
+
+############# WINDOW CONFIG ######################
+# canonical_configs/ = shipped templates, custom_configs/ = user-made variations
+WINDOW_CONFIG = canonical_configs/window_config.txt
+
+
+####### OUTPUT #########
+OUTPUT_MODE = window  # window = span displays from this app; syphon = publish via Syphon for QLab
+SYPHON_NAME = Taking_Stock  # name of the Syphon server (QLab Syphon input)
+PREVIEW_WIDTH = 100   # OF preview window width when OUTPUT_MODE = syphon
+PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
+WINDOW_DECORATED = true  # false = borderless/installation, true = title bar/debug
+
+
+############# PATHS ######################
+VIDEO_ASSET_PATH = ../videos
+VIDEOS_CSV_PATH = ../videos/installation.csv
+ARRANGEMENTS_PATH = ../arrangements
+AUDIO_PATH = ../audio
+
+CYCLE_RESET_DURATION = 5  # seconds to hold black when a cycle reset fires (0 = no hold even if CYCLE_RESET_COUNT is set)
+CYCLE_RESET_COUNT = 250   # trigger a cycle reset every N arrangements shown (0 = disabled)
+MIN_VIDEO_LENGTH = 1  # discard videos shorter than this many seconds (0 = keep all)
+SCALE_SELECT = true  # true = pick smallest scale variant >= slot dimensions; false = treat all scales as independent videos
+
+
+############## CONTROLS ################
+#s: export image 
+#r: regenerate layout
+
+
+############# AUDIO DEVICE ######################
+# Output device name — must match exactly the name shown in Audio MIDI Setup (empty = system default).
+AUDIO_DEVICE =
+
+
+############# SECONDARY WINDOW ######################
+SECONDARY_WINDOW_ENABLED = False 
+SECONDARY_WINDOW_WIDTH = 400
+SECONDARY_WINDOW_HEIGHT = 300

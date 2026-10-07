@@ -2,11 +2,45 @@
 
 ### Last updated by Tench C 10.02.26
 
-The config.txt file (in `takingstock_app/config/`, alongside this README) is where all config of the takingstock_app happens. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does.
+All config of the takingstock_app lives in `takingstock_app/config/`, alongside this README, and is split across two files. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does. Config is read every time the app starts, so changes only need an app restart, not a rebuild.
+
+## CONFIG FILES
+
+```
+config/
+  system_config.txt          <- always loaded; selects a window config with WINDOW_CONFIG
+  configREADME.md
+  config.txt                 <- old single-file config, kept for reference only (not read by the app)
+  canonical_configs/         <- shipped window config templates
+    window_config.txt
+  custom_configs/            <- user-made window config variations
+```
+
+**system_config.txt** holds the settings that belong to the machine and installation rather than to a particular display setup. It is always loaded from `config/system_config.txt`.
+
+**Window configs** hold the settings for one display/installation template (canvas size, layout generation, select filters, audio routing, and so on). Canonical templates live in `canonical_configs/`; your own variations go in `custom_configs/`. Copy a canonical file into `custom_configs/` and give it a new name to make a variation.
+
+**WINDOW_CONFIG** = (system_config.txt only) Path to the window config to use, relative to the `config/` folder, e.g. `WINDOW_CONFIG = canonical_configs/window_config.txt` or `WINDOW_CONFIG = custom_configs/my_gallery.txt`. Absolute paths also work.
+
+**Rules:**
+
+- The window config is loaded first and `system_config.txt` second, so if a setting appears in both files, **system_config.txt wins**.
+- `SELECT` and `EXPAND_RANGE` can appear on multiple lines and build up a list. If `system_config.txt` contains any `SELECT` lines, every `SELECT` line in the window config is ignored (the same for `EXPAND_RANGE`), so the system file replaces the list rather than adding to it.
+- All paths, in either file, are relative to the `config/` folder that holds `system_config.txt`.
+- The app stops with an error before opening any window if `system_config.txt` is missing, if `WINDOW_CONFIG` is not set, or if the file it points to does not exist. The error shows the full path it looked for. The startup log shows which window config was loaded.
+
+**Where each setting goes:**
+
+| File              | Settings |
+| ----------------- | -------- |
+| system_config.txt | `WINDOW_CONFIG`, `OUTPUT_MODE`, `SYPHON_NAME`, `PREVIEW_WIDTH`, `PREVIEW_HEIGHT`, `WINDOW_DECORATED`, `VIDEO_ASSET_PATH`, `VIDEOS_CSV_PATH`, `ARRANGEMENTS_PATH`, `AUDIO_PATH`, `CYCLE_RESET_DURATION`, `CYCLE_RESET_COUNT`, `MIN_VIDEO_LENGTH`, `SCALE_SELECT`, `AUDIO_DEVICE`, `SECONDARY_WINDOW_ENABLED`, `SECONDARY_WINDOW_WIDTH`, `SECONDARY_WINDOW_HEIGHT` |
+| window config     | `BOX_WIDTH`, `BOX_HEIGHT`, `VIDEO_FADE_DURATION`, `AUDIO_FADE_DURATION`, `AUDIO_SURROUND`, `AUDIO_CHANNEL_MAP`, `AUDIO_CHANNEL_GAINS`, `KEY_VIDEO_MIN_LENGTH`, `SELECT_MODE`, `SELECT`, `EXPAND_RANGE`, `EXPAND_FALLBACK`, `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `IGNORE_FINGERPRINT`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, `LAYOUT_PHASES`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `MAX_ITEMS`, `HEAVY_LAYOUT_ITEMS`, `AFTER_HEAVY_MAX_ITEMS` |
+
+Technically any setting is read from either file; the table is the intended layout. Settings the app does not recognize are ignored, but each one logs a warning at startup naming the setting and the file it is in (e.g. `Unknown setting 'PACKING_STOP_ARA' in window_config.txt`). Deprecated settings that are now hard-coded get their own warning pointing to HARD-CODED SETTINGS. `WINDOW_CONFIG` inside a window config is also ignored with a warning, since it is only read from system_config.txt.
 
 ## HARD-CODED SETTINGS
 
-The following options used to live in config.txt but have been deprecated. They are now fixed in code (`BinSorterConfig` in `src/ConfigLoader.h`) and are ignored if they appear in config.txt. To change one, edit the constant and rebuild.
+The following options used to live in config.txt but have been deprecated. They are now fixed in code (`BinSorterConfig` in `src/ConfigLoader.h`) and are ignored if they appear in either config file. To change one, edit the constant and rebuild.
 
 
 | Former option                       | Fixed value | Behavior                                                                                          |
@@ -20,7 +54,7 @@ The following options used to live in config.txt but have been deprecated. They 
 | `SELECT_EXACT_MATCH`                | `false`     | `SELECT` filters always use "any" matching.                                                       |
 | `GAP_FILTER_THRESHOLD`              | `0`         | Only perfect-fill arrangements (no empty space) are accepted.                                     |
 | `ASPECT_EXPAND_FILTER`              | `true`      | Arrangements whose slots exceed the expand tolerances are rejected.                               |
-| `NESTING_LAYERS`                    | `0`         | Nesting is disabled. Arrangement files use the `_nest0_` prefix.                                  |
+| `NESTING_LAYERS`                    | `0`         | Nesting is disabled and is not part of arrangement file names.                                    |
 | `NESTED_MIN_SPACE_THRESHOLD`        | `0`         | Unused, since nesting is disabled.                                                                |
 | `MAIN_BIN_FILL_CHANCE`              | `0.05`      | 5% chance the first item may match the canvas ratio and fill the whole canvas with one video.     |
 | `BREAK_BOX_COVERAGE_THRESHOLD`      | `0.99`      | Break-box sub-items must cover at least 99% of the original slot.                                 |
@@ -118,7 +152,7 @@ The secondary window shares a GL context with the main window and runs on the sa
 
 ## PATHS
 
-All paths are relative to the `config/` folder that holds config.txt. Since `audio/`, `videos/`, and `arrangements/` sit next to `config/` inside `takingstock_app/`, they start with `../` (e.g. `AUDIO_PATH = ../audio`). Absolute paths also work.
+These are set in `system_config.txt`. All paths are relative to the `config/` folder that holds system_config.txt. Since `audio/`, `videos/`, and `arrangements/` sit next to `config/` inside `takingstock_app/`, they start with `../` (e.g. `AUDIO_PATH = ../audio`). Absolute paths also work.
 
 **VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
 **VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render
@@ -255,13 +289,26 @@ generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a
 **HEAVY_LAYOUT_ITEMS** = An arrangement with more total items than this counts as "heavy". When a heavy arrangement is on screen, the next arrangement is re-picked (up to 50 tries) until it has at most `AFTER_HEAVY_MAX_ITEMS` items, so two heavy layouts don't play back to back. This is a playback-time rule to limit decoding load; unlike `MAX_ITEMS` it never discards arrangements. If no light enough arrangement is found in 50 tries, the last pick is used. Set to `0` to disable the rule. Has no effect if it is ≥ `MAX_ITEMS`, since no arrangement can exceed `MAX_ITEMS`. (default = 6)
 **AFTER_HEAVY_MAX_ITEMS** = The maximum number of items allowed in the arrangement that follows a heavy one (see `HEAVY_LAYOUT_ITEMS`). Set to `0` to disable the rule. (default = 5)
 
+### ARRANGEMENTS CACHE
+
+On startup the app looks in `arrangements/` for a cached file whose name matches **all** of the following:
+
+- the canvas aspect ratio (`BOX_WIDTH` / `BOX_HEIGHT`, rounded to 3 decimals)
+- a hash of the generation settings: `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, and `LAYOUT_PHASES` (plus the hard-coded break-box coverage threshold)
+
+Changing any of those settings means no file matches, so new arrangements are generated. The startup log prints the current hash and the values it was built from.
+
+Arrangements in a matching file are then re-checked against the current settings: every slot must fit inside the current `BOX_WIDTH` × `BOX_HEIGHT`, the layout must not exceed `MAX_ITEMS`, it must be a perfect fill, it must stay within the current `EXPAND_RANGE` / `EXPAND_FALLBACK` tolerances, and neighbouring videos must not overflow into each other. Arrangements that fail are discarded. If none survive, new arrangements are generated.
+
+Whenever a new set is saved, every other arrangement file for the same aspect ratio is deleted — including files made with different generation settings and files using the older naming scheme. Fingerprint files are kept. Files for other aspect ratios are not touched.
+
 ### ARRANGEMENTS FINGERPRINT
 
 When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
 
 This is the correct behavior for a live installation, but it can be disruptive during testing: cutting a single video from the folder or tweaking the CSV will wipe all cached arrangements and force a full regeneration, even if the existing layouts are still perfectly usable.
 
-**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current `BOX_WIDTH` and `BOX_HEIGHT` values. If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
+**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current aspect ratio and generation settings (see ARRANGEMENTS CACHE). If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
 
 ### ARRANGEMENTS ITEM PLACEMENT
 

@@ -10,7 +10,10 @@ int main() {
     // Load config before creating any window so we can use BOX_WIDTH/BOX_HEIGHT,
     // OUTPUT_MODE, and WINDOW_DECORATED to configure the window. Window position is hard-coded to (0, 0).
     BinSorterConfig cfg;
-    ConfigLoader::load(kConfigPath, cfg);
+    if (!ConfigLoader::load(kConfigPath, cfg)) {
+        ofLogFatalError("main") << "Config could not be loaded (see error above). Stopping.";
+        return 1;
+    }
 
     const bool syphonMode = (cfg.outputMode == OutputMode::Syphon);
     const int winW = syphonMode ? cfg.previewWidth : cfg.boxWidth;

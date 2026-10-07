@@ -5,7 +5,7 @@
 #include <vector>
 #include "BinSorter.h"
 
-inline constexpr const char* kConfigPath = "../../config/config.txt";  // relative to bin/data
+inline constexpr const char* kConfigPath = "../../config/system_config.txt";  // relative to bin/data; selects the window config via WINDOW_CONFIG
 
 enum class TransitionType { Jumpcut, Fade, JumpcutToBlack };
 enum class WeightNormalization { Raw, Sqrt, Equal };
@@ -93,5 +93,7 @@ public:
     static bool load(const std::string& path, BinSorterConfig& out);
 private:
     static std::string trim(const std::string& s);
-    static void parseLine(const std::string& line, BinSorterConfig& config);
+    static bool parseLine(const std::string& line, BinSorterConfig& config);  // false = not a recognized setting
+    static bool readSettingLines(const std::string& fullPath, std::vector<std::string>& lines);
+    static std::string lineKey(const std::string& line);
 };

@@ -13,41 +13,80 @@ static const uint32_t VERSION = 1;
 
 namespace ArrangementIO {
 
-static std::string getAspectPrefix(int boxWidth, int boxHeight, int nestingLayers) {
+static uint64_t fnv1a64(const std::string& s) {
+    uint64_t h = 14695981039346656037ULL;
+    for (unsigned char c : s) { h ^= c; h *= 1099511628211ULL; }
+    return h;
+}
+
+// "<ratio>_" — shared by every arrangement file for this canvas shape
+static std::string getShapePrefix(int boxWidth, int boxHeight) {
     double ratio = (boxHeight != 0) ? static_cast<double>(boxWidth) / boxHeight : 0.0;
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(3) << ratio;
-    return oss.str() + "_nest" + std::to_string(nestingLayers) + "_arrangements_";
+    return oss.str() + "_";
 }
 
-std::string getArrangementPath(const std::string& arrangementsPath, int boxWidth, int boxHeight, int nestingLayers, int numArrangements) {
-    std::string filename = getAspectPrefix(boxWidth, boxHeight, nestingLayers) + std::to_string(numArrangements);
+static std::string getAspectPrefix(int boxWidth, int boxHeight) {
+    return getShapePrefix(boxWidth, boxHeight) + "arrangements_";
+}
+
+static std::string getArrangementPrefix(int boxWidth, int boxHeight, const std::string& settingsHash) {
+    return getShapePrefix(boxWidth, boxHeight) + "s" + settingsHash + "_arrangements_";
+}
+
+static bool isFingerprintFile(const std::string& name) {
+    const std::string ext = ".fingerprint";
+    return name.size() >= ext.size() && name.compare(name.size() - ext.size(), ext.size(), ext) == 0;
+}
+
+std::string hashSettings(const std::string& settingsKey) {
+    std::ostringstream oss;
+    oss << std::hex << std::setw(8) << std::setfill('0') << (uint32_t)(fnv1a64(settingsKey) & 0xFFFFFFFFu);
+    return oss.str();
+}
+
+std::string getArrangementPath(const std::string& arrangementsPath, int boxWidth, int boxHeight,
+                               const std::string& settingsHash, int numArrangements) {
+    std::string filename = getArrangementPrefix(boxWidth, boxHeight, settingsHash) + std::to_string(numArrangements);
     std::string baseDir = ofToDataPath(arrangementsPath, true);
     return ofFilePath::join(baseDir, filename);
 }
 
-std::string findArrangementPath(const std::string& arrangementsPath, int boxWidth, int boxHeight, int nestingLayers) {
-    std::string prefix = getAspectPrefix(boxWidth, boxHeight, nestingLayers);
+std::string findArrangementPath(const std::string& arrangementsPath, int boxWidth, int boxHeight,
+                                const std::string& settingsHash) {
+    std::string prefix = getArrangementPrefix(boxWidth, boxHeight, settingsHash);
     std::string arrangementsDir = ofToDataPath(arrangementsPath, true);
     ofDirectory dir(arrangementsDir);
     if (!dir.exists()) return "";
     dir.listDir();
     for (int i = 0; i < dir.size(); ++i) {
         std::string name = dir.getName(i);
-        if (name.size() > prefix.size() && name.substr(0, prefix.size()) == prefix) {
+        if (name.size() > prefix.size() && name.substr(0, prefix.size()) == prefix && !isFingerprintFile(name)) {
             return dir.getPath(i);
         }
     }
     return "";
 }
 
-// -- Input fingerprinting -------------------------------------------------------
-
-static uint64_t fnv1a64(const std::string& s) {
-    uint64_t h = 14695981039346656037ULL;
-    for (unsigned char c : s) { h ^= c; h *= 1099511628211ULL; }
-    return h;
+void deleteOtherArrangementFiles(const std::string& arrangementsPath, int boxWidth, int boxHeight,
+                                 const std::string& keepPath) {
+    std::string prefix = getShapePrefix(boxWidth, boxHeight);
+    std::string keepName = ofFilePath::getFileName(keepPath);
+    ofDirectory dir(ofToDataPath(arrangementsPath, true));
+    if (!dir.exists()) return;
+    dir.listDir();
+    for (int i = 0; i < dir.size(); ++i) {
+        std::string name = dir.getName(i);
+        if (name == keepName || isFingerprintFile(name)) continue;
+        if (name.size() > prefix.size() && name.substr(0, prefix.size()) == prefix) {
+            ofFile(dir.getPath(i)).remove(false);
+            ofLogNotice("ArrangementIO") << "Deleted old arrangement file: " << name;
+        }
+    }
 }
+
+// -- Input fingerprinting -------------------------------------------------------
 
 static uint64_t hashFileContents(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
@@ -87,8 +126,8 @@ std::string computeInputsFingerprint(const std::string& csvPath) {
     return oss.str();
 }
 
-std::string getFingerprintPath(const std::string& arrangementsPath, int boxWidth, int boxHeight, int nestingLayers) {
-    std::string filename = getAspectPrefix(boxWidth, boxHeight, nestingLayers) + "inputs.fingerprint";
+std::string getFingerprintPath(const std::string& arrangementsPath, int boxWidth, int boxHeight) {
+    std::string filename = getAspectPrefix(boxWidth, boxHeight) + "inputs.fingerprint";
     return ofFilePath::join(ofToDataPath(arrangementsPath, true), filename);
 }
 
