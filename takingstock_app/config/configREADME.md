@@ -10,7 +10,6 @@ All config of the takingstock_app lives in `takingstock_app/config/`, alongside 
 config/
   system_config.txt          <- always loaded; selects a window config with WINDOW_CONFIG
   configREADME.md
-  config.txt                 <- old single-file config, kept for reference only (not read by the app)
   canonical_configs/         <- shipped window config templates
     window_config_horizontal.txt
     window_config_vertical.txt
@@ -35,7 +34,7 @@ config/
 
 | File              | Settings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| system_config.txt | `WINDOW_CONFIG`, `OUTPUT_MODE`, `SYPHON_NAME`, `PREVIEW_WIDTH`, `PREVIEW_HEIGHT`, `WINDOW_DECORATED`, `VIDEO_ASSET_PATH`, `VIDEOS_CSV_PATH`, `ARRANGEMENTS_PATH`, `AUDIO_PATH`, `CYCLE_RESET_DURATION`, `CYCLE_RESET_COUNT`, `MIN_VIDEO_LENGTH`, `SCALE_SELECT`, `RATIO_ROUND_DECIMALS`, `AUDIO_DEVICE`, `SECONDARY_WINDOW_ENABLED`, `SECONDARY_WINDOW_WIDTH`, `SECONDARY_WINDOW_HEIGHT`                                                                                                                                                                                                                           |
+| system_config.txt | `WINDOW_CONFIG`, `OUTPUT_MODE`, `SYPHON_NAME`, `PREVIEW_WIDTH`, `PREVIEW_HEIGHT`, `WINDOW_DECORATED`, `VIDEO_ASSET_PATH`, `VIDEOS_CSV_PATH`, `ARRANGEMENTS_PATH`, `AUDIO_PATH`, `CYCLE_RESET_DURATION`, `CYCLE_RESET_COUNT`, `MIN_VIDEO_LENGTH`, `SCALE_SELECT`, `RATIO_ROUND_DECIMALS`, `AUDIO_DEVICE`, `SECONDARY_WINDOW_ENABLED`, `SECONDARY_WINDOW_WIDTH`, `SECONDARY_WINDOW_HEIGHT`                                                                                                                                                                                                   |
 | window config     | `BOX_WIDTH`, `BOX_HEIGHT`, `VIDEO_FADE_DURATION`, `AUDIO_FADE_DURATION`, `AUDIO_SURROUND`, `AUDIO_CHANNEL_MAP`, `AUDIO_CHANNEL_GAINS`, `KEY_VIDEO_MIN_LENGTH`, `SELECT_MODE`, `SELECT`, `EXPAND_RANGE`, `EXPAND_FALLBACK`, `PACKING_STOP_AREA`, `ITEM_BREAK_SCALE`, `ITEM_BREAK_CHANCE`, `BREAK_BOX_MIN_ITEMS`, `BREAK_BOX_MAX_ITEMS`, `BREAK_BOX_FILL_ATTEMPTS`, `IGNORE_FINGERPRINT`, `LAYOUT_MAX_ATTEMPTS`, `LAYOUT_STALE_THRESHOLD`, `LAYOUT_PHASES`, `PLACEMENT_AREA_EXPONENT`, `PLACEMENT_TOP_K`, `WEIGHT_NORMALIZATION`, `MAX_ITEMS`, `HEAVY_LAYOUT_ITEMS`, `AFTER_HEAVY_MAX_ITEMS` |
 
 
@@ -157,32 +156,32 @@ These settings belong in the window config selected by `WINDOW_CONFIG`. Section 
 
 The window config has many options. These five are the main levers. Each one is documented in full in its section below; the notes here are starting points.
 
-**`LAYOUT_PHASES`** — Set to `1` while debugging and testing, so generation stays fast. Once the setup is working, raise it to about `3`–`6`. See Layout generation.
+`LAYOUT_PHASES` — Set to `1` while debugging and testing, so generation stays fast. Once the setup is working, raise it to about `3`–`6`. See Layout generation.
 
-**`PLACEMENT_TOP_K`** — About 75% of the number of unique aspect ratios in `installation.csv`. If there are 12 aspect ratios, use `9`. If there are 8, use `6`. See Layout generation.
+`PLACEMENT_TOP_K` — About 75% of the number of unique aspect ratios in `installation.csv`. If there are 12 aspect ratios, use `9`. If there are 8, use `6`. See Layout generation.
 
-**`PACKING_STOP_AREA`** — Depends on the composition. Canvas area is `BOX_WIDTH` × `BOX_HEIGHT`. See Layout structure.
-
-
-| Composition | Starting value |
-| --- | --- |
-| Horizontal band | `BOX_HEIGHT` × width of the smallest video in `installation.csv` |
-| Vertical band | `BOX_WIDTH` × height of the smallest video in `installation.csv` |
-| 16×9 or 1×1, canvas area under 5,000,000 px² | `40000` |
-| 16×9 or 1×1, canvas area over 5,000,000 px² | `200000` |
+`PACKING_STOP_AREA` — Depends on the composition. Canvas area is `BOX_WIDTH` × `BOX_HEIGHT`. See Layout structure.
 
 
-**`MAX_ITEMS`** — Depends on the composition. See Layout generation.
+| Composition                                  | Starting value                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| Horizontal band                              | `BOX_HEIGHT` × width of the smallest video in `installation.csv` |
+| Vertical band                                | `BOX_WIDTH` × height of the smallest video in `installation.csv` |
+| 16×9 or 1×1, canvas area under 5,000,000 px² | `40000`                                                          |
+| 16×9 or 1×1, canvas area over 5,000,000 px²  | `200000`                                                         |
 
 
-| Composition | Starting value |
-| --- | --- |
-| Horizontal | `BOX_WIDTH` / width of the smallest video in `installation.csv` |
-| Vertical | `BOX_HEIGHT` / height of the smallest video in `installation.csv` |
-| 16×9 or 1×1 | Varies with the composition |
+`MAX_ITEMS` — Depends on the composition. See Layout generation.
 
 
-**`SELECT_MODE`** — Turn this off while troubleshooting. Read Select mode carefully and check it against the `installation.csv` for this installation.
+| Composition | Starting value                                                    |
+| ----------- | ----------------------------------------------------------------- |
+| Horizontal  | `BOX_WIDTH` / width of the smallest video in `installation.csv`   |
+| Vertical    | `BOX_HEIGHT` / height of the smallest video in `installation.csv` |
+| 16×9 or 1×1 | Varies with the composition                                       |
+
+
+`SELECT_MODE` — Turn this off while troubleshooting. Read Select mode carefully and check it against the `installation.csv` for this installation.
 
 ### OUTPUT
 
@@ -270,6 +269,8 @@ From that score, the algorithm will pick one out of the top candidates for the v
 - **sqrt**: weight equals the square root of the video count (e.g. 177 → 13.3, 4 → 2.0). Ratios with more videos are still preferred, but the imbalance is compressed enough that all ratios meaningfully compete during placement.
 - **equal**: all ratios get weight 1.0 regardless of video count. Use this to treat all aspect ratios as equally likely candidates during layout generation.
 
+
+
 ### LAYOUT TRANSITIONS
 
 Transitions are how the app moves between arrangements. Transitions always fade: arrangement A fades down to black over `VIDEO_FADE_DURATION` seconds, then arrangement B fades up over another `VIDEO_FADE_DURATION` seconds. How long each arrangement is held is decided by the key video (see KEY VIDEO).
@@ -302,7 +303,11 @@ Matching always uses **any** mode (formerly `SELECT_EXACT_MATCH = false`): a vid
 - `weight` is a relative probability — a weight of `0.3` alongside two other `0.3` entries means each has a 1-in-3 chance of being picked per transition.
 - Multiple `SELECT` lines are allowed; one is chosen randomly at each transition using the weights.
 
+
+
 ### LAYOUT STRUCTURE
+
+
 
 #### ARRANGEMENTS EXPAND
 
@@ -389,6 +394,8 @@ The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
 > 4. Set `AUDIO_DEVICE` in `system_config.txt` to the exact device name shown (e.g. `Focusrite USB ASIO`). See Audio device under System config.
 > 5. Set `AUDIO_SURROUND = true` and configure `AUDIO_CHANNEL_MAP` / `AUDIO_CHANNEL_GAINS` as needed.
 > 6. Provide audio files with 4 channels (WAV/FFmpeg quad order: FL FR BL BR) in the `AUDIO_PATH` folder.
+
+
 
 ### KEY VIDEO
 
