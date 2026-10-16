@@ -1,0 +1,405 @@
+cluster_no,object,hsv_no,pose_no,width,height,ratio,file_name,duration
+cc100_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,808,1.337,output_folder__sort723_allclustercc100_p2263_t0_1779080545.609293_p39_st1_ct10.mp4,7.2
+cc100_p733_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",733,1080,808,1.337,output_folder__sort723_allclustercc100_p733_t0_1779080545.609331_p26_st1_ct10.mp4,5.7
+cc100_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,718,1.504,output_folder__sort723_allclustercc100_p734_t0_1779080545.609417_p26_st1_ct10.mp4,8.6
+cc101_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,718,1.504,output_folder__sort723_allclustercc101_p15_t0_1779080545.609449_p33_st1_ct10.mp4,25.9
+cc104_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc104_p15_t0_1779080545.60966_p29_st1_ct10.mp4,24.6
+cc105_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc105_p15_t0_1779080550.105571_p35_st1_ct10.mp4,15.5
+cc106_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc106_p2341_t0_1779080587.835506_p26_st1_ct10.mp4,11.7
+cc107_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc107_p15_t0_1779080589.180525_p30_st1_ct10.mp4,24.3
+cc116_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc116_p34_t0_1779080735.0961149_p29_st1_ct10.mp4,16.4
+cc117_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc117_p34_t0_1779080759.8364348_p33_st1_ct10.mp4,26.5
+cc117_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,924,1.169,output_folder__sort723_allclustercc117_p7_t0_1779080763.252255_p29_st1_ct10.mp4,40.2
+cc118_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc118_p15_t0_1779080807.6253219_p27_st1_ct10.mp4,11.3
+cc119_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc119_p15_t0_1779080833.8249469_p33_st1_ct10.mp4,35.0
+cc121_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc121_p15_t0_1779081007.696576_p28_st1_ct10.mp4,13.7
+cc122_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc122_p15_t0_1779081041.676678_p28_st1_ct10.mp4,35.9
+cc124_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc124_p34_t0_1779081111.826667_p35_st1_ct10.mp4,15.3
+cc125_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc125_p15_t0_1779081130.718197_p37_st1_ct10.mp4,10.2
+cc126_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,718,1080,0.665,output_folder__sort723_allclustercc126_p15_t0_1779081145.585464_p29_st1_ct10.mp4,19.1
+cc128_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc128_p15_t0_1779081273.306404_p42_st1_ct10.mp4,7.8
+cc129_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc129_p15_t0_1779081393.017901_p30_st1_ct10.mp4,10.8
+cc129_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,718,1.504,output_folder__sort723_allclustercc129_p2263_t0_1779081520.759094_p35_st1_ct10.mp4,15.5
+cc129_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc129_p2341_t0_1779081525.803877_p30_st1_ct10.mp4,8.1
+cc129_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc129_p727_t0_1779081566.488331_p45_st1_ct10.mp4,8.4
+cc129_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc129_p7_t0_1779081566.722743_p47_st1_ct10.mp4,4.4
+cc130_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc130_p15_t0_1779081585.6653068_p28_st1_ct10.mp4,13.6
+cc131_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,718,1.504,output_folder__sort723_allclustercc131_p25_t0_1779081696.626743_p27_st1_ct10.mp4,17.1
+cc131_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc131_p34_t0_1779081709.7480772_p36_st1_ct10.mp4,16.0
+cc133_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc133_p15_t0_1779081713.98469_p26_st1_ct10.mp4,5.7
+cc134_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc134_p15_t0_1779081972.054542_p25_st1_ct10.mp4,5.7
+cc136_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc136_p15_t0_1779082138.0906408_p45_st1_ct10.mp4,8.4
+cc138_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,924,1.169,output_folder__sort723_allclustercc138_p1685_t0_1779082274.6880121_p38_st1_ct10.mp4,10.0
+cc140_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc140_p2341_t0_1779082695.519244_p39_st1_ct10.mp4,10.3
+cc140_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,808,1.337,output_folder__sort723_allclustercc140_p734_t0_1779082724.278733_p40_st1_ct10.mp4,11.1
+cc156_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,862,1.253,output_folder__sort723_allclustercc156_p58_t0_1779083771.4057732_p27_st1_ct10.mp4,8.4
+cc158_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc158_p15_t0_1779083811.3375921_p27_st1_ct10.mp4,11.3
+cc161_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc161_p34_t0_1779083888.929714_p28_st1_ct10.mp4,16.6
+cc162_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc162_p34_t0_1779083950.4573388_p29_st1_ct10.mp4,10.7
+cc164_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,718,1.504,output_folder__sort723_allclustercc164_p2263_t0_1779083977.023595_p30_st1_ct10.mp4,8.1
+cc164_p586_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",586,1080,808,1.337,output_folder__sort723_allclustercc164_p586_t0_1779083985.789809_p35_st1_ct10.mp4,12.8
+cc167_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc167_p15_t0_1779084204.023463_p33_st1_ct10.mp4,26.0
+cc168_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc168_p15_t0_1779084321.062121_p40_st1_ct10.mp4,11.1
+cc169_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,810,1080,0.75,output_folder__sort723_allclustercc169_p15_t0_1779084521.515336_p29_st1_ct10.mp4,27.1
+cc170_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc170_p15_t0_1779084785.2744892_p40_st1_ct10.mp4,7.4
+cc173_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc173_p15_t0_1779085551.974464_p25_st1_ct10.mp4,2.2
+cc173_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc173_p2341_t0_1779085650.137602_p35_st1_ct10.mp4,15.3
+cc173_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,718,1.504,output_folder__sort723_allclustercc173_p29_t0_1779085655.8871932_p43_st1_ct10.mp4,8.0
+cc173_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,808,1.337,output_folder__sort723_allclustercc173_p734_t0_1779085673.736053_p28_st1_ct10.mp4,13.8
+cc174_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc174_p2341_t0_1779085679.280082_p34_st1_ct10.mp4,15.5
+cc174_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,718,1.504,output_folder__sort723_allclustercc174_p734_t0_1779085697.736324_p29_st1_ct10.mp4,8.0
+cc176_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc176_p15_t0_1779085707.204149_p34_st1_ct10.mp4,18.6
+cc176_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc176_p2341_t0_1779085836.280968_p29_st1_ct10.mp4,11.0
+cc176_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc176_p34_t0_1779085889.024294_p28_st1_ct10.mp4,8.4
+cc179_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc179_p34_t0_1779085892.808047_p37_st1_ct10.mp4,10.2
+cc17_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc17_p11_t0_1779085898.917681_p29_st1_ct10.mp4,24.3
+cc181_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc181_p11_t0_1779085915.670644_p37_st1_ct10.mp4,13.1
+cc181_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,808,1.337,output_folder__sort723_allclustercc181_p1685_t0_1779085919.075367_p34_st1_ct10.mp4,12.4
+cc181_p2230_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2230,1080,1080,1.0,output_folder__sort723_allclustercc181_p2230_t0_1779085920.191812_p37_st1_ct10.mp4,10.2
+cc181_p28_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",28,1080,808,1.337,output_folder__sort723_allclustercc181_p28_t0_1779085987.058594_p28_st1_ct10.mp4,11.1
+cc181_p35_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",35,1080,862,1.253,output_folder__sort723_allclustercc181_p35_t0_1779086010.884628_p25_st1_ct10.mp4,5.7
+cc181_p79_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",79,1080,862,1.253,output_folder__sort723_allclustercc181_p79_t0_1779086016.9332108_p53_st1_ct10.mp4,5.0
+cc182_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc182_p15_t0_1779086020.7727082_p28_st1_ct10.mp4,5.6
+cc184_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc184_p11_t0_1779086423.339031_p28_st1_ct10.mp4,19.5
+cc185_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc185_p15_t0_1779086453.17248_p28_st1_ct10.mp4,22.0
+cc186_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,1080,1.0,output_folder__sort723_allclustercc186_p25_t0_1779086532.109789_p36_st1_ct10.mp4,12.7
+cc188_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,718,1.504,output_folder__sort723_allclustercc188_p11_t0_1779086534.8815439_p35_st1_ct10.mp4,19.2
+cc188_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc188_p34_t0_1779086575.111524_p29_st1_ct10.mp4,8.1
+cc18_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,808,1.337,output_folder__sort723_allclustercc18_p1685_t0_1779086582.915767_p30_st1_ct10.mp4,8.1
+cc18_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,808,1.337,output_folder__sort723_allclustercc18_p2263_t0_1779086606.5559711_p29_st1_ct10.mp4,10.7
+cc18_p586_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",586,1080,718,1.504,output_folder__sort723_allclustercc18_p586_t0_1779086633.914349_p37_st1_ct10.mp4,9.7
+cc18_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,718,1.504,output_folder__sort723_allclustercc18_p727_t0_1779086648.851829_p27_st1_ct10.mp4,8.4
+cc18_p733_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",733,1080,718,1.504,output_folder__sort723_allclustercc18_p733_t0_1779086660.094163_p30_st1_ct10.mp4,8.1
+cc18_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,718,1.504,output_folder__sort723_allclustercc18_p734_t0_1779086667.02196_p28_st1_ct10.mp4,2.5
+cc190_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc190_p15_t0_1779086676.379443_p28_st1_ct10.mp4,13.9
+cc194_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc194_p15_t0_1779086723.4330602_p34_st1_ct10.mp4,21.7
+cc197_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc197_p15_t0_1779086838.463361_p34_st1_ct10.mp4,26.9
+cc197_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,862,1.253,output_folder__sort723_allclustercc197_p25_t0_1779087024.948308_p33_st1_ct10.mp4,20.1
+cc204_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc204_p15_t0_1779087030.4910452_p29_st1_ct10.mp4,16.2
+cc207_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc207_p15_t0_1779087086.92742_p32_st1_ct10.mp4,39.7
+cc207_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc207_p2341_t0_1779087329.4497259_p36_st1_ct10.mp4,9.4
+cc207_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,862,1.253,output_folder__sort723_allclustercc207_p734_t0_1779087337.392066_p42_st1_ct10.mp4,7.8
+cc207_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc207_p7_t0_1779087340.293607_p30_st1_ct10.mp4,8.1
+cc20_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,718,1.504,output_folder__sort723_allclustercc20_p15_t0_1779087349.7774441_p21_st1_ct10.mp4,3.0
+cc218_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc218_p1685_t0_1779087443.623807_p29_st1_ct10.mp4,11.0
+cc218_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc218_p58_t0_1779087465.215554_p27_st1_ct10.mp4,8.4
+cc221_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc221_p15_t0_1779087468.2509341_p32_st1_ct10.mp4,25.5
+cc221_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,808,1.337,output_folder__sort723_allclustercc221_p1685_t0_1779087469.6579142_p42_st1_ct10.mp4,7.8
+cc221_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc221_p2341_t0_1779087633.075346_p42_st1_ct10.mp4,7.8
+cc221_p258_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",258,1080,862,1.253,output_folder__sort723_allclustercc221_p258_t0_1779087638.747387_p42_st1_ct10.mp4,7.8
+cc221_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc221_p727_t0_1779087645.649277_p24_st1_ct10.mp4,6.3
+cc222_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc222_p15_t0_1779087650.171856_p37_st1_ct10.mp4,13.0
+cc224_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc224_p34_t0_1779087687.558539_p39_st1_ct10.mp4,10.8
+cc226_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc226_p15_t0_1779087698.745118_p28_st1_ct10.mp4,19.4
+cc227_p282_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",282,1080,862,1.253,output_folder__sort723_allclustercc227_p282_t0_1779087761.2912488_p29_st1_ct10.mp4,5.4
+cc22_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc22_p34_t0_1779087996.669755_p27_st1_ct10.mp4,11.4
+cc232_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc232_p1685_t0_1779088015.157207_p29_st1_ct10.mp4,8.1
+cc232_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,924,1.169,output_folder__sort723_allclustercc232_p58_t0_1779088020.504864_p34_st1_ct10.mp4,12.4
+cc232_p79_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",79,1080,924,1.169,output_folder__sort723_allclustercc232_p79_t0_1779088024.2529678_p39_st1_ct10.mp4,7.2
+cc234_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc234_p15_t0_1779088068.749957_p28_st1_ct10.mp4,13.7
+cc235_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,718,1.504,output_folder__sort723_allclustercc235_p29_t0_1779088238.711155_p36_st1_ct10.mp4,15.8
+cc235_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,718,1.504,output_folder__sort723_allclustercc235_p58_t0_1779088256.892812_p37_st1_ct10.mp4,10.2
+cc240_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,924,1.169,output_folder__sort723_allclustercc240_p1685_t0_1779088268.117046_p26_st1_ct10.mp4,8.5
+cc241_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,924,1.169,output_folder__sort723_allclustercc241_p25_t0_1779088627.873742_p29_st1_ct10.mp4,19.1
+cc252_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,718,1.504,output_folder__sort723_allclustercc252_p2263_t0_1779088935.903868_p44_st1_ct10.mp4,8.2
+cc252_p586_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",586,1080,718,1.504,output_folder__sort723_allclustercc252_p586_t0_1779088952.278759_p42_st1_ct10.mp4,7.8
+cc252_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,718,1.504,output_folder__sort723_allclustercc252_p727_t0_1779088956.180189_p44_st1_ct10.mp4,8.2
+cc252_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,718,1.504,output_folder__sort723_allclustercc252_p734_t0_1779088965.419604_p29_st1_ct10.mp4,11.0
+cc270_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc270_p15_t0_1779090022.991429_p28_st1_ct10.mp4,16.5
+cc272_p258_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",258,1080,808,1.337,output_folder__sort723_allclustercc272_p258_t0_1779090383.117326_p38_st1_ct10.mp4,10.0
+cc273_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc273_p15_t0_1779090427.665094_p28_st1_ct10.mp4,22.0
+cc276_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,718,1.504,output_folder__sort723_allclustercc276_p1685_t0_1779090551.587303_p29_st1_ct10.mp4,8.2
+cc276_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc276_p2341_t0_1779090594.226075_p28_st1_ct10.mp4,11.1
+cc276_p258_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",258,1080,808,1.337,output_folder__sort723_allclustercc276_p258_t0_1779090595.267702_p42_st1_ct10.mp4,7.8
+cc276_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,718,1.504,output_folder__sort723_allclustercc276_p727_t0_1779090598.44688_p40_st1_ct10.mp4,7.4
+cc276_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,718,1.504,output_folder__sort723_allclustercc276_p734_t0_1779090633.481719_p26_st1_ct10.mp4,8.7
+cc282_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc282_p15_t0_1779090850.947576_p36_st1_ct10.mp4,9.9
+cc285_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,808,1.337,output_folder__sort723_allclustercc285_p1685_t0_1779091065.822609_p38_st1_ct10.mp4,13.4
+cc286_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc286_p15_t0_1779091084.170769_p29_st1_ct10.mp4,8.2
+cc28_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc28_p15_t0_1779091190.577421_p29_st1_ct10.mp4,5.4
+cc290_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc290_p11_t0_1779091382.417247_p51_st1_ct10.mp4,4.8
+cc291_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc291_p34_t0_1779091675.115935_p24_st1_ct10.mp4,6.3
+cc294_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc294_p727_t0_1779091744.707812_p27_st1_ct10.mp4,8.4
+cc295_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc295_p15_t0_1779091753.831569_p34_st1_ct10.mp4,14.9
+cc299_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc299_p15_t0_1779091838.556351_p34_st1_ct10.mp4,24.1
+cc299_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc299_p2341_t0_1779092184.2614882_p29_st1_ct10.mp4,26.9
+cc299_p586_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",586,1080,808,1.337,output_folder__sort723_allclustercc299_p586_t0_1779092221.6856902_p27_st1_ct10.mp4,5.7
+cc299_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,808,1.337,output_folder__sort723_allclustercc299_p734_t0_1779092244.7605739_p36_st1_ct10.mp4,12.7
+cc299_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc299_p7_t0_1779092287.757817_p42_st1_ct10.mp4,7.8
+cc301_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc301_p11_t0_1779092290.9491498_p40_st1_ct10.mp4,7.4
+cc301_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc301_p7_t0_1779092320.115305_p27_st1_ct10.mp4,5.7
+cc302_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,862,1.253,output_folder__sort723_allclustercc302_p7_t0_1779092320.907616_p24_st1_ct10.mp4,6.3
+cc306_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc306_p15_t0_1779092324.4894552_p38_st1_ct10.mp4,10.0
+cc308_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,924,1.169,output_folder__sort723_allclustercc308_p7_t0_1779092668.918904_p37_st1_ct10.mp4,13.6
+cc30_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc30_p58_t0_1779092677.877463_p34_st1_ct10.mp4,12.4
+cc311_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,718,1.504,output_folder__sort723_allclustercc311_p1685_t0_1779093077.046785_p29_st1_ct10.mp4,8.1
+cc312_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc312_p34_t0_1779093096.667358_p16_st1_ct10.mp4,1.3
+cc319_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc319_p1685_t0_1779093106.295988_p38_st1_ct10.mp4,7.0
+cc320_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc320_p34_t0_1779093121.718084_p28_st1_ct10.mp4,5.6
+cc322_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc322_p727_t0_1779093135.1626801_p26_st1_ct10.mp4,8.6
+cc328_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc328_p15_t0_1779093184.494921_p35_st1_ct10.mp4,12.8
+cc329_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc329_p34_t0_1779093261.247072_p40_st1_ct10.mp4,7.4
+cc329_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc329_p727_t0_1779093265.7848341_p25_st1_ct10.mp4,9.0
+cc32_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc32_p15_t0_1779093265.988658_p32_st1_ct10.mp4,25.5
+cc32_p586_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",586,1080,808,1.337,output_folder__sort723_allclustercc32_p586_t0_1779093454.212831_p45_st1_ct10.mp4,8.4
+cc330_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,862,1.253,output_folder__sort723_allclustercc330_p58_t0_1779093481.44748_p25_st1_ct10.mp4,9.0
+cc331_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc331_p34_t0_1779093512.364544_p39_st1_ct10.mp4,10.3
+cc332_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,718,1080,0.665,output_folder__sort723_allclustercc332_p15_t0_1779093517.01165_p33_st1_ct10.mp4,24.0
+cc335_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc335_p15_t0_1779093620.3751092_p32_st1_ct10.mp4,30.9
+cc336_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,808,1.337,output_folder__sort723_allclustercc336_p2263_t0_1779093727.397554_p26_st1_ct10.mp4,5.7
+cc337_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc337_p15_t0_1779093741.722989_p34_st1_ct10.mp4,21.2
+cc33_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc33_p15_t0_1779093890.195573_p26_st1_ct10.mp4,8.5
+cc340_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,924,1.169,output_folder__sort723_allclustercc340_p7_t0_1779094041.548225_p40_st1_ct10.mp4,11.1
+cc343_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc343_p15_t0_1779094081.894681_p36_st1_ct10.mp4,15.8
+cc348_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc348_p34_t0_1779094411.769036_p34_st1_ct10.mp4,14.9
+cc350_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,718,1.504,output_folder__sort723_allclustercc350_p25_t0_1779094414.6518452_p28_st1_ct10.mp4,11.1
+cc359_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc359_p11_t0_1779094497.3492339_p30_st1_ct10.mp4,5.4
+cc35_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc35_p15_t0_1779094499.193873_p53_st1_ct10.mp4,5.0
+cc364_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc364_p15_t0_1779094715.775031_p27_st1_ct10.mp4,5.7
+cc369_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc369_p11_t0_1779094743.124108_p28_st1_ct10.mp4,11.0
+cc369_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc369_p34_t0_1779094853.7952251_p28_st1_ct10.mp4,8.3
+cc371_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc371_p34_t0_1779094889.591039_p24_st1_ct10.mp4,6.3
+cc37_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc37_p15_t0_1779095444.176089_p39_st1_ct10.mp4,10.8
+cc381_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc381_p34_t0_1779096012.471457_p46_st1_ct10.mp4,4.3
+cc384_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc384_p15_t0_1779096062.0352619_p29_st1_ct10.mp4,21.7
+cc385_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc385_p11_t0_1779096284.353517_p35_st1_ct10.mp4,12.8
+cc390_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc390_p15_t0_1779096340.803915_p28_st1_ct10.mp4,11.1
+cc3_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,1080,1.0,output_folder__sort723_allclustercc3_p1685_t0_1779096658.8552299_p39_st1_ct10.mp4,7.2
+cc409_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc409_p34_t0_1779097140.343953_p26_st1_ct10.mp4,8.6
+cc410_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc410_p15_t0_1779097141.044775_p32_st1_ct10.mp4,25.6
+cc410_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc410_p2341_t0_1779097472.940504_p28_st1_ct10.mp4,16.4
+cc413_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,718,1.504,output_folder__sort723_allclustercc413_p11_t0_1779097501.313963_p24_st1_ct10.mp4,6.3
+cc423_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,718,1.504,output_folder__sort723_allclustercc423_p58_t0_1779097814.12922_p39_st1_ct10.mp4,10.3
+cc425_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,718,1.504,output_folder__sort723_allclustercc425_p11_t0_1779097814.279247_p34_st1_ct10.mp4,21.7
+cc425_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc425_p34_t0_1779097818.4718652_p34_st1_ct10.mp4,12.4
+cc426_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc426_p11_t0_1779097824.2535481_p40_st1_ct10.mp4,11.1
+cc426_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc426_p15_t0_1779097842.549254_p28_st1_ct10.mp4,11.1
+cc42_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc42_p15_t0_1779097888.474644_p40_st1_ct10.mp4,7.4
+cc432_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,718,1.504,output_folder__sort723_allclustercc432_p11_t0_1779098080.919158_p29_st1_ct10.mp4,16.4
+cc438_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc438_p34_t0_1779098128.11093_p29_st1_ct10.mp4,16.5
+cc455_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc455_p1685_t0_1779098302.959466_p40_st1_ct10.mp4,7.4
+cc457_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc457_p34_t0_1779098337.0017972_p17_st1_ct10.mp4,1.3
+cc458_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc458_p15_t0_1779098341.38373_p18_st1_ct10.mp4,3.4
+cc459_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc459_p11_t0_1779098366.048404_p19_st1_ct10.mp4,3.2
+cc45_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc45_p11_t0_1779098430.264097_p36_st1_ct10.mp4,12.6
+cc45_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc45_p34_t0_1779098776.8777_p29_st1_ct10.mp4,13.8
+cc460_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc460_p727_t0_1779099071.2825038_p38_st1_ct10.mp4,7.0
+cc462_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc462_p11_t0_1779099108.744687_p29_st1_ct10.mp4,16.2
+cc463_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc463_p11_t0_1779099121.6907232_p29_st1_ct10.mp4,13.6
+cc471_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc471_p15_t0_1779099536.207613_p29_st1_ct10.mp4,13.4
+cc474_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,1080,1.0,output_folder__sort723_allclustercc474_p7_t0_1779100466.7116868_p29_st1_ct10.mp4,19.0
+cc479_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc479_p1685_t0_1779100551.435636_p51_st1_ct10.mp4,4.8
+cc479_p35_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",35,1080,862,1.253,output_folder__sort723_allclustercc479_p35_t0_1779100555.695078_p41_st1_ct10.mp4,7.6
+cc479_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,862,1.253,output_folder__sort723_allclustercc479_p58_t0_1779100581.1296818_p29_st1_ct10.mp4,27.0
+cc479_p79_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",79,1080,808,1.337,output_folder__sort723_allclustercc479_p79_t0_1779100598.434071_p37_st1_ct10.mp4,13.6
+cc47_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,718,1.504,output_folder__sort723_allclustercc47_p1685_t0_1779100630.6778839_p40_st1_ct10.mp4,7.4
+cc47_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,718,1.504,output_folder__sort723_allclustercc47_p2341_t0_1779100638.335022_p39_st1_ct10.mp4,10.8
+cc47_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,808,1.337,output_folder__sort723_allclustercc47_p734_t0_1779100650.610334_p35_st1_ct10.mp4,12.3
+cc47_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc47_p7_t0_1779100654.252337_p26_st1_ct10.mp4,8.6
+cc486_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,1080,1.0,output_folder__sort723_allclustercc486_p7_t0_1779100670.611327_p33_st1_ct10.mp4,20.1
+cc487_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc487_p15_t0_1779100683.602518_p32_st1_ct10.mp4,28.2
+cc487_p2263_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2263,1080,808,1.337,output_folder__sort723_allclustercc487_p2263_t0_1779100918.9164171_p24_st1_ct10.mp4,3.0
+cc487_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,718,1.504,output_folder__sort723_allclustercc487_p727_t0_1779100938.038489_p28_st1_ct10.mp4,8.4
+cc490_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc490_p15_t0_1779100950.157992_p32_st1_ct10.mp4,31.0
+cc490_p733_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",733,1080,808,1.337,output_folder__sort723_allclustercc490_p733_t0_1779101158.5072708_p36_st1_ct10.mp4,9.9
+cc490_p960_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",960,1080,924,1.169,output_folder__sort723_allclustercc490_p960_t0_1779101166.737731_p26_st1_ct10.mp4,11.7
+cc494_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc494_p15_t0_1779101175.478067_p35_st1_ct10.mp4,18.4
+cc495_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,862,1.253,output_folder__sort723_allclustercc495_p7_t0_1779101577.104678_p28_st1_ct10.mp4,20.0
+cc498_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc498_p15_t0_1779101621.277819_p36_st1_ct10.mp4,16.0
+cc501_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc501_p34_t0_1779101855.752046_p29_st1_ct10.mp4,13.6
+cc503_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc503_p34_t0_1779101892.318114_p29_st1_ct10.mp4,11.0
+cc505_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,808,1.337,output_folder__sort723_allclustercc505_p29_t0_1779101896.5731819_p39_st1_ct10.mp4,10.8
+cc505_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc505_p58_t0_1779101899.7454531_p37_st1_ct10.mp4,10.2
+cc514_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,862,1080,0.798,output_folder__sort723_allclustercc514_p15_t0_1779102178.917143_p30_st1_ct10.mp4,8.1
+cc515_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,862,1.253,output_folder__sort723_allclustercc515_p58_t0_1779102458.0971751_p39_st1_ct10.mp4,10.3
+cc516_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc516_p11_t0_1779102548.934193_p43_st1_ct10.mp4,8.0
+cc51_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,924,1.169,output_folder__sort723_allclustercc51_p34_t0_1779102913.54486_p28_st1_ct10.mp4,11.0
+cc523_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc523_p15_t0_1779102972.597316_p46_st1_ct10.mp4,4.3
+cc523_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc523_p1685_t0_1779102996.288796_p27_st1_ct10.mp4,5.7
+cc537_p282_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",282,862,1080,0.798,output_folder__sort723_allclustercc537_p282_t0_1779103566.348164_p35_st1_ct10.mp4,12.8
+cc547_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,862,1.253,output_folder__sort723_allclustercc547_p7_t0_1779104225.932714_p19_st1_ct10.mp4,1.5
+cc550_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,924,1.169,output_folder__sort723_allclustercc550_p11_t0_1779104226.752864_p22_st1_ct10.mp4,1.9
+cc552_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc552_p11_t0_1779104234.7011478_p16_st1_ct10.mp4,1.3
+cc573_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc573_p34_t0_1779105234.8071759_p28_st1_ct10.mp4,11.0
+cc576_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,1080,1.0,output_folder__sort723_allclustercc576_p7_t0_1779105387.121954_p29_st1_ct10.mp4,13.8
+cc579_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc579_p34_t0_1779106061.250442_p27_st1_ct10.mp4,8.4
+cc580_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc580_p34_t0_1779106115.407978_p33_st1_ct10.mp4,29.4
+cc581_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc581_p15_t0_1779106116.650694_p30_st1_ct10.mp4,8.1
+cc583_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc583_p15_t0_1779106193.818851_p35_st1_ct10.mp4,18.5
+cc587_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc587_p34_t0_1779106249.804045_p36_st1_ct10.mp4,12.6
+cc587_p734_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",734,1080,862,1.253,output_folder__sort723_allclustercc587_p734_t0_1779106256.643769_p37_st1_ct10.mp4,10.2
+cc589_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc589_p15_t0_1779106258.3773592_p34_st1_ct10.mp4,21.2
+cc593_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc593_p15_t0_1779106565.406471_p32_st1_ct10.mp4,23.2
+cc597_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,924,1080,0.856,output_folder__sort723_allclustercc597_p15_t0_1779106718.377913_p35_st1_ct10.mp4,18.4
+cc598_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,924,1.169,output_folder__sort723_allclustercc598_p34_t0_1779106736.330131_p42_st1_ct10.mp4,7.8
+cc599_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc599_p34_t0_1779106757.218213_p28_st1_ct10.mp4,11.0
+cc59_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc59_p34_t0_1779106758.382866_p32_st1_ct10.mp4,34.8
+cc601_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc601_p15_t0_1779106771.083828_p28_st1_ct10.mp4,13.6
+cc602_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc602_p15_t0_1779106849.445594_p32_st1_ct10.mp4,41.8
+cc608_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc608_p34_t0_1779107170.5769038_p27_st1_ct10.mp4,11.1
+cc610_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc610_p15_t0_1779107381.664188_p29_st1_ct10.mp4,13.8
+cc611_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,1080,1.0,output_folder__sort723_allclustercc611_p25_t0_1779107482.8339_p28_st1_ct10.mp4,11.0
+cc619_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc619_p15_t0_1779108341.969702_p26_st1_ct10.mp4,8.6
+cc626_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,718,1080,0.665,output_folder__sort723_allclustercc626_p15_t0_1779108430.023895_p30_st1_ct10.mp4,8.1
+cc628_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc628_p11_t0_1779108594.9719949_p19_st1_ct10.mp4,1.5
+cc632_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,718,1080,0.665,output_folder__sort723_allclustercc632_p15_t0_1779108652.337728_p42_st1_ct10.mp4,7.8
+cc638_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc638_p7_t0_1779109120.21901_p24_st1_ct10.mp4,2.1
+cc641_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc641_p15_t0_1779109149.937566_p27_st1_ct10.mp4,8.3
+cc662_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc662_p15_t0_1779110356.747197_p33_st1_ct10.mp4,26.2
+cc670_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc670_p15_t0_1779110626.1507258_p33_st1_ct10.mp4,18.0
+cc673_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc673_p11_t0_1779110854.554523_p28_st1_ct10.mp4,16.7
+cc673_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc673_p34_t0_1779110866.483506_p34_st1_ct10.mp4,21.0
+cc674_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc674_p34_t0_1779110911.4279392_p42_st1_ct10.mp4,7.8
+cc676_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc676_p11_t0_1779110944.2539551_p29_st1_ct10.mp4,11.0
+cc678_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc678_p15_t0_1779111032.6527832_p33_st1_ct10.mp4,29.0
+cc693_p25_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",25,1080,924,1.169,output_folder__sort723_allclustercc693_p25_t0_1779111356.032728_p27_st1_ct10.mp4,2.8
+cc698_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc698_p11_t0_1779111501.1895208_p28_st1_ct10.mp4,5.6
+cc698_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc698_p15_t0_1779111577.9088352_p29_st1_ct10.mp4,29.7
+cc69_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc69_p15_t0_1779111884.37762_p29_st1_ct10.mp4,46.2
+cc69_p282_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",282,1080,1080,1.0,output_folder__sort723_allclustercc69_p282_t0_1779112169.518868_p29_st1_ct10.mp4,5.4
+cc701_p258_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",258,1080,808,1.337,output_folder__sort723_allclustercc701_p258_t0_1779112384.801051_p42_st1_ct10.mp4,7.8
+cc701_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc701_p58_t0_1779112393.117235_p30_st1_ct10.mp4,18.9
+cc701_p79_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",79,1080,808,1.337,output_folder__sort723_allclustercc701_p79_t0_1779112410.832247_p27_st1_ct10.mp4,11.1
+cc702_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,718,1080,0.665,output_folder__sort723_allclustercc702_p15_t0_1779112476.341281_p28_st1_ct10.mp4,27.7
+cc705_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc705_p15_t0_1779112685.675374_p30_st1_ct10.mp4,54.0
+cc705_p28_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",28,1080,924,1.169,output_folder__sort723_allclustercc705_p28_t0_1779113031.617975_p27_st1_ct10.mp4,2.8
+cc707_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc707_p15_t0_1779113065.084429_p34_st1_ct10.mp4,12.4
+cc708_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,808,1.337,output_folder__sort723_allclustercc708_p7_t0_1779113185.3320582_p32_st1_ct10.mp4,26.1
+cc710_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc710_p15_t0_1779113198.746274_p28_st1_ct10.mp4,33.3
+cc711_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc711_p34_t0_1779113659.385837_p39_st1_ct10.mp4,10.8
+cc71_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc71_p34_t0_1779113718.113205_p44_st1_ct10.mp4,8.2
+cc720_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,718,1.504,output_folder__sort723_allclustercc720_p727_t0_1779113738.646824_p23_st1_ct10.mp4,2.0
+cc721_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc721_p34_t0_1779113739.7904809_p29_st1_ct10.mp4,8.1
+cc722_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc722_p2341_t0_1779113739.969899_p29_st1_ct10.mp4,10.7
+cc726_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,718,1.504,output_folder__sort723_allclustercc726_p11_t0_1779113775.447932_p29_st1_ct10.mp4,29.6
+cc726_p181_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",181,1080,808,1.337,output_folder__sort723_allclustercc726_p181_t0_1779113780.640476_p35_st1_ct10.mp4,9.6
+cc726_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,808,1.337,output_folder__sort723_allclustercc726_p29_t0_1779113791.963376_p28_st1_ct10.mp4,13.7
+cc726_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc726_p34_t0_1779113792.980674_p33_st1_ct10.mp4,26.2
+cc726_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc726_p58_t0_1779113796.8964858_p29_st1_ct10.mp4,16.4
+cc729_p7_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",7,1080,924,1.169,output_folder__sort723_allclustercc729_p7_t0_1779113834.808364_p35_st1_ct10.mp4,12.3
+cc731_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc731_p15_t0_1779113835.327473_p37_st1_ct10.mp4,13.1
+cc734_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc734_p11_t0_1779113895.613674_p25_st1_ct10.mp4,9.0
+cc734_p181_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",181,1080,862,1.253,output_folder__sort723_allclustercc734_p181_t0_1779113943.7307498_p41_st1_ct10.mp4,7.6
+cc734_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc734_p34_t0_1779113995.880039_p18_st1_ct10.mp4,3.4
+cc736_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc736_p15_t0_1779114010.694752_p29_st1_ct10.mp4,16.4
+cc738_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,808,1.337,output_folder__sort723_allclustercc738_p15_t0_1779114032.3102632_p33_st1_ct10.mp4,20.4
+cc741_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc741_p15_t0_1779114180.7942011_p33_st1_ct10.mp4,23.4
+cc745_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,862,1.253,output_folder__sort723_allclustercc745_p11_t0_1779114288.581113_p40_st1_ct10.mp4,11.1
+cc745_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,924,1.169,output_folder__sort723_allclustercc745_p34_t0_1779114333.8139699_p26_st1_ct10.mp4,11.7
+cc747_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,718,1.504,output_folder__sort723_allclustercc747_p34_t0_1779114337.08897_p28_st1_ct10.mp4,8.3
+cc747_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,862,1.253,output_folder__sort723_allclustercc747_p58_t0_1779114345.1503842_p44_st1_ct10.mp4,8.2
+cc749_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc749_p15_t0_1779114355.539094_p26_st1_ct10.mp4,11.7
+cc74_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc74_p15_t0_1779114593.407974_p38_st1_ct10.mp4,13.4
+cc74_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,862,1.253,output_folder__sort723_allclustercc74_p34_t0_1779114694.54543_p35_st1_ct10.mp4,18.7
+cc751_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc751_p34_t0_1779114731.7764852_p28_st1_ct10.mp4,16.8
+cc752_p1685_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1685,1080,862,1.253,output_folder__sort723_allclustercc752_p1685_t0_1779114762.808558_p28_st1_ct10.mp4,8.4
+cc752_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,808,1.337,output_folder__sort723_allclustercc752_p2341_t0_1779114777.3729868_p37_st1_ct10.mp4,10.2
+cc752_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,808,1.337,output_folder__sort723_allclustercc752_p29_t0_1779114783.567196_p44_st1_ct10.mp4,8.2
+cc752_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc752_p34_t0_1779114813.573963_p44_st1_ct10.mp4,8.2
+cc752_p727_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",727,1080,808,1.337,output_folder__sort723_allclustercc752_p727_t0_1779114843.0389178_p27_st1_ct10.mp4,8.4
+cc752_p733_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",733,1080,808,1.337,output_folder__sort723_allclustercc752_p733_t0_1779114854.307521_p24_st1_ct10.mp4,6.3
+cc756_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc756_p15_t0_1779114871.451405_p36_st1_ct10.mp4,13.2
+cc762_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc762_p34_t0_1779114910.8777978_p24_st1_ct10.mp4,3.0
+cc77_p11_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",11,1080,808,1.337,output_folder__sort723_allclustercc77_p11_t0_1779114928.125034_p39_st1_ct10.mp4,10.3
+cc77_p34_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",34,1080,808,1.337,output_folder__sort723_allclustercc77_p34_t0_1779114929.7417548_p26_st1_ct10.mp4,8.5
+cc78_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,862,1.253,output_folder__sort723_allclustercc78_p15_t0_1779114933.995222_p34_st1_ct10.mp4,14.8
+cc79_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,810,1080,0.75,output_folder__sort723_allclustercc79_p15_t0_1779114955.988868_p29_st1_ct10.mp4,16.4
+cc7_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,1080,1.0,output_folder__sort723_allclustercc7_p15_t0_1779115004.589306_p34_st1_ct10.mp4,23.9
+cc80_p29_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",29,1080,808,1.337,output_folder__sort723_allclustercc80_p29_t0_1779115112.213362_p17_st1_ct10.mp4,3.4
+cc80_p58_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",58,1080,808,1.337,output_folder__sort723_allclustercc80_p58_t0_1779115160.4953668_p29_st1_ct10.mp4,19.1
+cc82_p282_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",282,1080,808,1.337,output_folder__sort723_allclustercc82_p282_t0_1779115332.544949_p35_st1_ct10.mp4,18.7
+cc82_p437_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",437,1080,808,1.337,output_folder__sort723_allclustercc82_p437_t0_1779115335.4766889_p45_st1_ct10.mp4,8.4
+cc84_p2341_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",2341,1080,1080,1.0,output_folder__sort723_allclustercc84_p2341_t0_1779115372.801769_p42_st1_ct10.mp4,7.8
+cc89_p15_t0,27,"{'background_hsv_bins': [], 'object_hsv_bins': []}",15,1080,924,1.169,output_folder__sort723_allclustercc89_p15_t0_1779115381.104844_p29_st1_ct10.mp4,19.0
+cc89_p258_t0,67,"{'background_hsv_bins': [], 'object_hsv_bins': []}",258,1080,808,1.337,output_folder__sort723_allclustercc89_p258_t0_1779115566.306514_p38_st1_ct10.mp4,10.5
+cc104_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc104_p1_t0_h0-13+15-22_1779080545.609775_p29_st1_ct10.mp4,52.2
+cc104_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc104_p1_t0_h0-13+15-22_1779080545.609775_p29_st1_ct10.mp4,52.2
+cc104_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc104_p1_t0_h2_1779080545.610132_p31_st1_ct10.mp4,61.6
+cc105_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,718,1.504,output_folder__sort723_p1_100tobuildclustercc105_p1_t0_h2_1779080580.183071_p29_st1_ct10.mp4,44.3
+cc107_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc107_p1_t0_h2_1779080612.99229_p29_st1_ct10.mp4,43.0
+cc110_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc110_p1_t0_h0-13+15-22_1779080630.992775_p29_st1_ct10.mp4,57.5
+cc110_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc110_p1_t0_h2_1779080718.595062_p32_st1_ct10.mp4,58.9
+cc118_p1_t0,0,"{'background_hsv_bins': [], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc118_p1_t0_1779080828.780892_p32_st1_ct10.mp4,48.4
+cc119_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc119_p1_t0_h0-13+15-22_1779080878.892956_p29_st1_ct10.mp4,57.2
+cc156_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc156_p1_t0_h0-13+15-22_1779083392.204938_p32_st1_ct10.mp4,61.8
+cc156_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc156_p1_t0_h0-13+15-22_1779083392.204938_p32_st1_ct10.mp4,61.8
+cc156_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc156_p1_t0_h1_1779083473.769208_p29_st1_ct10.mp4,43.0
+cc166_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc166_p1_t0_h0-13+15-22_1779084020.154618_p32_st1_ct10.mp4,56.6
+cc166_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc166_p1_t0_h0-13+15-22_1779084020.154618_p32_st1_ct10.mp4,56.6
+cc166_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc166_p1_t0_h2_1779084183.078343_p29_st1_ct10.mp4,46.1
+cc167_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc167_p1_t0_h0-13+15-22_1779084256.6472352_p32_st1_ct10.mp4,56.5
+cc167_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc167_p1_t0_h2_1779084300.888771_p32_st1_ct10.mp4,45.6
+cc172_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc172_p1_t0_h0-13+15-22_1779084857.039458_p29_st1_ct10.mp4,40.2
+cc172_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc172_p1_t0_h1_1779085304.923075_p29_st1_ct10.mp4,56.4
+cc172_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc172_p1_t0_h2_1779085395.297465_p32_st1_ct10.mp4,61.9
+cc172_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc172_p1_t0_h2_1779085395.297465_p32_st1_ct10.mp4,61.9
+cc173_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc173_p1_t0_h0-13+15-22_1779085571.093384_p29_st1_ct10.mp4,43.7
+cc197_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc197_p1_t0_h2_1779086979.4707022_p32_st1_ct10.mp4,47.6
+cc207_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc207_p1_t0_h0-13+15-22_1779087088.39325_p29_st1_ct10.mp4,54.7
+cc221_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc221_p1_t0_h0-13+15-22_1779087503.1596842_p30_st1_ct10.mp4,45.9
+cc221_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc221_p1_t0_h0-13+15-22_1779087503.1596842_p30_st1_ct10.mp4,45.9
+cc221_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc221_p1_t0_h2_1779087569.2748742_p32_st1_ct10.mp4,48.0
+cc265_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc265_p1_t0_h2_1779089769.828546_p29_st1_ct10.mp4,43.4
+cc288_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc288_p1_t0_h0-13+15-22_1779091130.711762_p29_st1_ct10.mp4,41.6
+cc28_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc28_p1_t0_h0-13+15-22_1779091359.319401_p29_st1_ct10.mp4,51.5
+cc290_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc290_p1_t0_h2_1779091636.0084321_p32_st1_ct10.mp4,42.6
+cc299_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc299_p1_t0_h0-13+15-22_1779091889.84593_p29_st1_ct10.mp4,48.7
+cc299_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc299_p1_t0_h0-13+15-22_1779091889.84593_p29_st1_ct10.mp4,48.7
+cc299_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc299_p1_t0_h2_1779092134.6789298_p29_st1_ct10.mp4,45.6
+cc310_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc310_p1_t0_h1_1779092965.7087061_p31_st1_ct10.mp4,58.1
+cc324_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc324_p1_t0_h2_1779093178.232942_p32_st1_ct10.mp4,53.5
+cc32_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc32_p1_t0_h2_1779093395.4884648_p32_st1_ct10.mp4,39.8
+cc332_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,718,1080,0.665,output_folder__sort723_p1_100tobuildclustercc332_p1_t0_h0-13+15-22_1779093528.0088801_p29_st1_ct10.mp4,44.2
+cc332_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,718,1080,0.665,output_folder__sort723_p1_100tobuildclustercc332_p1_t0_h2_1779093619.402047_p29_st1_ct10.mp4,51.3
+cc340_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc340_p1_t0_h0-13+15-22_1779093900.658543_p29_st1_ct10.mp4,48.8
+cc399_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc399_p1_t0_h0-13+15-22_1779096525.632056_p31_st1_ct10.mp4,58.1
+cc399_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc399_p1_t0_h2_1779096629.973163_p32_st1_ct10.mp4,56.3
+cc401_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc401_p1_t0_h0-13+15-22_1779096720.454248_p29_st1_ct10.mp4,46.9
+cc46_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc46_p1_t0_h1_1779099368.066557_p32_st1_ct10.mp4,53.4
+cc46_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc46_p1_t0_h2_1779099419.245451_p32_st1_ct10.mp4,50.9
+cc46_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc46_p1_t0_h2_1779099419.245451_p32_st1_ct10.mp4,50.9
+cc472_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc472_p1_t0_h2_1779100084.8869371_p29_st1_ct10.mp4,45.6
+cc472_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc472_p1_t0_h2_1779100084.8869371_p29_st1_ct10.mp4,45.6
+cc474_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc474_p1_t0_h0-13+15-22_1779100314.831295_p29_st1_ct10.mp4,54.7
+cc478_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc478_p1_t0_h0-13+15-22_1779100477.9527738_p29_st1_ct10.mp4,52.1
+cc487_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,718,1.504,output_folder__sort723_p1_100tobuildclustercc487_p1_t0_h2_1779100871.108779_p32_st1_ct10.mp4,48.1
+cc490_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc490_p1_t0_h2_1779101015.7679539_p29_st1_ct10.mp4,44.3
+cc494_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc494_p1_t0_h0-13+15-22_1779101183.360472_p29_st1_ct10.mp4,40.8
+cc495_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc495_p1_t0_h2_1779101486.6857688_p29_st1_ct10.mp4,37.6
+cc498_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc498_p1_t0_h0-13+15-22_1779101665.416496_p29_st1_ct10.mp4,52.2
+cc498_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc498_p1_t0_h2_1779101832.722951_p31_st1_ct10.mp4,55.3
+cc507_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc507_p1_t0_h0-13+15-22_1779101961.9715998_p29_st1_ct10.mp4,49.5
+cc507_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc507_p1_t0_h0-13+15-22_1779101961.9715998_p29_st1_ct10.mp4,49.5
+cc507_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc507_p1_t0_h2_1779101983.68617_p31_st1_ct10.mp4,47.6
+cc572_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc572_p1_t0_h2_1779105193.109177_p31_st1_ct10.mp4,44.8
+cc572_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc572_p1_t0_h2_1779105193.109177_p31_st1_ct10.mp4,44.8
+cc578_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc578_p1_t0_h2_1779105770.5822551_p32_st1_ct10.mp4,47.8
+cc589_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc589_p1_t0_h0-13+15-22_1779106310.648035_p31_st1_ct10.mp4,47.6
+cc589_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc589_p1_t0_h2_1779106382.193037_p31_st1_ct10.mp4,42.0
+cc58_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc58_p1_t0_h1_1779106504.75964_p32_st1_ct10.mp4,42.0
+cc58_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc58_p1_t0_h2_1779106516.5536242_p32_st1_ct10.mp4,56.2
+cc593_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc593_p1_t0_h0-13+15-22_1779106587.128437_p29_st1_ct10.mp4,43.1
+cc595_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,808,1.337,output_folder__sort723_p1_100tobuildclustercc595_p1_t0_h0-13+15-22_1779106664.013943_p32_st1_ct10.mp4,51.1
+cc601_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc601_p1_t0_h0-13+15-22_1779106771.524064_p29_st1_ct10.mp4,46.9
+cc602_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc602_p1_t0_h0-13+15-22_1779106903.1264992_p32_st1_ct10.mp4,50.7
+cc605_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc605_p1_t0_h2_1779107096.9148521_p32_st1_ct10.mp4,48.3
+cc605_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc605_p1_t0_h2_1779107096.9148521_p32_st1_ct10.mp4,48.3
+cc609_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc609_p1_t0_h0-13+15-22_1779107196.210736_p32_st1_ct10.mp4,44.7
+cc609_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc609_p1_t0_h0-13+15-22_1779107196.210736_p32_st1_ct10.mp4,44.7
+cc662_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc662_p1_t0_h0-13+15-22_1779110397.426568_p32_st1_ct10.mp4,45.0
+cc698_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc698_p1_t0_h0-13+15-22_1779111590.863838_p32_st1_ct10.mp4,47.9
+cc698_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc698_p1_t0_h0-13+15-22_1779111590.863838_p32_st1_ct10.mp4,47.9
+cc698_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc698_p1_t0_h2_1779111797.591467_p29_st1_ct10.mp4,43.7
+cc69_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc69_p1_t0_h0-13+15-22_1779111886.3882828_p29_st1_ct10.mp4,45.9
+cc702_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc702_p1_t0_h0-13+15-22_1779112545.6148171_p31_st1_ct10.mp4,47.6
+cc702_p1_t0_h2,0,"{'background_hsv_bins': [2], 'object_hsv_bins': []}",1,924,1080,0.856,output_folder__sort723_p1_100tobuildclustercc702_p1_t0_h2_1779112618.6253362_p32_st1_ct10.mp4,53.6
+cc705_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc705_p1_t0_h0-13+15-22_1779112754.866415_p32_st1_ct10.mp4,50.8
+cc705_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc705_p1_t0_h0-13+15-22_1779112754.866415_p32_st1_ct10.mp4,50.8
+cc710_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc710_p1_t0_h0-13+15-22_1779113253.83962_p29_st1_ct10.mp4,49.6
+cc710_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc710_p1_t0_h0-13+15-22_1779113253.83962_p29_st1_ct10.mp4,49.6
+cc756_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc756_p1_t0_h0-13+15-22_1779114873.100466_p29_st1_ct10.mp4,48.5
+cc79_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,718,1080,0.665,output_folder__sort723_p1_100tobuildclustercc79_p1_t0_h0-13+15-22_1779114962.8137631_p29_st1_ct10.mp4,46.1
+cc7_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,1080,1.0,output_folder__sort723_p1_100tobuildclustercc7_p1_t0_h0-13+15-22_1779115022.316129_p32_st1_ct10.mp4,56.4
+cc81_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc81_p1_t0_h0-13+15-22_1779115207.01916_p32_st1_ct10.mp4,50.6
+cc81_p1_t0_h0-13+15-22,0,"{'background_hsv_bins': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22], 'object_hsv_bins': []}",1,1080,862,1.253,output_folder__sort723_p1_100tobuildclustercc81_p1_t0_h0-13+15-22_1779115207.01916_p32_st1_ct10.mp4,50.6
+cc90_p1_t0_h1,0,"{'background_hsv_bins': [1], 'object_hsv_bins': []}",1,1080,924,1.169,output_folder__sort723_p1_100tobuildclustercc90_p1_t0_h1_1779115686.79168_p29_st1_ct10.mp4,44.3
