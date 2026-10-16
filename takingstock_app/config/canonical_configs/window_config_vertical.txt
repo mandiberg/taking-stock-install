@@ -2,6 +2,7 @@
 #Last updated by Tench C 10.07.2026
 # Template settings for a vertical installation. Selected by WINDOW_CONFIG in system_config.txt.
 # Any setting that also appears in system_config.txt is overridden by system_config.txt.
+# Main levers are wrapped in #***# lines: LAYOUT_PHASES, PLACEMENT_TOP_K, MAX_ITEMS, SELECT_MODE, and PACKING_STOP_AREA. See FOUNDATIONAL CONFIG OPTIONS in configREADME.md.
 # Tall narrow band, set up here as 250×1800. Packing and item limits assume that strip, not a 16:9 frame.
 
 ####### OUTPUT #########
@@ -13,11 +14,21 @@ BOX_HEIGHT = 1800  # vertical band height (the long side)
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
 LAYOUT_STALE_THRESHOLD = 3000 # stop phase after this many duplicates (default 3k)
+
+#***************************#
 LAYOUT_PHASES = 3            # reseeded phases to explore different regions (default 5)
-PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
+#***************************#
+
+#***************************#
 PLACEMENT_TOP_K = 11          # randomly pick from top K candidates for variation (1=always best) vastly increases num arrangements
-WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)
+#***************************#
+
+#***************************#
 MAX_ITEMS = 12                # reject layouts with more than this many total items (0 = no limit)
+#***************************#
+
+PLACEMENT_AREA_EXPONENT = 1.4 # score = area^exp * weight; >1 favors larger items with less weight
+WEIGHT_NORMALIZATION = sqrt  # how video counts become placement weights: raw | sqrt | equal (default: sqrt)
 HEAVY_LAYOUT_ITEMS = 8        # a layout with more items than this is "heavy" (0 = disable heavy/light alternation)
 AFTER_HEAVY_MAX_ITEMS = 6     # after a heavy layout, the next must have at most this many items (0 = disable)
 
@@ -27,7 +38,11 @@ VIDEO_FADE_DURATION = 1  # seconds for visual fade down/up
 ############# SELECT MODE ######################
 # Select mode: filter videos by CSV object column when loading arrangements
 # Usage: SELECT = [obj1, obj2], weight   # [*] = any object, [] = empty object list
+
+#***************************#
 SELECT_MODE = true
+#***************************#
+
 SELECT = [*], 0.3
 #SELECT = [], 0.3
 #SELECT = [86], 0.3
@@ -46,7 +61,10 @@ EXPAND_RANGE = [1.10, 1.60, 0.05, 0.1, 0.05, 0.1]   # landscape (1.169, 1.253, 1
 # Used for any ratio not covered by an EXPAND_RANGE above: [top, right, bottom, left]
 EXPAND_FALLBACK = [0.05, 0.05, 0.05, 0.05]
 
+#***************************#
 PACKING_STOP_AREA = 20000 #stop placing when largest placeable item would be < this (px²); prevents infinite tiny items
+#***************************#
+
 ITEM_BREAK_SCALE = 0.2 #How big does an object have to be to have a chance to break?
 ITEM_BREAK_CHANCE = 0.5 #what is the chance to break?
 BREAK_BOX_MIN_ITEMS = 1 # minimum sub-items a break must produce

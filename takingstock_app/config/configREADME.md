@@ -214,19 +214,15 @@ If there are 20 videos with a 2x3 aspect ratio and 5 videos with a 1x1 aspect ra
 
 How slots are allowed to expand, and how large slots break apart, is in Layout structure.
 
-#### ARRANGEMENTS ATTEMPTS
+Setting order below matches the LAYOUT GENERATION block in the canonical window configs.
 
-Arrangement generation happens in a phase based system, where the program attempts to generate a certain amount of arrangements, and if they are considered valid (see Layout structure) it saves them. If it creates creates too many duplicates and stalls out it will move to the next phase, which uses a seeding system to try to fill in some different spaces.
+#### ARRANGEMENTS FINGERPRINT
 
-Attempts go like this ->
-generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a **LAYOUT_STALE_THRESHOLD** number of duplicate arrangements created, then re-seed, go to the next phase, and repeat until all phases completed.
+When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
 
-**LAYOUT_MAX_ATTEMPTS** = This is the maximum number of generation attempts the program will try per phase (default = 50000)
-**LAYOUT_STALE_THRESHOLD** = This is the maximum number of duplicates the program will allow before it skips to the next phase (default = 3000)
-**LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
-**MAX_ITEMS** = Maximum number of total video slots allowed in a layout. Any generated or cached arrangement whose total item count (top-level slots plus any nested sub-items) exceeds this value is discarded. Set to `0` to disable the limit and allow layouts of any size. (default = 0)
-**HEAVY_LAYOUT_ITEMS** = An arrangement with more total items than this counts as "heavy". When a heavy arrangement is on screen, the next arrangement is re-picked (up to 50 tries) until it has at most `AFTER_HEAVY_MAX_ITEMS` items, so two heavy layouts don't play back to back. This is a playback-time rule to limit decoding load; unlike `MAX_ITEMS` it never discards arrangements. If no light enough arrangement is found in 50 tries, the last pick is used. Set to `0` to disable the rule. Has no effect if it is ≥ `MAX_ITEMS`, since no arrangement can exceed `MAX_ITEMS`. (default = 6)
-**AFTER_HEAVY_MAX_ITEMS** = The maximum number of items allowed in the arrangement that follows a heavy one (see `HEAVY_LAYOUT_ITEMS`). Set to `0` to disable the rule. (default = 5)
+This is the correct behavior for a live installation, but it can be disruptive during testing: cutting a single video from the folder or tweaking the CSV will wipe all cached arrangements and force a full regeneration, even if the existing layouts are still perfectly usable.
+
+**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current aspect ratio and generation settings (see ARRANGEMENTS CACHE). If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
 
 #### ARRANGEMENTS CACHE
 
@@ -241,13 +237,16 @@ Arrangements in a matching file are then re-checked against the current settings
 
 Whenever a new set is saved, every other arrangement file for the same aspect ratio is deleted — including files made with different generation settings and files using the older naming scheme. Fingerprint files are kept. Files for other aspect ratios are not touched.
 
-#### ARRANGEMENTS FINGERPRINT
+#### ARRANGEMENTS ATTEMPTS
 
-When the app starts, it normally computes a fingerprint of the current `installation.csv` contents and the names and sizes of every `.mp4` in the video folder. This fingerprint is saved alongside the cached arrangement binary in the `arrangements/` folder. On the next startup, if the fingerprint no longer matches — because a video was added, removed, or swapped — the stale arrangement cache is automatically deleted and new arrangements are generated from scratch.
+Arrangement generation happens in a phase based system, where the program attempts to generate a certain amount of arrangements, and if they are considered valid (see Layout structure) it saves them. If it creates creates too many duplicates and stalls out it will move to the next phase, which uses a seeding system to try to fill in some different spaces.
 
-This is the correct behavior for a live installation, but it can be disruptive during testing: cutting a single video from the folder or tweaking the CSV will wipe all cached arrangements and force a full regeneration, even if the existing layouts are still perfectly usable.
+Attempts go like this ->
+generate until either **LAYOUT_MAX_ATTEMPTS** number of generations reached or a **LAYOUT_STALE_THRESHOLD** number of duplicate arrangements created, then re-seed, go to the next phase, and repeat until all phases completed.
 
-**IGNORE_FINGERPRINT** = Options: [true, false] When `true`, the fingerprint check is skipped entirely on startup. The app scans the `arrangements/` folder for any cached arrangement file that matches the current aspect ratio and generation settings (see ARRANGEMENTS CACHE). If a matching file is found it is loaded and used directly — no fingerprint is read, compared, or written. If no matching file exists, new arrangements are generated and saved as normal (still without writing a fingerprint). Set to `false` to restore normal fingerprint-based cache invalidation. (default = false)
+**LAYOUT_MAX_ATTEMPTS** = This is the maximum number of generation attempts the program will try per phase (default = 50000)
+**LAYOUT_STALE_THRESHOLD** = This is the maximum number of duplicates the program will allow before it skips to the next phase (default = 3000)
+**LAYOUT_PHASES** = This is the number of reseeded phases the program will complete (default = 5)
 
 #### ARRANGEMENTS ITEM PLACEMENT
 
@@ -261,13 +260,19 @@ score = (area^**PLACEMENT_AREA_EXPONENT**) * weight
 
 From that score, the algorithm will pick one out of the top candidates for the video to be placed in the arrangement. The number of candidates it picks from is set in **PLACEMENT_TOP_K**
 
-**PLACEMENT_AREA_EXPONENT** = This is the exponent that is used in the weighting equation, >1 favor larger area fills with less wieght (defualt 1.4)
 **PLACEMENT_TOP_K** = Number of candidates algorithm will pick from for item placement, vastly increases number of arrangments (default = 3)
+
+**MAX_ITEMS** = Maximum number of total video slots allowed in a layout. Any generated or cached arrangement whose total item count (top-level slots plus any nested sub-items) exceeds this value is discarded. Set to `0` to disable the limit and allow layouts of any size. (default = 0)
+
+**PLACEMENT_AREA_EXPONENT** = This is the exponent that is used in the weighting equation, >1 favor larger area fills with less wieght (defualt 1.4)
 **WEIGHT_NORMALIZATION** = Controls how video counts per aspect ratio are converted into placement weights. Options: [**raw**, **sqrt**, **equal**] (default = sqrt)
 
 - **raw**: weight equals the raw video count. A ratio with 177 videos has 44x the weight of one with 4 videos. Use this only when your video counts are already balanced across ratios, otherwise the packer will overwhelmingly favor the most common ratio and struggle to generate valid arrangements.
 - **sqrt**: weight equals the square root of the video count (e.g. 177 → 13.3, 4 → 2.0). Ratios with more videos are still preferred, but the imbalance is compressed enough that all ratios meaningfully compete during placement.
 - **equal**: all ratios get weight 1.0 regardless of video count. Use this to treat all aspect ratios as equally likely candidates during layout generation.
+
+**HEAVY_LAYOUT_ITEMS** = An arrangement with more total items than this counts as "heavy". When a heavy arrangement is on screen, the next arrangement is re-picked (up to 50 tries) until it has at most `AFTER_HEAVY_MAX_ITEMS` items, so two heavy layouts don't play back to back. This is a playback-time rule to limit decoding load; unlike `MAX_ITEMS` it never discards arrangements. If no light enough arrangement is found in 50 tries, the last pick is used. Set to `0` to disable the rule. Has no effect if it is ≥ `MAX_ITEMS`, since no arrangement can exceed `MAX_ITEMS`. (default = 6)
+**AFTER_HEAVY_MAX_ITEMS** = The maximum number of items allowed in the arrangement that follows a heavy one (see `HEAVY_LAYOUT_ITEMS`). Set to `0` to disable the rule. (default = 5)
 
 
 
