@@ -7,16 +7,19 @@ openframeworks/of_*/
 bin/*.app/
 obj/
 
-# Large media/data files
+# Large media/data files. .gitkeep stays so the empty folder remains in git.
 videos/*.mp4
 videos/*.csv
+!videos/.gitkeep
 
 #arrangements
 arrangements/*arrangements*
+!arrangements/.gitkeep
 
 #audio files
 audio/*.mp3
 audio/*.wav
+!audio/.gitkeep
 *.wav
 *.mp4
 /ignore
