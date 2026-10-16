@@ -29,7 +29,7 @@
 			"isa": "PBXFileReference",
 			"lastKnownFileType": "folder",
 			"name": "openFrameworks",
-			"path": "../../../libs/openFrameworks",
+			"path": "openframeworks/of_v0.12.1_osx_release/libs/openFrameworks",
 			"sourceTree": "SOURCE_ROOT"
 		},
 		"19B789C429E5AB4A0082E9B8": {
@@ -109,7 +109,7 @@
 			"children": [],
 			"isa": "PBXGroup",
 			"name": "addons",
-			"path": "../../../addons",
+			"path": "openframeworks/of_v0.12.1_osx_release/addons",
 			"sourceTree": "SOURCE_ROOT"
 		},
 		"BFA91DD2-9ACC-4675-B444-21B6BDBDCE87": {

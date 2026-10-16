@@ -4,7 +4,7 @@
 
 ############# WINDOW CONFIG ######################
 # canonical_configs/ = shipped templates, custom_configs/ = user-made variations
-WINDOW_CONFIG = custom_configs/window_config_16_9.txt
+WINDOW_CONFIG = canonical_configs/window_config_16_9.txt
 
 
 ####### OUTPUT #########

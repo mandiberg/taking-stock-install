@@ -11,9 +11,9 @@ It is important that you place that exact folder and not just the contents or th
 
 The default version of that file needs to be replaced for the app to work. To replace the default file, open the terminal and input the following commands:
 
-`cd (path to takingstock_app folder)`
-`cp openframeworks/ofAVFoundationVideoPlayer.m (path to takingstock_app folder)/openframeworks/of_v.0.12.1_osx_release/libs/openFrameworks/video/`
+`cd (path to this repo)`
+`cp openframeworks/ofAVFoundationVideoPlayer.m openframeworks/of_v0.12.1_osx_release/libs/openFrameworks/video/`
 
 If you want to copy it without the terminal, you can copy it into *of_v.0.12.1_osx_release/libs/openFrameworks/video/*
 
-After you're done with that command, you can go back to the README.md in takingstock_app, one directory up from this one.
+After you're done with that command, you can go back to the README.md one directory up from this one.

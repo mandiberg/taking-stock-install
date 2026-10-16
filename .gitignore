@@ -1,27 +1,27 @@
 **/.DS_Store
 
 # openFrameworks SDK
-takingstock_app/openframeworks/of_*/
+openframeworks/of_*/
 
 # Build artifacts
-takingstock_app/bin/*.app/
-takingstock_app/obj/
+bin/*.app/
+obj/
 
 # Large media/data files
-takingstock_app/videos/*.mp4
-takingstock_app/videos/*.csv
+videos/*.mp4
+videos/*.csv
 
 #arrangements
-takingstock_app/arrangements/*arrangements*
+arrangements/*arrangements*
 
 #audio files
-takingstock_app/audio/*.mp3
-takingstock_app/audio/*.wav
+audio/*.mp3
+audio/*.wav
 *.wav
 *.mp4
-/takingstock_app/videos.test1080
+/videos.test1080
 /basel_final_p1_videos
 /basel_final_p2_videos
-/takingstock_app/videos.stable1080
-/takingstock_app/Old_videos
+/videos.stable1080
+/Old_videos
 /ignore

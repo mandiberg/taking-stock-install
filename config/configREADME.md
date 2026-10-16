@@ -2,7 +2,7 @@
 
 ### Last updated by Tench C 10.07.26
 
-All config of the takingstock_app lives in `takingstock_app/config/`, alongside this README, and is split across two files. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does. Config is read every time the app starts, so changes only need an app restart, not a rebuild (you do not need to run the `make` command, only `make RunRelease`).
+All config lives in `config/`, alongside this README, and is split across two files. Each line is used for a different setting, and lines that begin with a # indicate a comment line. This README is a guide to what each specific config option does. Config is read every time the app starts, so changes only need an app restart, not a rebuild (you do not need to run the `make` command, only `make RunRelease`).
 
 ## CONFIG FILES
 
@@ -96,7 +96,7 @@ The preview window can be resized only when `WINDOW_DECORATED = true`; the previ
 
 ### PATHS
 
-All paths are relative to the `config/` folder that holds system_config.txt. Since `audio/`, `videos/`, and `arrangements/` sit next to `config/` inside `takingstock_app/`, they start with `../` (e.g. `AUDIO_PATH = ../audio`). Absolute paths also work.
+All paths are relative to the `config/` folder that holds system_config.txt. Since `audio/`, `videos/`, and `arrangements/` sit next to `config/`, they start with `../` (e.g. `AUDIO_PATH = ../audio`). Absolute paths also work.
 
 **VIDEO_ASSET_PATH** = This is a path to the folder which contains all the video files that will be used in the render
 **VIDEOS_CSV_PATH** = This is a path to the csv file which contains all the information about the video files that will be used in the render

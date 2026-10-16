@@ -11,6 +11,13 @@
 OF_ROOT = openframeworks/of_v0.12.1_osx_release
 
 ################################################################################
+# APP NAME
+#   openFrameworks otherwise names the .app after the directory that holds
+#   this Makefile. Pin it so the Syphon copy below stays in the real bundle.
+################################################################################
+APPNAME = taking-stock-install
+
+################################################################################
 # PROJECT ROOT
 #   The location of the project - a starting place for searching for files
 #       (default) PROJECT_ROOT = . (this directory)
@@ -85,8 +92,8 @@ PROJECT_LDFLAGS += -framework AudioToolbox
 PROJECT_LDFLAGS += -framework CoreAudio
 
 # Copy Syphon.framework into the Release app bundle after OF's afterplatform recreates it.
-# Hardcoded to the Release app name (make / make RunRelease). Debug: takingstock_app_debug.app.
-PROJECT_AFTER += mkdir -p bin/takingstock_app.app/Contents/Frameworks && cp -a addons/ofxSyphon/libs/Syphon/lib/osx/Syphon.framework bin/takingstock_app.app/Contents/Frameworks/
+# Hardcoded to the Release app name (make / make RunRelease). Debug: taking-stock-install_debug.app.
+PROJECT_AFTER += mkdir -p bin/taking-stock-install.app/Contents/Frameworks && cp -a addons/ofxSyphon/libs/Syphon/lib/osx/Syphon.framework bin/taking-stock-install.app/Contents/Frameworks/
 
 
 ################################################################################
