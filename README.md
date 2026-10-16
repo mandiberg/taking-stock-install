@@ -1,4 +1,5 @@
 # Taking Stock Install
+### Last Updated by Tench Cholnoky 10.16.2026
 
 ## INTRO
 
@@ -48,7 +49,7 @@ The csv is produced in the takingstock repo by `make_video.py` (mode 1) and `mer
 
 `cluster_no`, `hsv_no`, `pose_no`, `width`, `height`, `ratio`, `file_name`, `duration`, `object`
 
-`file_name` is the video file sitting next to the csv. `cluster_no` is also what the app uses to find audio. `width`, `height`, and `ratio` are what the arrangement generator uses to tile the window. `object` is a list of object ids for that video, such as `[]` or `[82]`. When select mode is on, the app uses this column to choose which videos can appear.
+`file_name` is the video file sitting next to the csv. `cluster_no` is also what the app uses to find audio. `width`, `height`, and `ratio` are what the arrangement generator uses to tile the window. `object` is a list of object ids for that video, such as `[]` or `[82]`. When **[config option]** - SELECT_MODE is on, the app uses this column to choose which videos can appear.
 
 ## AUDIO
 
@@ -66,15 +67,15 @@ Generated files are saved in `arrangements/`. The name looks like this:
 
 That is aspect ratio (width/height), then `s` plus a hash of the generation settings, then how many arrangements are in the file.
 
-The hash comes from the generation settings in the selected window config and from `RATIO_ROUND_DECIMALS` in `config/system_config.txt`. On startup the app reuses a file only when both the aspect ratio and the hash match. The current hash is printed in the startup log. Which settings are included is listed under ARRANGEMENTS CACHE in [config/configREADME.md](config/configREADME.md).
+The hash comes from the generation settings in the selected window config and from **[config option]** - RATIO_ROUND_DECIMALS in `config/system_config.txt`. On startup the app reuses a file only when both the aspect ratio and the hash match. The current hash is printed in the startup log. Which settings are included is listed under ARRANGEMENTS CACHE in [config/configREADME.md](config/configREADME.md).
 
 To force a new set, delete the arrangement file for that aspect ratio. When a new set is saved, every other arrangement file for the same aspect ratio is deleted. Files for other aspect ratios are left alone.
 
-You may also see a file like `1.333_arrangements_inputs.fingerprint`. That file is used only when the config option `IGNORE_FINGERPRINT` is false. It records the state of `installation.csv` and the video files so arrangements are rebuilt when the videos change. The cleanup above does not delete it.
+You may also see a file like `1.333_arrangements_inputs.fingerprint`. That file is used only when **[config option]** - IGNORE_FINGERPRINT is false. It records the state of `installation.csv` and the video files so arrangements are rebuilt when the videos change. The cleanup above does not delete it.
 
 ## CONFIG
 
-All settings live in `config/`. `config/system_config.txt` is always loaded. Its `WINDOW_CONFIG` line picks the window template. Shipped templates are in `config/canonical_configs/`. Your own variations go in `config/custom_configs/`. If the same setting appears in both files, `system_config.txt` wins.
+All settings live in `config/`. `config/system_config.txt` is always loaded. Its **[config option]** - WINDOW_CONFIG line picks the window template. Shipped templates are in `config/canonical_configs/`. Your own variations go in `config/custom_configs/`. If the same setting appears in both files, `system_config.txt` wins.
 
 The app reads config on every launch, so a settings change needs a restart, not a rebuild.
 
