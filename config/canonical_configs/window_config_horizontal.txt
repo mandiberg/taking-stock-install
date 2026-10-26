@@ -75,7 +75,7 @@ BREAK_BOX_FILL_ATTEMPTS = 5 #How many attempts to break before lowering number o
 
 ############# AUDIO ######################
 AUDIO_FADE_DURATION = 1.0   # seconds for audio fade in/out (0 = instant cut)
-AUDIO_SURROUND = false  # true = quad (4-channel) output; false = stereo (native file format)
+AUDIO_SURROUND = false  # true = file channels onto device outputs (no stereo downmix); false = native file format
 
 # Channel map: for each output channel position, which source file channel to read (0-based).
 # Quad output order (WAV/FFmpeg standard): FL FR BL BR. Pass-through default: [0, 1, 2, 3]

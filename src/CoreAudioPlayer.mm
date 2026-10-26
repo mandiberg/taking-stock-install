@@ -3,6 +3,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <CoreAudio/CoreAudio.h>
 #import <algorithm>
+#import <cmath>
 #import <cstring>
 #import <string>
 #import <vector>
@@ -61,15 +62,54 @@ static AVAudioFormat* makePlanarFloatFormat(double sampleRate, AVAudioChannelCou
                         channels:channels
                      interleaved:NO];
     }
+    // Discrete channel order, not a surround tag. Quadraphonic / 5.1 tags make the
+    // mixer fold channels onto speaker positions (fronts only, or loopback on a 4i4).
     AudioChannelLayoutTag tag = kAudioChannelLayoutTag_DiscreteInOrder | channels;
-    if (channels == 4) tag = kAudioChannelLayoutTag_Quadraphonic;
-    else if (channels == 6) tag = kAudioChannelLayoutTag_MPEG_5_1_A;
     AVAudioChannelLayout* layout = [AVAudioChannelLayout layoutWithLayoutTag:tag];
     return [[AVAudioFormat alloc]
         initWithCommonFormat:AVAudioPCMFormatFloat32
                   sampleRate:sampleRate
                  interleaved:NO
                channelLayout:layout];
+}
+
+// Resample without changing channel count or layout. Used so a 24 kHz file can be
+// scheduled at the interface rate; the output node rejects a sample-rate mismatch.
+static AVAudioPCMBuffer* convertBufferSampleRate(AVAudioPCMBuffer* src, AVAudioFormat* dstFormat) {
+    if ([src.format isEqual:dstFormat]) return src;
+
+    double ratio = dstFormat.sampleRate / src.format.sampleRate;
+    if (ratio <= 0.0 || src.frameLength == 0) return nil;
+
+    AVAudioFrameCount capacity = (AVAudioFrameCount)ceil((double)src.frameLength * ratio) + 1024;
+    AVAudioPCMBuffer* dst = [[AVAudioPCMBuffer alloc] initWithPCMFormat:dstFormat frameCapacity:capacity];
+    AVAudioConverter* converter = [[AVAudioConverter alloc] initFromFormat:src.format toFormat:dstFormat];
+    if (!dst || !converter) return nil;
+
+    __block bool supplied = false;
+    NSError* err = nil;
+    AVAudioConverterOutputStatus status = [converter convertToBuffer:dst
+                                                               error:&err
+                                                  withInputFromBlock:^AVAudioBuffer*(AVAudioPacketCount, AVAudioConverterInputStatus* outStatus) {
+        if (supplied) {
+            *outStatus = AVAudioConverterInputStatus_EndOfStream;
+            return nil;
+        }
+        supplied = true;
+        *outStatus = AVAudioConverterInputStatus_HaveData;
+        return src;
+    }];
+    if (status == AVAudioConverterOutputStatus_Error || dst.frameLength == 0) {
+        NSLog(@"CoreAudioPlayer: sample-rate conversion failed (%@)", err);
+        return nil;
+    }
+    AVAudioFrameCount expected = (AVAudioFrameCount)((double)src.frameLength * ratio);
+    if (expected > 1024 && dst.frameLength + 1024 < expected) {
+        NSLog(@"CoreAudioPlayer: sample-rate conversion short (%u frames, expected ~%u)",
+              dst.frameLength, expected);
+        return nil;
+    }
+    return dst;
 }
 
 // ---------------------------------------------------------------------------
@@ -203,32 +243,47 @@ bool CoreAudioPlayer::load(const std::string& path) {
 
     AVAudioFormat* hwFormat = [impl->engine.outputNode outputFormatForBus:0];
     AVAudioChannelCount hwCh = hwFormat ? hwFormat.channelCount : 0;
-    NSLog(@"CoreAudioPlayer: current output device reports %u ch @ %.0f Hz "
-          "(informational — quad output is not limited to this)",
-          hwCh, hwFormat ? hwFormat.sampleRate : 0.0);
+    double hwRate = hwFormat ? hwFormat.sampleRate : 0.0;
+    NSLog(@"CoreAudioPlayer: output device format is %u ch @ %.0f Hz", hwCh, hwRate);
 
     // ---- 3. Determine output format ----
-    // Always emit 4 channels when AUDIO_SURROUND is on. Do not clamp to whatever
-    // this machine's current default device reports — the install uses a different
-    // 4-channel interface, and the pre-start query here is often 2ch even then.
+    // The mixer downmixes to stereo unless its input and its connection to the
+    // output node have the device's channel count. A Scarlett 4i4 reports 6
+    // (analog 1–4 plus loopback 5–6), so a 4-channel quad buffer collapses to
+    // outputs 1–2. Match the device instead, and place file channels on the
+    // first outputs in order.
     bool useSurround = impl->surroundEnabled;
     if (useSurround && fileCh < 4) {
         NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but file has only %u channel(s) — "
               "falling back to native format for %s", fileCh, path.c_str());
         useSurround = false;
     }
+    if (useSurround && (hwCh < 4 || hwRate <= 0.0)) {
+        NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but the output device reports %u ch "
+              "@ %.0f Hz — refusing to play, the mixer would downmix to stereo",
+              hwCh, hwRate);
+        impl->engine = nil;
+        impl->player = nil;
+        return false;
+    }
 
-    AVAudioChannelCount outCh = useSurround ? 4 : fileCh;
+    AVAudioChannelCount outCh = useSurround ? hwCh : fileCh;
+    double outRate = useSurround ? hwRate : sampleRate;
 
-    AVAudioChannelLayout* preferredLayout = nil;
-    if (useSurround && hwFormat && hwFormat.channelCount == 4 && hwFormat.channelLayout)
-        preferredLayout = hwFormat.channelLayout;
-    else if (!useSurround && fileFormat.channelCount == outCh)
-        preferredLayout = fileFormat.channelLayout;
+    AVAudioChannelLayout* layout = nil;
+    if (useSurround)
+        layout = hwFormat.channelLayout;
+    else if (fileFormat.channelCount == outCh)
+        layout = fileFormat.channelLayout;
+    if (useSurround && !layout) {
+        layout = [AVAudioChannelLayout layoutWithLayoutTag:
+                  (kAudioChannelLayoutTag_DiscreteInOrder | outCh)];
+    }
 
-    AVAudioFormat* outFormat = makePlanarFloatFormat(sampleRate, outCh, preferredLayout);
-    if (!outFormat) {
-        NSLog(@"CoreAudioPlayer: could not create %u-channel output format for %s",
+    // Map at the file rate, then resample to the device rate when they differ.
+    AVAudioFormat* mappedFormat = makePlanarFloatFormat(sampleRate, outCh, layout);
+    if (!mappedFormat) {
+        NSLog(@"CoreAudioPlayer: could not create %u-channel mapped format for %s",
               outCh, path.c_str());
         impl->engine = nil;
         impl->player = nil;
@@ -237,7 +292,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
 
     // ---- 4. Allocate the output buffer and apply channel map + gains ----
     AVAudioPCMBuffer* dstBuf = [[AVAudioPCMBuffer alloc]
-        initWithPCMFormat:outFormat frameCapacity:frames];
+        initWithPCMFormat:mappedFormat frameCapacity:frames];
     if (!dstBuf || !dstBuf.floatChannelData) {
         NSLog(@"CoreAudioPlayer: could not allocate %u-channel output buffer for %s",
               outCh, path.c_str());
@@ -279,27 +334,75 @@ bool CoreAudioPlayer::load(const std::string& path) {
         }
     }
 
-    impl->buffer = dstBuf;
-
-    // ---- 5. Connect player → mainMixerNode ----
-    @try {
-        [impl->engine connect:impl->player
-                           to:impl->engine.mainMixerNode
-                       format:outFormat];
-    } @catch (NSException* ex) {
-        NSLog(@"CoreAudioPlayer: connect failed (%@). Retrying with native file format.", ex);
-        @try {
-            [impl->engine connect:impl->player
-                               to:impl->engine.mainMixerNode
-                           format:fileFormat];
-            impl->buffer = srcBuf;
-            outCh = fileCh;
-        } @catch (NSException* ex2) {
-            NSLog(@"CoreAudioPlayer: connect retry failed: %@", ex2);
+    AVAudioFormat* playFormat = mappedFormat;
+    if (fabs(outRate - sampleRate) > 0.5) {
+        playFormat = makePlanarFloatFormat(outRate, outCh, layout);
+        AVAudioPCMBuffer* resampled = playFormat ? convertBufferSampleRate(dstBuf, playFormat) : nil;
+        if (!resampled) {
+            NSLog(@"CoreAudioPlayer: could not resample %s from %.0f Hz to %.0f Hz",
+                  path.c_str(), sampleRate, outRate);
             impl->engine = nil;
             impl->player = nil;
-            impl->buffer = nil;
             return false;
+        }
+        dstBuf = resampled;
+    }
+    impl->buffer = dstBuf;
+
+    // ---- 5. Connect ----
+    // The mixer's default link to the output node is stereo. Connect that link at
+    // the device channel count FIRST, then attach the player at the same count.
+    // Attaching the player while the mixer is still stereo is what downmixed the quad.
+    const char* route = "mixer";
+    @try {
+        if (useSurround) {
+            [impl->engine connect:impl->engine.mainMixerNode
+                               to:impl->engine.outputNode
+                           format:playFormat];
+            [impl->engine connect:impl->player
+                               to:impl->engine.mainMixerNode
+                           format:playFormat];
+            route = "mixer-multichannel";
+        } else {
+            [impl->engine connect:impl->player
+                               to:impl->engine.mainMixerNode
+                           format:playFormat];
+        }
+    } @catch (NSException* ex) {
+        if (!useSurround) {
+            NSLog(@"CoreAudioPlayer: connect failed (%@). Retrying with native file format.", ex);
+            @try {
+                [impl->engine connect:impl->player
+                                   to:impl->engine.mainMixerNode
+                               format:fileFormat];
+                impl->buffer = srcBuf;
+                outCh = fileCh;
+                playFormat = fileFormat;
+            } @catch (NSException* ex2) {
+                NSLog(@"CoreAudioPlayer: connect retry failed: %@", ex2);
+                impl->engine = nil;
+                impl->player = nil;
+                impl->buffer = nil;
+                return false;
+            }
+        } else {
+            NSLog(@"CoreAudioPlayer: %u-ch mixer connect failed (%@). Retrying with the device format.",
+                  outCh, ex);
+            @try {
+                [impl->engine connect:impl->engine.mainMixerNode
+                                   to:impl->engine.outputNode
+                               format:hwFormat];
+                [impl->engine connect:impl->player
+                                   to:impl->engine.mainMixerNode
+                               format:playFormat];
+                route = "mixer-hardware";
+            } @catch (NSException* ex2) {
+                NSLog(@"CoreAudioPlayer: multichannel connect failed: %@", ex2);
+                impl->engine = nil;
+                impl->player = nil;
+                impl->buffer = nil;
+                return false;
+            }
         }
     }
 
@@ -315,9 +418,10 @@ bool CoreAudioPlayer::load(const std::string& path) {
 
     impl->player.volume = impl->volume;
 
-    NSLog(@"CoreAudioPlayer: loaded %s (%u frames, %u ch → %u ch out, %.0f Hz%s)",
-          path.c_str(), frames, fileCh, outCh, sampleRate,
-          useSurround ? ", quad" : "");
+    NSLog(@"CoreAudioPlayer: loaded %s (%u file frames → %u play frames, %u file ch → %u device ch, %.0f → %.0f Hz, %@)",
+          path.c_str(), frames, impl->buffer.frameLength, fileCh, outCh, sampleRate, playFormat.sampleRate,
+          useSurround ? [NSString stringWithFormat:@"surround via %s", route]
+                      : @"native");
     return true;
 }
 

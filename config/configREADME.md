@@ -368,7 +368,7 @@ During a transition, the current audio fades out at the start of the visual fade
 
 **AUDIO_FADE_DURATION** = Duration in seconds for the audio fade in and fade out during a transition. Set to `0` for an instant audio cut while the visuals still fade. (default = 1.0)
 
-**AUDIO_SURROUND** = Options: [true, false] When `true`, the audio engine routes output through a quad (4-channel) layout (`kAudioChannelLayoutTag_Quadraphonic`). The audio file must have at least 4 channels; if it has fewer, the app logs a warning and falls back to the file's native format automatically. When `false`, audio plays in the file's native stereo (or mono) format. (default = false)
+**AUDIO_SURROUND** = Options: [true, false] When `true`, file channels are copied onto device outputs using `AUDIO_CHANNEL_MAP` (or straight through, if the map is empty) and the mixer's link to that device is opened at the device's real channel count. This is required because the mixer otherwise downmixes to stereo. A Scarlett 4i4 reports 6 channels (analog outputs 1–4 plus loopback on 5–6); the four file channels land on analog 1–4 and the loopback pair stays silent. The file is resampled to the device sample rate. The device must report at least 4 channels, or the app logs an error and does not play that file. A file with fewer than 4 channels falls back to its native format. When `false`, audio plays in the file's native stereo (or mono) format. (default = false)
 
 **AUDIO_CHANNEL_MAP** = Defines, for each output channel position, which **source file channel** to read from (0-based index). This lets you reorder channels without re-exporting the audio file. The number of entries should match the output channel count (2 for stereo, 4 for quad). Entries beyond the output channel count are ignored. If this setting is omitted or left empty, a pass-through identity map is used (output channel N reads from source channel N).
 
@@ -394,11 +394,10 @@ The clockwise room cycle (FL → FR → BR → BL) maps to indices `0, 1, 3, 2`.
 > **Quad setup checklist:**
 >
 > 1. Connect your 4-channel interface or amplifier.
-> 2. Open **Audio MIDI Setup**, select the device, and set the format to 4ch / your sample rate.
-> 3. Verify speaker assignments in the **Configure Speakers** sheet (FL, FR, BL, BR).
-> 4. Set `AUDIO_DEVICE` in `system_config.txt` to the exact device name shown (e.g. `Focusrite USB ASIO`). See Audio device under System config.
-> 5. Set `AUDIO_SURROUND = true` and configure `AUDIO_CHANNEL_MAP` / `AUDIO_CHANNEL_GAINS` as needed.
-> 6. Provide audio files with 4 channels (WAV/FFmpeg quad order: FL FR BL BR) in the `AUDIO_PATH` folder.
+> 2. Open **Audio MIDI Setup** and confirm the device's output stream. A Scarlett 4i4 4th Gen stays at 6 channels (analog 1–4, loopback 5–6); do not try to force it to 4. Match the sample rate you want to play at (usually 48000 Hz).
+> 3. Set `AUDIO_DEVICE` in `system_config.txt` to the exact device name shown (e.g. `Scarlett 4i4 4th Gen`). See Audio device under System config.
+> 4. Set `AUDIO_SURROUND = true` and configure `AUDIO_CHANNEL_MAP` / `AUDIO_CHANNEL_GAINS` as needed. Map entries are device output indexes; outputs past the end of the map stay silent.
+> 5. Provide audio files with 4 channels (WAV/FFmpeg quad order: FL FR BL BR) in the `AUDIO_PATH` folder. On a successful load the log looks like `4 file ch → 6 device ch` and `surround via mixer-multichannel`.
 
 
 
