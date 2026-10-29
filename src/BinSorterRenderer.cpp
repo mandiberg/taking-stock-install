@@ -119,7 +119,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
         for (size_t i = 0; i < out.size(); ++i) {
             auto& slot = out[i];
             if (slot.hasVideo) {
-                if (slot.player.load(slot.path)) {
+                if (Diag::loadVideo(slot.player, slot.path)) {
                     float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
                     ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "]: "
                         << ofFile(slot.path).getFileName()
@@ -127,7 +127,7 @@ static bool buildSlotsImpl(BinSorter* binSorter, VideoAssetPool* videoPool, bool
                         << " | duration: " << (int)slot.duration << "s";
                     slot.player.setLoopState(videoLoop ? OF_LOOP_NORMAL : OF_LOOP_NONE);
                     if (!deferPlay) slot.player.play();
-                    if (!videoLoop && !slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
+                    if (!videoLoop && !slot.nextPath.empty() && Diag::loadVideo(slot.nextPlayer, slot.nextPath)) {
                         ofLogNotice("BinSorterRenderer") << "Video load [" << arrangementContext << "]: "
                             << ofFile(slot.nextPath).getFileName()
                             << " | ratio: " << std::fixed << std::setprecision(3) << ratio
@@ -223,8 +223,12 @@ void BinSorterRenderer::startPlaying() {
 
 void BinSorterRenderer::update() {
     // Clear deferred slots from previous frame's swap (not same frame - avoids Bus error 10)
-    if (!didSwapThisFrame)
+    if (!didSwapThisFrame && !slotsPendingDeletion.empty()) {
+        const int n = (int)slotsPendingDeletion.size();
+        auto t0 = Diag::Clock::now();
         slotsPendingDeletion.clear();
+        Diag::monitor().noteDestroy(Diag::msSince(t0), n);
+    }
     didSwapThisFrame = false;
 
     // Staggered preload: load one video for next arrangement every 0.5s
@@ -239,7 +243,7 @@ void BinSorterRenderer::update() {
                 auto& slot = nextSlots[slotIdx];
                 float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
                 if (isNextPlayer) {
-                    if (!slot.nextPath.empty() && slot.nextPlayer.load(slot.nextPath)) {
+                    if (!slot.nextPath.empty() && Diag::loadVideo(slot.nextPlayer, slot.nextPath)) {
                         ofLogNotice("BinSorterRenderer") << "Video load [next arrangement]: "
                             << ofFile(slot.nextPath).getFileName()
                             << " | ratio: " << std::fixed << std::setprecision(3) << ratio
@@ -248,7 +252,7 @@ void BinSorterRenderer::update() {
                         slot.nextPlayer.setPosition(0);
                     }
                 } else {
-                    if (!slot.path.empty() && slot.player.load(slot.path)) {
+                    if (!slot.path.empty() && Diag::loadVideo(slot.player, slot.path)) {
                         ofLogNotice("BinSorterRenderer") << "Video load [next arrangement]: "
                             << ofFile(slot.path).getFileName()
                             << " | ratio: " << std::fixed << std::setprecision(3) << ratio
@@ -268,10 +272,15 @@ void BinSorterRenderer::update() {
                 slot.nextPlayer.update();
         }
     }
+    int diagPlaying = 0, diagNewFrames = 0;
     for (size_t i = 0; i < slots.size(); ++i) {
         auto& slot = slots[i];
         if (slot.hasVideo) {
             slot.player.update();
+            if (slot.player.isLoaded() && slot.player.isPlaying() && !slot.player.getIsMovieDone()) {
+                ++diagPlaying;
+                if (slot.player.isFrameNew()) ++diagNewFrames;
+            }
             if (!videoLoop) {
                 if (slot.nextPlayer.isLoaded())
                     slot.nextPlayer.update();  // keep preloaded video decoded for seamless swap
@@ -279,13 +288,14 @@ void BinSorterRenderer::update() {
                     if (slot.nextPlayer.isLoaded()) {
                         slot.nextPlayer.play();
                         slot.player.close();
+                        Diag::monitor().noteClose();
                         std::string newPath = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (newPath.empty()) {
                             slot.hasVideo = false;
                             ofLogWarning("BinSorterRenderer") << "Slot " << (i + 1) << ": no replacement video for ratio "
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
-                            if (slot.player.load(newPath)) {
+                            if (Diag::loadVideo(slot.player, newPath)) {
                                 float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
                                 ofLogNotice("BinSorterRenderer") << "Video load [current arrangement]: "
                                     << ofFile(newPath).getFileName()
@@ -308,13 +318,14 @@ void BinSorterRenderer::update() {
                         }
                     } else {
                         slot.player.close();
+                        Diag::monitor().noteClose();
                         std::string path = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (path.empty()) {
                             slot.hasVideo = false;
                             ofLogWarning("BinSorterRenderer") << "Slot " << (i + 1) << ": no replacement video for ratio "
                                 << slot.ratioW << ":" << slot.ratioH << ", falling back to placeholder";
                         } else {
-                            if (slot.player.load(path)) {
+                            if (Diag::loadVideo(slot.player, path)) {
                                 float ratio = (slot.ratioH > 0) ? (float)slot.ratioW / slot.ratioH : 0.f;
                                 ofLogNotice("BinSorterRenderer") << "Video load [current arrangement]: "
                                     << ofFile(path).getFileName()
@@ -338,6 +349,7 @@ void BinSorterRenderer::update() {
             }
         }
     }
+    Diag::monitor().noteVideoFrame(diagPlaying, diagNewFrames);
 }
 
 void BinSorterRenderer::draw(float offsetX, float offsetY) {
@@ -562,4 +574,21 @@ int BinSorterRenderer::getKeyVideoSlotIndex(float minLength) const {
 float BinSorterRenderer::getKeyVideoDuration(float minLength) const {
     int idx = getKeyVideoSlotIndex(minLength);
     return (idx >= 0) ? slots[idx].duration : -1.f;
+}
+
+Diag::RendererCounts BinSorterRenderer::getDiagCounts() const {
+    Diag::RendererCounts c;
+    auto count = [](const std::vector<VideoSlot>& v, int& loaded) {
+        for (const auto& s : v) {
+            if (s.player.isLoaded()) ++loaded;
+            if (s.nextPlayer.isLoaded()) ++loaded;
+        }
+    };
+    c.slots = (int)slots.size();
+    c.nextSlots = (int)nextSlots.size();
+    c.pendingSlots = (int)slotsPendingDeletion.size();
+    count(slots, c.loadedCurrent);
+    count(nextSlots, c.loadedNext);
+    count(slotsPendingDeletion, c.loadedPending);
+    return c;
 }

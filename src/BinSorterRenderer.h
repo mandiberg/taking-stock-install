@@ -2,6 +2,7 @@
 
 #include "BinSorter.h"
 #include "ofVideoPlayer.h"
+#include "Diagnostics.h"
 #include <vector>
 #include <map>
 #include <set>
@@ -9,8 +10,9 @@
 #include <utility>
 
 struct VideoSlot {
-    ofVideoPlayer player;      // currently displaying
-    ofVideoPlayer nextPlayer;  // preloaded for seamless swap (only used when !videoLoop)
+    Diag::TrackedVideoPlayer player;      // currently displaying
+    Diag::TrackedVideoPlayer nextPlayer;  // preloaded for seamless swap (only used when !videoLoop)
+    Diag::LiveCounter<Diag::SlotTag> diagSlotCounter;
     std::string path;
     std::string nextPath;      // path of preloaded next video
     int x, y, w, h;
@@ -37,6 +39,7 @@ public:
     bool isPreloadComplete() const { return nextSlots.empty() || nextSlotsLoadQueue.empty(); }
     float getKeyVideoDuration(float minLength) const;  // returns longest slot duration >= minLength, or -1 if none
     int getKeyVideoSlotIndex(float minLength) const;   // returns index of key video slot, or -1 if none
+    Diag::RendererCounts getDiagCounts() const;
 private:
     void buildSlots();
     void buildSlotsFromArrangement(const std::vector<std::vector<BinItem>>& bins,

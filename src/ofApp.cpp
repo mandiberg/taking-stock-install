@@ -55,7 +55,11 @@ void ofApp::startAudioForArrangement(float initialVolume) {
 
     audioVolume = initialVolume;
     currentAudioFileName = ofFile(audioPath).getFileName();
-    audioPlayer.load(audioPath);
+    {
+        auto t0 = Diag::Clock::now();
+        audioPlayer.load(audioPath);
+        Diag::monitor().noteAudioLoad(Diag::msSince(t0));
+    }
     audioPlayer.setLoop(true);
     audioPlayer.setVolume(audioVolume);
     audioPlayer.play();
@@ -532,6 +536,7 @@ void ofApp::pickSelectAndApplyFilterWithFallback() {
 
 void ofApp::swapToPreloadedAndLog(size_t idx, bool deferPlay) {
     if (arrangements.empty() || idx >= arrangements.size()) return;
+    Diag::monitor().noteTransition();
 
     // Count-based cycle reset: fire after every cycleResetCount arrangements shown.
     if (config.cycleResetCount > 0 && config.cycleResetDuration > 0.f) {
@@ -753,6 +758,8 @@ size_t ofApp::pickNextArrangementIndex() {
 }
 
 void ofApp::update() {
+    Diag::monitor().beginUpdate();
+    Diag::ScopedMs updateTimer(Diag::monitor().cur().update);
     float now = ofGetElapsedTimef();
     ofSoundUpdate();
     updateAudioFade();
@@ -766,6 +773,7 @@ void ofApp::update() {
                 if (preloadWaitStartTime < 0.f) preloadWaitStartTime = now;
                 float timeout = renderer.getSlots().size() * 0.5f + 15.f;
                 if (now - preloadWaitStartTime > timeout) {
+                    Diag::monitor().notePreloadStall();
                     ofLogWarning("ofApp") << "Preload stalled for " << (now - preloadWaitStartTime)
                         << "s (timeout=" << timeout << "s), forcing transition";
                     preloadReady = true;
@@ -865,7 +873,10 @@ void ofApp::update() {
         }
     }
 
-    renderer.update();
+    {
+        Diag::ScopedMs rendererTimer(Diag::monitor().cur().renderer);
+        renderer.update();
+    }
 }
 
 void ofApp::drawComposition(int w, int h, float x, float y) {
@@ -908,7 +919,10 @@ void ofApp::publishAndPreviewSyphon() {
     outputFbo.end();
 
     ofTexture& tex = outputFbo.getTexture();
-    syphonServer.publishTexture(&tex);
+    {
+        Diag::ScopedMs publishTimer(Diag::monitor().cur().publish);
+        syphonServer.publishTexture(&tex);
+    }
 
     ofBackground(0);
     ofSetColor(255);
@@ -923,6 +937,8 @@ void ofApp::publishAndPreviewSyphon() {
 }
 
 void ofApp::draw() {
+    {
+    Diag::ScopedMs drawTimer(Diag::monitor().cur().draw);
     if (config.outputMode == OutputMode::Syphon) {
         publishAndPreviewSyphon();
     } else {
@@ -931,6 +947,14 @@ void ofApp::draw() {
         const float y = std::floor((ofGetWindowHeight() - config.boxHeight) * 0.5f);
         drawComposition(config.boxWidth, config.boxHeight, x, y);
     }
+    }
+
+    // Occasionally wait for the GPU to drain so its backlog shows up in the diagnostics.
+    if (Diag::monitor().sampleGpuNow()) {
+        Diag::ScopedMs gpuTimer(Diag::monitor().cur().gpuFinish);
+        glFinish();
+    }
+    if (Diag::monitor().reportDue()) Diag::monitor().report(renderer.getDiagCounts());
 
     if (exportRequested) {
         if (config.outputMode != OutputMode::Syphon) {
