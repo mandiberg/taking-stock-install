@@ -459,6 +459,17 @@ private:
             ") > '" + path + "' 2>&1 &";
         std::system(cmd.c_str());
         ofLogNotice("Diag") << "Snapshot #" << snapshotCount_ << " -> " << path;
+
+        // heap: malloc class histogram by size every snapshot. leaks: first snapshot
+        // (baseline) and then every 4th. Both run on a forked corpse, so the app is
+        // only paused briefly, and in a separate background job.
+        const std::string base = dir_ + "/snap_" + stamp_ + "_" + std::to_string(snapshotCount_);
+        std::string heapCmd =
+            "( /usr/bin/heap --forkCorpse -s -H " + pid + " > '" + base + "_heap.txt' 2>&1";
+        if (snapshotCount_ == 1 || snapshotCount_ % 4 == 0)
+            heapCmd += "; /usr/bin/leaks --forkCorpse --groupByType " + pid + " > '" + base + "_leaks.txt' 2>&1";
+        heapCmd += " ) &";
+        std::system(heapCmd.c_str());
     }
 
     bool started_ = false;
