@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset name="Taking_Stock_Quad_EFA_Studio" version="4" dateCreated="20261023T162540.729-0400"
+        dateModified="20261023T162540.729-0400">
+  <Device productId="33306" deviceIsRestarting="0" ledBrightness="high"
+          ledSleepEnabled="1" autoGainTargetLevel="-18.0" supportsMultiChannelAutoGain="0"
+          hasMetering="0">
+    <Inputs>
+      <InputGroup groupName="Analogue">
+        <Input isAvailable="1" inputId="128" channelName="Analogue 1" shortChannelName="1"
+               isStereo="0" supportsAutoGain="1" channelType="preamp" postDspInputId="774">
+          <Controls phantomPower="1" air="0" airMode="presence" clipSafe="0" mode="line"
+                    preampGain="0.0" preampGainRangeStart="0.0" preampGainRangeEnd="70.0"
+                    linked="0"/>
+          <availableInputMode mode="line"/>
+          <availableInputMode mode="inst"/>
+        </Input>
+        <Input isAvailable="1" inputId="129" channelName="Analogue 2" shortChannelName="2"
+               isStereo="0" supportsAutoGain="1" channelType="preamp" postDspInputId="775">
+          <Controls phantomPower="0" air="0" airMode="presence" clipSafe="0" mode="line"
+                    preampGain="1.0" preampGainRangeStart="0.0" preampGainRangeEnd="70.0"
+                    linked="0"/>
+          <availableInputMode mode="line"/>
+          <availableInputMode mode="inst"/>
+        </Input>
+        <Input isAvailable="1" inputId="130" channelName="Analogue 3" shortChannelName="3"
+               isStereo="0" supportsAutoGain="0" channelType="preamp">
+          <Controls mode="line" lineBoost="0.0"/>
+          <availableInputMode mode="line"/>
+          <lineBoostOptions>
+            <availableLineBoost lineBoost="0.0" isAvailable="1"/>
+            <availableLineBoost lineBoost="5.999999046325684" isAvailable="1"/>
+            <availableLineBoost lineBoost="12.0" isAvailable="1"/>
+          </lineBoostOptions>
+        </Input>
+        <Input isAvailable="1" inputId="131" channelName="Analogue 4" shortChannelName="4"
+               isStereo="0" supportsAutoGain="0" channelType="preamp">
+          <Controls mode="line" lineBoost="0.0"/>
+          <availableInputMode mode="line"/>
+          <lineBoostOptions>
+            <availableLineBoost lineBoost="0.0" isAvailable="1"/>
+            <availableLineBoost lineBoost="5.999999046325684" isAvailable="1"/>
+            <availableLineBoost lineBoost="12.0" isAvailable="1"/>
+          </lineBoostOptions>
+        </Input>
+      </InputGroup>
+    </Inputs>
+    <Outputs>
+      <OutputGroup groupName="Analogue outputs" groupType="0">
+        <StereoOutput isAvailable="1" channelName="Output 1 - 2" shortChannelName="1 - 2">
+          <MonoOutput channelName="Output 1" shortChannelName="1" outputId="128" channelType="line">
+            <Controls/>
+          </MonoOutput>
+          <MonoOutput channelName="Output 2" shortChannelName="2" outputId="129" channelType="line">
+            <Controls/>
+          </MonoOutput>
+          <Controls isSplitToMono="1"/>
+        </StereoOutput>
+        <StereoOutput isAvailable="1" channelName="Output 3 - 4" shortChannelName="3 - 4">
+          <MonoOutput channelName="Output 3" shortChannelName="3" outputId="130" channelType="line">
+            <Controls/>
+          </MonoOutput>
+          <MonoOutput channelName="Output 4" shortChannelName="4" outputId="131" channelType="line">
+            <Controls/>
+          </MonoOutput>
+          <Controls isSplitToMono="1"/>
+        </StereoOutput>
+        <StereoOutput isAvailable="1" channelName="Headphones" shortChannelName="">
+          <MonoOutput channelName="Headphone L" shortChannelName="" outputId="132"
+                      channelType="headphones">
+            <Controls/>
+          </MonoOutput>
+          <MonoOutput channelName="Headphone R" shortChannelName="" outputId="133"
+                      channelType="headphones">
+            <Controls/>
+          </MonoOutput>
+          <Controls isSplitToMono="0"/>
+        </StereoOutput>
+      </OutputGroup>
+      <OutputGroup groupName="Digital outputs" groupType="1">
+        <StereoOutput isAvailable="1" channelName="Loopback" shortChannelName="">
+          <MonoOutput channelName="Loopback 1" shortChannelName="1" outputId="1540"
+                      channelType="host">
+            <Controls/>
+          </MonoOutput>
+          <MonoOutput channelName="Loopback 2" shortChannelName="2" outputId="1541"
+                      channelType="host">
+            <Controls/>
+          </MonoOutput>
+          <Controls isSplitToMono="0"/>
+        </StereoOutput>
+      </OutputGroup>
+    </Outputs>
+    <RoutingSources/>
+    <Routings>
+      <Routing inputId="768" outputId="128"/>
+      <Routing inputId="769" outputId="129"/>
+      <Routing inputId="770" outputId="130"/>
+      <Routing inputId="771" outputId="131"/>
+      <Routing inputId="772" outputId="1540"/>
+      <Routing inputId="773" outputId="1541"/>
+    </Routings>
+    <Mixer isAvailable="0" hasRoutableSources="0" remainingChannels="0">
+      <Mix mixId="768" mixName="Mix A" leftMixerSource="768" rightMixerSource="769"
+           mixColour="red">
+        <Controls mixLevel="0.0" mixMute="unmuted"/>
+        <MixerChannelGroup groupName="Analogue">
+          <StereoMixerChannel channelName="Analogue 1 - 2">
+            <MonoMixerChannel inputId="774" isAvailable="1" channelName="Analogue 1" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="775" isAvailable="1" channelName="Analogue 2" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Analogue 3 - 4">
+            <MonoMixerChannel inputId="130" isAvailable="1" channelName="Analogue 3" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="131" isAvailable="1" channelName="Analogue 4" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+        <MixerChannelGroup groupName="Playback">
+          <StereoMixerChannel channelName="Playback 1 - 2">
+            <MonoMixerChannel inputId="1536" isAvailable="1" channelName="Playback 1" channelType="host">
+              <Controls hidden="0" level="-21.0" mute="muted" solo="unsoloed" effectiveMute="muted"
+                        pan="-1.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1537" isAvailable="1" channelName="Playback 2" channelType="host">
+              <Controls hidden="0" level="-20.0" mute="muted" solo="unsoloed" effectiveMute="muted"
+                        pan="1.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 3 - 4">
+            <MonoMixerChannel inputId="1538" isAvailable="1" channelName="Playback 3" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.05999999865889549"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1539" isAvailable="1" channelName="Playback 4" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 5 - 6">
+            <MonoMixerChannel inputId="1540" isAvailable="1" channelName="Playback 5" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1541" isAvailable="1" channelName="Playback 6" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+      </Mix>
+      <Mix mixId="770" mixName="Mix B" leftMixerSource="770" rightMixerSource="771"
+           mixColour="amber">
+        <Controls mixLevel="0.0" mixMute="unmuted"/>
+        <MixerChannelGroup groupName="Analogue">
+          <StereoMixerChannel channelName="Analogue 1 - 2">
+            <MonoMixerChannel inputId="774" isAvailable="1" channelName="Analogue 1" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="775" isAvailable="1" channelName="Analogue 2" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Analogue 3 - 4">
+            <MonoMixerChannel inputId="130" isAvailable="1" channelName="Analogue 3" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="131" isAvailable="1" channelName="Analogue 4" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+        <MixerChannelGroup groupName="Playback">
+          <StereoMixerChannel channelName="Playback 1 - 2">
+            <MonoMixerChannel inputId="1536" isAvailable="1" channelName="Playback 1" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1537" isAvailable="1" channelName="Playback 2" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 3 - 4">
+            <MonoMixerChannel inputId="1538" isAvailable="1" channelName="Playback 3" channelType="host">
+              <Controls hidden="0" level="-36.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="-1.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1539" isAvailable="1" channelName="Playback 4" channelType="host">
+              <Controls hidden="0" level="-36.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="1.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 5 - 6">
+            <MonoMixerChannel inputId="1540" isAvailable="1" channelName="Playback 5" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1541" isAvailable="1" channelName="Playback 6" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+      </Mix>
+      <Mix mixId="772" mixName="Mix C" leftMixerSource="772" rightMixerSource="773"
+           mixColour="orange">
+        <Controls mixLevel="0.0" mixMute="unmuted"/>
+        <MixerChannelGroup groupName="Analogue">
+          <StereoMixerChannel channelName="Analogue 1 - 2">
+            <MonoMixerChannel inputId="774" isAvailable="1" channelName="Analogue 1" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="775" isAvailable="1" channelName="Analogue 2" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Analogue 3 - 4">
+            <MonoMixerChannel inputId="130" isAvailable="1" channelName="Analogue 3" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="131" isAvailable="1" channelName="Analogue 4" channelType="preamp">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+        <MixerChannelGroup groupName="Playback">
+          <StereoMixerChannel channelName="Playback 1 - 2">
+            <MonoMixerChannel inputId="1536" isAvailable="1" channelName="Playback 1" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1537" isAvailable="1" channelName="Playback 2" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 3 - 4">
+            <MonoMixerChannel inputId="1538" isAvailable="1" channelName="Playback 3" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1539" isAvailable="1" channelName="Playback 4" channelType="host">
+              <Controls hidden="0" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="1"/>
+          </StereoMixerChannel>
+          <StereoMixerChannel channelName="Playback 5 - 6">
+            <MonoMixerChannel inputId="1540" isAvailable="1" channelName="Playback 5" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <MonoMixerChannel inputId="1541" isAvailable="1" channelName="Playback 6" channelType="host">
+              <Controls hidden="1" level="-128.0" mute="unmuted" solo="unsoloed" effectiveMute="unmuted"
+                        pan="0.0"/>
+            </MonoMixerChannel>
+            <Controls isSplitToMono="0"/>
+          </StereoMixerChannel>
+        </MixerChannelGroup>
+      </Mix>
+    </Mixer>
+    <CustomChannelNames>
+      <Inputs>
+        <StereoEntry customName="">
+          <MonoEntry inputId="128" customName=""/>
+          <MonoEntry inputId="129" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="130" customName=""/>
+          <MonoEntry inputId="131" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="1536" customName=""/>
+          <MonoEntry inputId="1537" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="1538" customName=""/>
+          <MonoEntry inputId="1539" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="1540" customName=""/>
+          <MonoEntry inputId="1541" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="774" customName=""/>
+          <MonoEntry inputId="775" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="768" customName=""/>
+          <MonoEntry inputId="769" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="770" customName=""/>
+          <MonoEntry inputId="771" customName=""/>
+        </StereoEntry>
+        <StereoEntry customName="">
+          <MonoEntry inputId="772" customName=""/>
+          <MonoEntry inputId="773" customName=""/>
+        </StereoEntry>
+      </Inputs>
+    </CustomChannelNames>
+  </Device>
+</Preset>
