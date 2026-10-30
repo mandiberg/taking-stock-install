@@ -44,7 +44,17 @@ SELECT_MODE = true
 #***************************#
 
 SELECT = [*], 0.3
-#SELECT = [], 0.3
+SELECT = [], 0.5
+
+SELECT = [27], 0.2
+SELECT = [67], 0.1
+SELECT = [63], 0.1
+SELECT = [82], 0.1
+SELECT = [95], 0.05
+SELECT = [82, 93, 94, 95], 0.1
+SELECT = [56], 0.1
+SELECT = [80, 73], 0.02
+
 #SELECT = [86], 0.3
 #SELECT = [67], 0.3
 #SELECT = [39], 0.3

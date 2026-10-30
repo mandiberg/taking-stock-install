@@ -39,6 +39,27 @@ make RunRelease
 
 `make` is only required the first time, or after the C++ sources change. Expect 1–2 minutes and a lot of compiler output. Later sessions can start with `make RunRelease`.
 
+When running make for the first time on a new device, you may be prompted to install Command Line Tools. Follow this dialog box's instructions. FYI, your terminal may output this error:
+
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+
+
+If you are on an unstable internet connection or struggling to have the app run, you can download the Command Line Tools package on another device and transfer the .dmg to the computer you are installing this on and double click the .dmg to install the software. 
+
+Once the Command Line Tools package has been installed, try running make again. The inital run of make on a new device will print out lots of warnings that you can disregard as long as it compiles and prints this message at the end:
+
+     compiling done
+     to launch the application
+
+     cd bin/taking-stock-install.app/Contents/MacOS/
+     ./taking-stock-install
+     
+     - or -
+     
+     make RunRelease
+
 > **If `make` dies with `fatal error: 'map' file not found`, go to [Troubleshooting 1A](#1a-xcode-install-errors-during-make).**
 
 ## VIDEOS
@@ -56,6 +77,10 @@ The csv is produced in the takingstock repo by `make_video.py` (mode 1) and `mer
 `audio/` holds one file per cluster you want to hear. The app reads the key video's `cluster_no` from `installation.csv` and plays the first file in this folder whose name contains that string. If nothing matches, that arrangement is silent.
 
 Name files so the cluster id is in the filename. Matching, fade, surround, and channel settings are described under AUDIO in [config/configREADME.md](config/configREADME.md).
+
+If setting up audio with the Scarlette 4i4 from Focusrite, install Focusrite Control 2 from https://downloads.focusrite.com/focusrite/scarlett-4th-gen/scarlett-4i4-4th-gen
+
+Then go to "Audio MIDI Setup" and select the Audio Interface from the left menu. Click configure speakers in the bottom right and select Quadrophonic from the Configuration dropdown. Click apply and return to the FocusRite software. In the bottom left of FocusRite, load the Taking_Stock_Quad preset, which can be found in the utilities folder. This preset will map each channel of audio to a playback channel in Mixer A or Mixer B. These channels will be hard panned, one for each direction in either mixer. Sliders within these mixers will control audio gain for each channel. 
 
 ## ARRANGEMENTS
 

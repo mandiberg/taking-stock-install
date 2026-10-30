@@ -23,3 +23,5 @@ audio/*.wav
 *.wav
 *.mp4
 /ignore
+/bin/data/diagnostics
+/Gym_Media_hold

@@ -7,8 +7,8 @@
 
 ####### OUTPUT #########
 # Canvas size is the master composition (arrangements, FBO, Syphon). Independent of how it is displayed.
-BOX_WIDTH = 1800   # horizontal band width (the long side)
-BOX_HEIGHT = 250   # horizontal band height (the short side)
+BOX_WIDTH = 3600   # horizontal band width (the long side)
+BOX_HEIGHT = 500   # horizontal band height (the short side)
 
 ################ LAYOUT GENERATION ########################
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
@@ -44,7 +44,18 @@ SELECT_MODE = true
 #***************************#
 
 SELECT = [*], 0.3
-#SELECT = [], 0.3
+SELECT = [], 0.5
+
+SELECT = [155], 0.2
+SELECT = [151], 0.2
+SELECT = [140], 0.1
+
+SELECT = [156], 0.05
+SELECT = [155, 156, 157], 0.1
+SELECT = [141, 142, 143, 150], 0.05
+
+
+
 #SELECT = [86], 0.3
 #SELECT = [67], 0.3
 #SELECT = [39], 0.3
