@@ -123,6 +123,11 @@ struct CoreAudioPlayer::Impl {
     bool  loop    = false;
     float volume  = 1.0f;
     bool  playing = false;
+    unsigned long long loadCalls = 0;
+    unsigned long long enginesCreated = 0;
+    unsigned long long enginesReleased = 0;
+    unsigned long long sourceBufferBytes = 0;
+    unsigned long long retainedBufferBytes = 0;
 
     // Configuration (set before load(); persist across loads)
     bool              surroundEnabled = false;
@@ -136,11 +141,19 @@ CoreAudioPlayer::CoreAudioPlayer() : impl(new Impl()) {}
 
 CoreAudioPlayer::~CoreAudioPlayer() {
     stop();
+    releaseResources();
+    delete impl;
+}
+
+void CoreAudioPlayer::releaseResources() {
     if (impl->engine) {
         [impl->engine stop];
         impl->engine = nil;
+        ++impl->enginesReleased;
     }
-    delete impl;
+    impl->player = nil;
+    impl->buffer = nil;
+    impl->retainedBufferBytes = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,13 +179,10 @@ void CoreAudioPlayer::setOutputDeviceName(const std::string& name) {
 // load()
 // ---------------------------------------------------------------------------
 bool CoreAudioPlayer::load(const std::string& path) {
+    ++impl->loadCalls;
     stop();
-    if (impl->engine) {
-        [impl->engine stop];
-        impl->engine = nil;
-        impl->player = nil;
-        impl->buffer = nil;
-    }
+    releaseResources();
+    impl->sourceBufferBytes = 0;
 
     NSLog(@"CoreAudioPlayer: loading %s", path.c_str());
 
@@ -213,9 +223,11 @@ bool CoreAudioPlayer::load(const std::string& path) {
         return false;
     }
     frames = srcBuf.frameLength;
+    impl->sourceBufferBytes = (unsigned long long)frames * fileCh * sizeof(float);
 
     // ---- 2. Build engine and select device so we can query hardware channel count ----
     impl->engine = [[AVAudioEngine alloc] init];
+    if (impl->engine) ++impl->enginesCreated;
     impl->player = [[AVAudioPlayerNode alloc] init];
     [impl->engine attachNode:impl->player];
 
@@ -262,8 +274,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
         NSLog(@"CoreAudioPlayer: AUDIO_SURROUND=true but the output device reports %u ch "
               "@ %.0f Hz — refusing to play, the mixer would downmix to stereo",
               hwCh, hwRate);
-        impl->engine = nil;
-        impl->player = nil;
+        releaseResources();
         return false;
     }
 
@@ -285,8 +296,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
     if (!mappedFormat) {
         NSLog(@"CoreAudioPlayer: could not create %u-channel mapped format for %s",
               outCh, path.c_str());
-        impl->engine = nil;
-        impl->player = nil;
+        releaseResources();
         return false;
     }
 
@@ -296,8 +306,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
     if (!dstBuf || !dstBuf.floatChannelData) {
         NSLog(@"CoreAudioPlayer: could not allocate %u-channel output buffer for %s",
               outCh, path.c_str());
-        impl->engine = nil;
-        impl->player = nil;
+        releaseResources();
         return false;
     }
     dstBuf.frameLength = frames;
@@ -341,13 +350,14 @@ bool CoreAudioPlayer::load(const std::string& path) {
         if (!resampled) {
             NSLog(@"CoreAudioPlayer: could not resample %s from %.0f Hz to %.0f Hz",
                   path.c_str(), sampleRate, outRate);
-            impl->engine = nil;
-            impl->player = nil;
+            releaseResources();
             return false;
         }
         dstBuf = resampled;
     }
     impl->buffer = dstBuf;
+    impl->retainedBufferBytes =
+        (unsigned long long)dstBuf.frameLength * dstBuf.format.channelCount * sizeof(float);
 
     // ---- 5. Connect ----
     // The mixer's default link to the output node is stereo. Connect that link at
@@ -378,11 +388,11 @@ bool CoreAudioPlayer::load(const std::string& path) {
                 impl->buffer = srcBuf;
                 outCh = fileCh;
                 playFormat = fileFormat;
+                impl->retainedBufferBytes =
+                    (unsigned long long)srcBuf.frameLength * srcBuf.format.channelCount * sizeof(float);
             } @catch (NSException* ex2) {
                 NSLog(@"CoreAudioPlayer: connect retry failed: %@", ex2);
-                impl->engine = nil;
-                impl->player = nil;
-                impl->buffer = nil;
+                releaseResources();
                 return false;
             }
         } else {
@@ -398,9 +408,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
                 route = "mixer-hardware";
             } @catch (NSException* ex2) {
                 NSLog(@"CoreAudioPlayer: multichannel connect failed: %@", ex2);
-                impl->engine = nil;
-                impl->player = nil;
-                impl->buffer = nil;
+                releaseResources();
                 return false;
             }
         }
@@ -410,9 +418,7 @@ bool CoreAudioPlayer::load(const std::string& path) {
     NSError* startErr = nil;
     if (![impl->engine startAndReturnError:&startErr]) {
         NSLog(@"CoreAudioPlayer: AVAudioEngine failed to start: %@", startErr);
-        impl->engine = nil;
-        impl->player = nil;
-        impl->buffer = nil;
+        releaseResources();
         return false;
     }
 
@@ -423,6 +429,17 @@ bool CoreAudioPlayer::load(const std::string& path) {
           useSurround ? [NSString stringWithFormat:@"surround via %s", route]
                       : @"native");
     return true;
+}
+
+CoreAudioPlayerDiagnostics CoreAudioPlayer::getDiagnostics() const {
+    CoreAudioPlayerDiagnostics d;
+    d.engineLive = impl->engine != nil;
+    d.loadCalls = impl->loadCalls;
+    d.enginesCreated = impl->enginesCreated;
+    d.enginesReleased = impl->enginesReleased;
+    d.sourceBufferBytes = impl->sourceBufferBytes;
+    d.retainedBufferBytes = impl->retainedBufferBytes;
+    return d;
 }
 
 // ---------------------------------------------------------------------------

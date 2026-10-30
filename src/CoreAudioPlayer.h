@@ -2,6 +2,15 @@
 #include <string>
 #include <vector>
 
+struct CoreAudioPlayerDiagnostics {
+    bool engineLive = false;
+    unsigned long long loadCalls = 0;
+    unsigned long long enginesCreated = 0;
+    unsigned long long enginesReleased = 0;
+    unsigned long long sourceBufferBytes = 0;
+    unsigned long long retainedBufferBytes = 0;
+};
+
 class CoreAudioPlayer {
 public:
     CoreAudioPlayer();
@@ -19,8 +28,10 @@ public:
     void setLoop(bool loop);
     void setVolume(float volume);  // 0.0 - 1.0
     bool isPlaying();
+    CoreAudioPlayerDiagnostics getDiagnostics() const;
 
 private:
+    void releaseResources();
     struct Impl;
     Impl* impl;
 };

@@ -267,28 +267,27 @@ void BinSorterRenderer::update() {
 
     for (auto& slot : nextSlots) {
         if (slot.hasVideo) {
-            slot.player.update();
+            Diag::updateVideo(slot.player, false, slot.path);
             if (!videoLoop && slot.nextPlayer.isLoaded())
-                slot.nextPlayer.update();
+                Diag::updateVideo(slot.nextPlayer, false, slot.nextPath);
         }
     }
     int diagPlaying = 0, diagNewFrames = 0;
     for (size_t i = 0; i < slots.size(); ++i) {
         auto& slot = slots[i];
         if (slot.hasVideo) {
-            slot.player.update();
+            Diag::updateVideo(slot.player, true, slot.path);
             if (slot.player.isLoaded() && slot.player.isPlaying() && !slot.player.getIsMovieDone()) {
                 ++diagPlaying;
                 if (slot.player.isFrameNew()) ++diagNewFrames;
             }
             if (!videoLoop) {
                 if (slot.nextPlayer.isLoaded())
-                    slot.nextPlayer.update();  // keep preloaded video decoded for seamless swap
+                    Diag::updateVideo(slot.nextPlayer, false, slot.nextPath);  // keep preloaded video decoded for seamless swap
                 if (slot.player.getIsMovieDone()) {
                     if (slot.nextPlayer.isLoaded()) {
                         slot.nextPlayer.play();
-                        slot.player.close();
-                        Diag::monitor().noteClose();
+                        Diag::closeVideo(slot.player);
                         std::string newPath = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (newPath.empty()) {
                             slot.hasVideo = false;
@@ -317,8 +316,7 @@ void BinSorterRenderer::update() {
                             }
                         }
                     } else {
-                        slot.player.close();
-                        Diag::monitor().noteClose();
+                        Diag::closeVideo(slot.player);
                         std::string path = videoPool ? videoPool->getVideoPath(slot.ratioW, slot.ratioH, slot.w, slot.h) : "";
                         if (path.empty()) {
                             slot.hasVideo = false;

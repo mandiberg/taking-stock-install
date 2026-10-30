@@ -954,7 +954,17 @@ void ofApp::draw() {
         Diag::ScopedMs gpuTimer(Diag::monitor().cur().gpuFinish);
         glFinish();
     }
-    if (Diag::monitor().reportDue()) Diag::monitor().report(renderer.getDiagCounts());
+    if (Diag::monitor().reportDue()) {
+        const CoreAudioPlayerDiagnostics audio = audioPlayer.getDiagnostics();
+        Diag::AudioCounts audioCounts;
+        audioCounts.liveEngines = audio.engineLive ? 1 : 0;
+        audioCounts.loadCalls = (long long)audio.loadCalls;
+        audioCounts.enginesCreated = (long long)audio.enginesCreated;
+        audioCounts.enginesReleased = (long long)audio.enginesReleased;
+        audioCounts.sourceBufferBytes = (long long)audio.sourceBufferBytes;
+        audioCounts.retainedBufferBytes = (long long)audio.retainedBufferBytes;
+        Diag::monitor().report(renderer.getDiagCounts(), audioCounts);
+    }
 
     if (exportRequested) {
         if (config.outputMode != OutputMode::Syphon) {

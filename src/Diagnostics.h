@@ -166,6 +166,15 @@ struct RendererCounts {
     int loadedCurrent = 0, loadedNext = 0, loadedPending = 0;
 };
 
+struct AudioCounts {
+    int liveEngines = 0;
+    long long loadCalls = 0;
+    long long enginesCreated = 0;
+    long long enginesReleased = 0;
+    long long sourceBufferBytes = 0;
+    long long retainedBufferBytes = 0;
+};
+
 class Monitor {
 public:
     // ---- per-frame hooks -------------------------------------------------
@@ -199,7 +208,23 @@ public:
             ofLogWarning("Diag") << "SLOW LOAD " << (int)ms << " ms (" << (ok ? "ok" : "FAILED") << "): "
                                  << ofFile(path).getFileName();
     }
-    void noteClose() { ++closes_; ++totalCloses_; }
+    void noteClose(double ms) {
+        cur_.destroy += ms;
+        closes_.add(ms);
+        ++totalCloses_;
+    }
+    void noteVideoUpdate(double ms, bool currentPlayer, bool loaded, bool frameNew,
+                         const std::string& path) {
+        videoUpdates_.add(ms);
+        if (currentPlayer) currentVideoUpdates_.add(ms);
+        else preloadedVideoUpdates_.add(ms);
+        if (loaded) ++videoLoadedUpdateCount_;
+        if (frameNew) ++videoNewFrameCount_;
+        if (ms >= SLOW_LOAD_LOG_MS)
+            ofLogWarning("Diag") << "SLOW VIDEO UPDATE " << (int)ms << " ms ("
+                << (currentPlayer ? "current" : "preloaded") << ", loaded=" << loaded
+                << "): " << ofFile(path).getFileName();
+    }
     void noteDestroy(double ms, int count) {
         cur_.destroy += ms;
         destroys_.add(ms);
@@ -220,7 +245,7 @@ public:
         return started_ && std::chrono::duration<double>(Clock::now() - lastReport_).count() >= REPORT_INTERVAL_SEC;
     }
 
-    void report(const RendererCounts& rc) {
+    void report(const RendererCounts& rc, const AudioCounts& ac) {
         auto now = Clock::now();
         const double wall = std::chrono::duration<double>(now - lastReport_).count();
         const double uptime = std::chrono::duration<double>(now - startTime_).count();
@@ -265,11 +290,25 @@ public:
         r.add("load_fails", loadFails_);
         r.add("load_avg_ms", loads_.avg(), 1);
         r.add("load_max_ms", loads_.max, 1);
-        r.add("closes", closes_);
+        r.add("closes", closes_.n);
+        r.add("close_avg_ms", closes_.avg(), 2);
+        r.add("close_max_ms", closes_.max, 1);
+        r.add("video_update_avg_ms", videoUpdates_.avg(), 2);
+        r.add("video_update_max_ms", videoUpdates_.max, 1);
+        r.add("current_video_update_max_ms", currentVideoUpdates_.max, 1);
+        r.add("preloaded_video_update_max_ms", preloadedVideoUpdates_.max, 1);
+        r.add("video_loaded_updates", videoLoadedUpdateCount_);
+        r.add("video_new_frames", videoNewFrameCount_);
         r.add("destroyed_slots", destroyedSlots_);
         r.add("destroy_max_ms", destroys_.max, 1);
         r.add("audio_loads", audioLoads_.n);
         r.add("audio_load_max_ms", audioLoads_.max, 1);
+        r.add("audio_engines_live", ac.liveEngines);
+        r.add("audio_load_calls_total", ac.loadCalls);
+        r.add("audio_engines_created_total", ac.enginesCreated);
+        r.add("audio_engines_released_total", ac.enginesReleased);
+        r.add("audio_source_buffer_mb", ac.sourceBufferBytes / (1024.0 * 1024.0), 2);
+        r.add("audio_retained_buffer_mb", ac.retainedBufferBytes / (1024.0 * 1024.0), 2);
         r.add("transitions", transitions_);
         r.add("preload_stalls", preloadStalls_);
         r.add("slots", rc.slots);
@@ -313,6 +352,8 @@ public:
             << " hitch>100ms=" << hitch100_
             << " vidFps/slot=" << vidFpsPerSlot
             << " loadAvg/max=" << (int)loads_.avg() << "/" << (int)loads_.max << "ms"
+            << " videoUpdateMax=" << (int)videoUpdates_.max << "ms"
+            << " closeMax=" << (int)closes_.max << "ms"
             << " | players live=" << livePlayers << " expected=" << expectedPlayers
             << " loaded=" << (rc.loadedCurrent + rc.loadedNext + rc.loadedPending)
             << " slots live=" << liveSlots << " expected=" << expectedSlots
@@ -374,11 +415,13 @@ private:
 
     void resetInterval() {
         frames_ = frameDt_ = updates_ = renderers_ = draws_ = publishes_ = gpuFinish_ = Stat{};
-        loads_ = destroys_ = audioLoads_ = Stat{};
+        loads_ = closes_ = destroys_ = audioLoads_ = Stat{};
+        videoUpdates_ = currentVideoUpdates_ = preloadedVideoUpdates_ = Stat{};
         hitch50_ = hitch100_ = hitch250_ = hitch1000_ = 0;
         hitchLogs_ = 0;
-        loadFails_ = closes_ = destroyedSlots_ = transitions_ = preloadStalls_ = 0;
+        loadFails_ = destroyedSlots_ = transitions_ = preloadStalls_ = 0;
         vidNewFrames_ = playingSlotFrames_ = 0;
+        videoLoadedUpdateCount_ = videoNewFrameCount_ = 0;
     }
 
     void openFiles() {
@@ -428,11 +471,13 @@ private:
     ProcStats prevProc_;
 
     Stat frames_, frameDt_, updates_, renderers_, draws_, publishes_, gpuFinish_;
-    Stat loads_, destroys_, audioLoads_;
+    Stat loads_, closes_, destroys_, audioLoads_;
+    Stat videoUpdates_, currentVideoUpdates_, preloadedVideoUpdates_;
     long long hitch50_ = 0, hitch100_ = 0, hitch250_ = 0, hitch1000_ = 0;
     int hitchLogs_ = 0;
-    long long loadFails_ = 0, closes_ = 0, destroyedSlots_ = 0, transitions_ = 0, preloadStalls_ = 0;
+    long long loadFails_ = 0, destroyedSlots_ = 0, transitions_ = 0, preloadStalls_ = 0;
     long long vidNewFrames_ = 0, playingSlotFrames_ = 0;
+    long long videoLoadedUpdateCount_ = 0, videoNewFrameCount_ = 0;
     long long totalLoads_ = 0, totalCloses_ = 0;
 };
 
@@ -454,6 +499,21 @@ inline bool loadVideo(ofVideoPlayer& p, const std::string& path) {
     bool ok = p.load(path);
     monitor().noteLoad(msSince(t0), ok, path);
     return ok;
+}
+
+inline void updateVideo(ofVideoPlayer& p, bool currentPlayer, const std::string& path) {
+    auto t0 = Clock::now();
+    p.update();
+    const double ms = msSince(t0);
+    const bool loaded = p.isLoaded();
+    const bool frameNew = loaded && p.isFrameNew();
+    monitor().noteVideoUpdate(ms, currentPlayer, loaded, frameNew, path);
+}
+
+inline void closeVideo(ofVideoPlayer& p) {
+    auto t0 = Clock::now();
+    p.close();
+    monitor().noteClose(msSince(t0));
 }
 
 }  // namespace Diag
