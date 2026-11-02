@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include "ArrangementIO.h"
+#include "AutoreleasePool.h"
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -758,6 +759,7 @@ size_t ofApp::pickNextArrangementIndex() {
 }
 
 void ofApp::update() {
+    ScopedAutoreleasePool autoreleasePool;
     Diag::monitor().beginUpdate();
     Diag::ScopedMs updateTimer(Diag::monitor().cur().update);
     float now = ofGetElapsedTimef();
@@ -937,6 +939,7 @@ void ofApp::publishAndPreviewSyphon() {
 }
 
 void ofApp::draw() {
+    ScopedAutoreleasePool autoreleasePool;
     {
     Diag::ScopedMs drawTimer(Diag::monitor().cur().draw);
     if (config.outputMode == OutputMode::Syphon) {
