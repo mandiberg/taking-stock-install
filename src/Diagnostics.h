@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <fstream>
 #include <sstream>
+#include <thread>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,6 +40,10 @@ constexpr double FIRST_SNAPSHOT_SEC = 120.0;
 constexpr double HITCH_LOG_MS = 250.0;
 constexpr int MAX_HITCH_LOGS_PER_INTERVAL = 20;
 constexpr double SLOW_LOAD_LOG_MS = 1000.0;
+// Watchdog: if the main loop doesn't start a new frame for this long, capture a stack
+// sample of the stuck process plus system state. Capped per run.
+constexpr double STALL_CAPTURE_AFTER_MS = 2000.0;
+constexpr int MAX_STALL_CAPTURES = 25;
 
 using Clock = std::chrono::steady_clock;
 inline double msSince(Clock::time_point t0) {
@@ -177,6 +182,11 @@ struct AudioCounts {
 
 class Monitor {
 public:
+    ~Monitor() {
+        watchdogStop_ = true;
+        if (watchdog_.joinable()) watchdog_.join();
+    }
+
     // ---- per-frame hooks -------------------------------------------------
     void beginUpdate() {
         auto now = Clock::now();
@@ -190,8 +200,11 @@ public:
             lastSnapshot_ = now;
             openFiles();
             prevProc_ = readProcStats();
+            lastBeatMs_ = nowMs();
+            watchdog_ = std::thread([this] { watchdogLoop(); });
         }
         lastFrameStart_ = now;
+        lastBeatMs_ = nowMs();
         cur_ = FrameTimes{};
     }
 
@@ -424,6 +437,46 @@ private:
         videoLoadedUpdateCount_ = videoNewFrameCount_ = 0;
     }
 
+    static long long nowMs() {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::steady_clock::now().time_since_epoch()).count();
+    }
+
+    // Runs off the main thread, so it still works while the main thread is blocked.
+    void watchdogLoop() {
+        long long capturedBeat = -1;
+        int captures = 0;
+        while (!watchdogStop_) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            long long beat = lastBeatMs_.load();
+            if (beat == capturedBeat || captures >= MAX_STALL_CAPTURES) continue;
+            if (nowMs() - beat < (long long)STALL_CAPTURE_AFTER_MS) continue;
+            capturedBeat = beat;
+            ++captures;
+            captureStall(captures);
+        }
+    }
+
+    void captureStall(int n) {
+        const std::string pid = std::to_string(getpid());
+        const std::string base = dir_ + "/stall_" + stamp_ + "_" + std::to_string(n);
+        ofLogWarning("Diag") << "STALL > " << (int)STALL_CAPTURE_AFTER_MS << " ms, capturing " << base << "_*.txt";
+        // sample shows exactly where each thread (main thread especially) is blocked.
+        std::string cmd =
+            "/usr/bin/sample " + pid + " 3 1 -file '" + base + "_sample.txt' > /dev/null 2>&1; "
+            "( date; echo '=== top (2 samples)'; /usr/bin/top -l 2 -s 1 -n 12 -o cpu; "
+            "echo '=== vm_stat'; /usr/bin/vm_stat; "
+            "echo '=== pmset therm'; /usr/bin/pmset -g therm; "
+            "echo '=== GPU'; /usr/sbin/ioreg -r -c IOAccelerator -w0 | grep PerformanceStatistics; "
+            "echo '=== os log, last 60 s (errors, faults, media/GPU/system processes)'; "
+            "/usr/bin/log show --last 60s --info --predicate "
+            "'messageType == error OR messageType == fault OR process == \"VTDecoderXPCService\" "
+            "OR process == \"mediaserverd\" OR process == \"kernel\" OR process == \"WindowServer\" "
+            "OR process == \"powerd\" OR process == \"thermalmonitord\"' | tail -n 400 "
+            ") > '" + base + "_system.txt' 2>&1";
+        std::system(cmd.c_str());
+    }
+
     void openFiles() {
         stamp_ = ofGetTimestampString("%Y%m%d_%H%M%S");
         dir_ = ofToDataPath("diagnostics", true);
@@ -473,6 +526,9 @@ private:
     }
 
     bool started_ = false;
+    std::atomic<long long> lastBeatMs_{0};
+    std::atomic<bool> watchdogStop_{false};
+    std::thread watchdog_;
     Clock::time_point startTime_, lastReport_, lastSnapshot_, lastFrameStart_;
     FrameTimes cur_;
     long long totalFrames_ = 0;
