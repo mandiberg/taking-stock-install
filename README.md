@@ -37,7 +37,15 @@ make
 make RunRelease
 ```
 
-`make` is only required the first time, or after the C++ sources change. Expect 1–2 minutes and a lot of compiler output. Later sessions can start with `make RunRelease`.
+Run `make` the first time and after source changes. If `openframeworks/ofAVFoundationVideoPlayer.m` changes, repeat the copy in step 2 before running `make` so the openFrameworks library and app pick up the replacement. Later sessions can start with `make RunRelease`.
+
+The video player normally uses AVFoundation's video output to retrieve available frames. If a frame is late, the previous frame stays visible; the next available frame is chosen at the player's current time, so intermediate frames can be skipped. To use the previous asset-reader playback path for a run, start the app with:
+
+```
+TAKING_STOCK_VIDEO_SOURCE=asset_reader make RunRelease
+```
+
+The console logs `Video frame source: video_output` or `Video frame source: asset_reader` when the first video loads. Unset the variable (or set it to `video_output`) to use the new path again.
 
 When running make for the first time on a new device, you may be prompted to install Command Line Tools. Follow this dialog box's instructions. FYI, your terminal may output this error:
 

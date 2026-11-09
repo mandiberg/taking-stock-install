@@ -6,6 +6,9 @@
 
 #import "ofAVFoundationVideoPlayer.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #define IS_OS_6_OR_LATER    ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
 
 
@@ -13,6 +16,22 @@
 static NSString * const kTracksKey = @"tracks";
 static NSString * const kStatusKey = @"status";
 static NSString * const kRateKey = @"rate";
+
+#if defined(USE_VIDEO_OUTPUT)
+static BOOL useVideoOutputForPlayback(void) {
+	static BOOL useVideoOutput;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		const char *source = getenv("TAKING_STOCK_VIDEO_SOURCE");
+		useVideoOutput = source == NULL || strcmp(source, "video_output") == 0;
+		if (source != NULL && !useVideoOutput && strcmp(source, "asset_reader") != 0) {
+			NSLog(@"Unknown TAKING_STOCK_VIDEO_SOURCE '%s'; using asset_reader", source);
+		}
+		NSLog(@"Video frame source: %s", useVideoOutput ? "video_output" : "asset_reader");
+	});
+	return useVideoOutput;
+}
+#endif
 
 //---------------------------------------------------------- video player.
 @implementation ofAVFoundationVideoPlayer
@@ -262,6 +281,9 @@ static const void *PlayerRateContext = &ItemStatusContext;
 			
 			if (!self->bStream) {
 				// create asset reader
+#if defined(USE_VIDEO_OUTPUT)
+				if (!useVideoOutputForPlayback() || self->bSampleAudio) {
+#endif
 				BOOL bOk = [self createAssetReaderWithTimeRange:CMTimeRangeMake(kCMTimeZero, self->duration)];
 				if(bOk == NO) {
 					NSLog(@"problem with creating asset reader.");
@@ -271,6 +293,9 @@ static const void *PlayerRateContext = &ItemStatusContext;
 					[self->asyncLock unlock];
 					return;
 				}
+#if defined(USE_VIDEO_OUTPUT)
+				}
+#endif
 				
 				AVAssetTrack * videoTrack = [videoTracks objectAtIndex:0];
 				self->frameRate = videoTrack.nominalFrameRate;
@@ -829,7 +854,8 @@ static const void *PlayerRateContext = &ItemStatusContext;
 	[self updateFromAssetReader];
 #else
 	// get new sample
-	if (!bStream && self.player.rate > 0.0) {
+	if (!bStream && self.player.rate > 0.0 &&
+		(!useVideoOutputForPlayback() || bSampleAudio || CMTIME_IS_VALID(synchSampleTime))) {
 		// playing forward
 		// pull out frames from assetreader
 		[self updateFromAssetReader];
@@ -847,17 +873,20 @@ static const void *PlayerRateContext = &ItemStatusContext;
 #if defined(USE_VIDEO_OUTPUT)
 - (void)updateFromVideoOutput {
 	OSStatus err = noErr;
+	bNewFrame = NO;
+	if (!bSampleVideo || self.videoOutput == nil) {
+		return;
+	}
 	
 	// get time from player
 	CMTime time = [_player currentTime];
 
 	if ([self.videoOutput hasNewPixelBufferForItemTime:time]) {
-		
-		bNewFrame = YES;
-		currentTime = time;
-		
 		// get buffer
 		CVPixelBufferRef buffer = [self.videoOutput copyPixelBufferForItemTime:time itemTimeForDisplay:NULL];
+		if (!buffer) {
+			return;
+		}
 		
 		// set videosize in case it is not set yet
 		if (videoWidth == 0 || videoHeight == 0) {
@@ -867,17 +896,14 @@ static const void *PlayerRateContext = &ItemStatusContext;
 		}		
 		
 		// create or update video format description
-		if (!_videoInfo || !CMVideoFormatDescriptionMatchesImageBuffer(_videoInfo, buffer)) {
-			if (_videoInfo) {
-				CFRelease(_videoInfo);
-				_videoInfo = nil;
-			}		
-			err = CMVideoFormatDescriptionCreateForImageBuffer(NULL, buffer, &_videoInfo);
+		CMVideoFormatDescriptionRef format = _videoInfo;
+		BOOL newFormat = !_videoInfo || !CMVideoFormatDescriptionMatchesImageBuffer(_videoInfo, buffer);
+		if (newFormat) {
+			format = nil;
+			err = CMVideoFormatDescriptionCreateForImageBuffer(NULL, buffer, &format);
 		}
 		if (err) {
 			NSLog(@"Error at CMVideoFormatDescriptionCreateForImageBuffer %ld", (long)err);
-			bNewFrame = NO;
-			// release temp buffer
 			CVBufferRelease(buffer);
 			return;
 		}
@@ -890,38 +916,33 @@ static const void *PlayerRateContext = &ItemStatusContext;
 		};
 		
 	
-		// release old buffer.
-		if(videoSampleBuffer) {
-			CFRelease(videoSampleBuffer);
-			videoSampleBuffer = nil;
-		}
-		
 		// create new sampleBuffer
+		CMSampleBufferRef newSampleBuffer = nil;
 		err = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault,
 												 buffer,
 												 true,
 												 NULL,
 												 NULL,
-												 _videoInfo,
+												 format,
 												 &sampleTimingInfo,
-												 &videoSampleBuffer);
+												 &newSampleBuffer);
 		if (err) {
 			NSLog(@"Error at CMSampleBufferCreateForImageBuffer %ld", (long)err);
-			bNewFrame = NO;
-			// release temp buffer
+			if (newFormat && format) CFRelease(format);
 			CVBufferRelease(buffer);
 			return;
 		}
-		
-		// release temp buffer
+
+		if (newFormat) {
+			if (_videoInfo) CFRelease(_videoInfo);
+			_videoInfo = format;
+		}
+		if (videoSampleBuffer) CFRelease(videoSampleBuffer);
+		videoSampleBuffer = newSampleBuffer;
 		CVBufferRelease(buffer);
-		
+		currentTime = time;
 		videoSampleTime = time;
-		
-		
-	} else {
-		// no new frame for time
-		bNewFrame = NO;
+		bNewFrame = YES;
 	}
 }
 #endif
