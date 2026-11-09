@@ -1,12 +1,11 @@
 #pragma once
 
-// Long-run stability diagnostics (header-only, main-thread only).
+// Long-run stability diagnostics (header-only).
 //
 // Every REPORT_INTERVAL_SEC seconds one row is appended to
 //   bin/data/diagnostics/diag_<start time>.csv   (flushed immediately, survives a crash)
-// and a one-line "[Diag]" summary is logged. Every SNAPSHOT_INTERVAL_SEC seconds a
-// background shell job also dumps footprint / vmmap / GPU memory / thermal state to
-//   bin/data/diagnostics/snap_<start time>_<n>.txt
+// and a one-line "[Diag]" summary is logged. Periodic system and heap snapshots
+// can be enabled below; stall captures run independently of that setting.
 //
 // What it answers:
 //   * Are ofVideoPlayer / VideoSlot objects accumulating?  (live_* vs expected_*)
@@ -35,15 +34,15 @@
 namespace Diag {
 
 constexpr double REPORT_INTERVAL_SEC = 60.0;
+constexpr bool ENABLE_PERIODIC_SNAPSHOTS = false;
 constexpr double SNAPSHOT_INTERVAL_SEC = 1800.0;
 constexpr double FIRST_SNAPSHOT_SEC = 120.0;
 constexpr double HITCH_LOG_MS = 250.0;
 constexpr int MAX_HITCH_LOGS_PER_INTERVAL = 20;
 constexpr double SLOW_LOAD_LOG_MS = 1000.0;
 // Watchdog: if the main loop doesn't start a new frame for this long, capture a stack
-// sample of the stuck process plus system state. Capped per run.
+// sample of the stuck process plus system state.
 constexpr double STALL_CAPTURE_AFTER_MS = 2000.0;
-constexpr int MAX_STALL_CAPTURES = 25;
 
 using Clock = std::chrono::steady_clock;
 inline double msSince(Clock::time_point t0) {
@@ -383,7 +382,8 @@ public:
 
         const double sinceSnap = std::chrono::duration<double>(now - lastSnapshot_).count();
         const double nextSnap = snapshotCount_ == 0 ? FIRST_SNAPSHOT_SEC : SNAPSHOT_INTERVAL_SEC;
-        if (sinceSnap >= nextSnap - 1.0 || (snapshotCount_ == 0 && uptime >= FIRST_SNAPSHOT_SEC)) {
+        if (ENABLE_PERIODIC_SNAPSHOTS &&
+            (sinceSnap >= nextSnap - 1.0 || (snapshotCount_ == 0 && uptime >= FIRST_SNAPSHOT_SEC))) {
             takeSnapshot();
             lastSnapshot_ = now;
         }
@@ -445,11 +445,11 @@ private:
     // Runs off the main thread, so it still works while the main thread is blocked.
     void watchdogLoop() {
         long long capturedBeat = -1;
-        int captures = 0;
+        unsigned long long captures = 0;
         while (!watchdogStop_) {
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
             long long beat = lastBeatMs_.load();
-            if (beat == capturedBeat || captures >= MAX_STALL_CAPTURES) continue;
+            if (beat == capturedBeat) continue;
             if (nowMs() - beat < (long long)STALL_CAPTURE_AFTER_MS) continue;
             capturedBeat = beat;
             ++captures;
@@ -457,7 +457,7 @@ private:
         }
     }
 
-    void captureStall(int n) {
+    void captureStall(unsigned long long n) {
         const std::string pid = std::to_string(getpid());
         const std::string base = dir_ + "/stall_" + stamp_ + "_" + std::to_string(n);
         ofLogWarning("Diag") << "STALL > " << (int)STALL_CAPTURE_AFTER_MS << " ms, capturing " << base << "_*.txt";
