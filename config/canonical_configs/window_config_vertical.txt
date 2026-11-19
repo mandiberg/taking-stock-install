@@ -10,6 +10,9 @@
 BOX_WIDTH = 250    # vertical band width (the narrow side)
 BOX_HEIGHT = 1800  # vertical band height (the long side)
 
+VIDEO_ASSET_PATH  = ../videos/videos
+VIDEOS_CSV_PATH   = ../videos/videos/installation.csv
+
 ################ LAYOUT GENERATION ########################
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)

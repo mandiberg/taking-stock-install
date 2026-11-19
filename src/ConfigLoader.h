@@ -40,7 +40,7 @@ struct BinSorterConfig {
     static constexpr bool aspectExpandFilter = true;              // reject layouts whose slots exceed expand tolerances
     static constexpr int nestingLayers = 0;                       // nesting disabled
     static constexpr int nestedMinSpaceThreshold = 0;
-    static constexpr float mainBinFillChance = 0.05f;             // chance the first item may fill the whole canvas
+    float mainBinFillChance = 0.05f;                               // chance the first item may fill the whole canvas
     static constexpr float breakBoxCoverageThreshold = 0.99f;     // fraction of a broken slot the sub-items must cover
     static constexpr int windowX = 0;                             // main window opens at the primary display's top-left
     static constexpr int windowY = 0;

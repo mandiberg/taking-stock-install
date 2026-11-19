@@ -8,9 +8,10 @@ bin/*.app/
 obj/
 
 # Large media/data files. .gitkeep stays so the empty folder remains in git.
-videos/*.mp4
-videos/*.csv
+videos/**/*.mp4
+videos/**/*.csv
 !videos/.gitkeep
+!videos/**/.gitkeep
 
 #arrangements
 arrangements/*arrangements*
