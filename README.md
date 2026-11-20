@@ -47,6 +47,8 @@ TAKING_STOCK_VIDEO_SOURCE=asset_reader make RunRelease
 
 The console logs `Video frame source: video_output` or `Video frame source: asset_reader` when the first video loads. Unset the variable (or set it to `video_output`) to use the new path again.
 
+The app also writes Mach port-space breakdowns to `bin/data/diagnostics/portspace_<run>_startup.txt` and one file per 24 hours of uptime (`..._day_1.txt`, `..._day_2.txt`, etc.). Each file records counts by right type and the active port names, types, user-reference counts, and object identifiers, for comparing what accumulates over a long run.
+
 When running make for the first time on a new device, you may be prompted to install Command Line Tools. Follow this dialog box's instructions. FYI, your terminal may output this error:
 
 xcode-select: note: No developer tools were found, requesting install.

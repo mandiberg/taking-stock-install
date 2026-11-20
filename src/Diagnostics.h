@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <thread>
 #include <string>
@@ -27,6 +28,7 @@
 
 #include <libproc.h>
 #include <mach/mach.h>
+#include <mach_debug/ipc_info.h>
 #include <sys/resource.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
@@ -37,6 +39,7 @@ constexpr double REPORT_INTERVAL_SEC = 60.0;
 constexpr bool ENABLE_PERIODIC_SNAPSHOTS = false;
 constexpr double SNAPSHOT_INTERVAL_SEC = 1800.0;
 constexpr double FIRST_SNAPSHOT_SEC = 120.0;
+constexpr double PORT_SPACE_INTERVAL_SEC = 24.0 * 60.0 * 60.0;
 constexpr double HITCH_LOG_MS = 250.0;
 constexpr int MAX_HITCH_LOGS_PER_INTERVAL = 20;
 constexpr double SLOW_LOAD_LOG_MS = 1000.0;
@@ -199,6 +202,8 @@ public:
             lastSnapshot_ = now;
             openFiles();
             prevProc_ = readProcStats();
+            nextPortSpaceSnapshotSec_ = PORT_SPACE_INTERVAL_SEC;
+            capturePortSpace("startup", 0.0);
             lastBeatMs_ = nowMs();
             watchdog_ = std::thread([this] { watchdogLoop(); });
         }
@@ -380,6 +385,12 @@ public:
         prevProc_ = ps;
         resetInterval();
 
+        if (uptime >= nextPortSpaceSnapshotSec_) {
+            const auto day = static_cast<unsigned long long>(uptime / PORT_SPACE_INTERVAL_SEC);
+            capturePortSpace("day_" + std::to_string(day), uptime);
+            nextPortSpaceSnapshotSec_ = (day + 1) * PORT_SPACE_INTERVAL_SEC;
+        }
+
         const double sinceSnap = std::chrono::duration<double>(now - lastSnapshot_).count();
         const double nextSnap = snapshotCount_ == 0 ? FIRST_SNAPSHOT_SEC : SNAPSHOT_INTERVAL_SEC;
         if (ENABLE_PERIODIC_SNAPSHOTS &&
@@ -477,6 +488,106 @@ private:
         std::system(cmd.c_str());
     }
 
+    void capturePortSpace(const std::string& label, double uptimeSec) {
+        ipc_info_space_t spaceInfo{};
+        ipc_info_name_array_t names = nullptr;
+        mach_msg_type_number_t nameCount = 0;
+        ipc_info_tree_name_array_t tree = nullptr;
+        mach_msg_type_number_t treeCount = 0;
+        const kern_return_t result = mach_port_space_info(
+            mach_task_self(), &spaceInfo, &names, &nameCount, &tree, &treeCount);
+        if (result != KERN_SUCCESS) {
+            ofLogError("Diag") << "mach_port_space_info failed: " << mach_error_string(result);
+            return;
+        }
+
+        struct RightCounts {
+            unsigned int send = 0;
+            unsigned int receive = 0;
+            unsigned int sendOnce = 0;
+            unsigned int portSet = 0;
+            unsigned int deadName = 0;
+            unsigned int deadNameRequests = 0;
+            unsigned int setRequests = 0;
+            unsigned int delayedSetRequests = 0;
+            unsigned int named = 0;
+            unsigned long long sendUserRefs = 0;
+        } counts;
+
+        for (mach_msg_type_number_t i = 0; i < nameCount; ++i) {
+            const mach_port_type_t type = names[i].iin_type;
+            if (type == MACH_PORT_TYPE_NONE) continue;
+            ++counts.named;
+            if (type & MACH_PORT_TYPE_SEND) {
+                ++counts.send;
+                counts.sendUserRefs += names[i].iin_urefs;
+            }
+            if (type & MACH_PORT_TYPE_RECEIVE) ++counts.receive;
+            if (type & MACH_PORT_TYPE_SEND_ONCE) ++counts.sendOnce;
+            if (type & MACH_PORT_TYPE_PORT_SET) ++counts.portSet;
+            if (type & MACH_PORT_TYPE_DEAD_NAME) ++counts.deadName;
+            if (type & MACH_PORT_TYPE_DNREQUEST) ++counts.deadNameRequests;
+            if (type & MACH_PORT_TYPE_SPREQUEST) ++counts.setRequests;
+            if (type & MACH_PORT_TYPE_SPREQUEST_DELAYED) ++counts.delayedSetRequests;
+        }
+
+        const std::string path = dir_ + "/portspace_" + stamp_ + "_" + label + ".txt";
+        std::ofstream out(path);
+        if (!out) {
+            ofLogError("Diag") << "Could not write Mach port breakdown: " << path;
+        } else {
+            out << "timestamp=" << ofGetTimestampString("%Y-%m-%d %H:%M:%S") << "\n"
+                << "uptime_seconds=" << std::fixed << std::setprecision(1) << uptimeSec << "\n"
+                << "pid=" << getpid() << "\n"
+                << "mach_port_space_info_result=" << result << "\n"
+                << "table_size=" << spaceInfo.iis_table_size << "\n"
+                << "table_entries_returned=" << nameCount << "\n"
+                << "named_ports=" << counts.named << "\n"
+                << "send_right_names=" << counts.send << "\n"
+                << "send_user_references=" << counts.sendUserRefs << "\n"
+                << "receive_right_names=" << counts.receive << "\n"
+                << "send_once_right_names=" << counts.sendOnce << "\n"
+                << "port_set_names=" << counts.portSet << "\n"
+                << "dead_name_right_names=" << counts.deadName << "\n"
+                << "dead_name_requests=" << counts.deadNameRequests << "\n"
+                << "set_requests=" << counts.setRequests << "\n"
+                << "delayed_set_requests=" << counts.delayedSetRequests << "\n"
+                << "\n# active entries: name type rights urefs object_id\n";
+            for (mach_msg_type_number_t i = 0; i < nameCount; ++i) {
+                const mach_port_type_t type = names[i].iin_type;
+                if (type == MACH_PORT_TYPE_NONE) continue;
+                std::string rights;
+                auto addRight = [&rights](const char* right) {
+                    if (!rights.empty()) rights += "|";
+                    rights += right;
+                };
+                if (type & MACH_PORT_TYPE_SEND) addRight("send");
+                if (type & MACH_PORT_TYPE_RECEIVE) addRight("receive");
+                if (type & MACH_PORT_TYPE_SEND_ONCE) addRight("send_once");
+                if (type & MACH_PORT_TYPE_PORT_SET) addRight("port_set");
+                if (type & MACH_PORT_TYPE_DEAD_NAME) addRight("dead_name");
+                if (type & MACH_PORT_TYPE_DNREQUEST) addRight("dead_name_request");
+                if (type & MACH_PORT_TYPE_SPREQUEST) addRight("set_request");
+                if (type & MACH_PORT_TYPE_SPREQUEST_DELAYED) addRight("delayed_set_request");
+                out << std::hex << "0x" << names[i].iin_name
+                    << " 0x" << names[i].iin_type
+                    << std::dec << " " << rights << " " << names[i].iin_urefs
+                    << std::hex << " 0x" << names[i].iin_object
+                    << std::dec << "\n";
+            }
+            out.flush();
+            if (!out) ofLogError("Diag") << "Error writing Mach port breakdown: " << path;
+            else ofLogNotice("Diag") << "Mach port breakdown -> " << path
+                << " | names=" << counts.named << " send=" << counts.send
+                << " receive=" << counts.receive << " dead=" << counts.deadName;
+        }
+
+        if (names)
+            vm_deallocate(mach_task_self(), (vm_address_t)names, nameCount * sizeof(*names));
+        if (tree)
+            vm_deallocate(mach_task_self(), (vm_address_t)tree, treeCount * sizeof(*tree));
+    }
+
     void openFiles() {
         stamp_ = ofGetTimestampString("%Y%m%d_%H%M%S");
         dir_ = ofToDataPath("diagnostics", true);
@@ -530,6 +641,7 @@ private:
     std::atomic<bool> watchdogStop_{false};
     std::thread watchdog_;
     Clock::time_point startTime_, lastReport_, lastSnapshot_, lastFrameStart_;
+    double nextPortSpaceSnapshotSec_ = PORT_SPACE_INTERVAL_SEC;
     FrameTimes cur_;
     long long totalFrames_ = 0;
     int snapshotCount_ = 0;
