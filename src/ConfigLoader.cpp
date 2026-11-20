@@ -36,6 +36,7 @@ bool ConfigLoader::parseLine(const std::string& line, BinSorterConfig& config) {
     if (key == "PACKING_STOP_AREA") { config.packingStopArea = std::stoi(value); return true; }
     if (key == "ITEM_BREAK_SCALE") { config.itemBreakScale = std::stof(value); return true; }
     if (key == "ITEM_BREAK_CHANCE") { config.itemBreakChance = std::stof(value); return true; }
+    if (key == "MAIN_BIN_FILL_CHANCE") { config.mainBinFillChance = std::stof(value); return true; }
     if (key == "BREAK_BOX_MIN_ITEMS") { config.breakBoxMinItems = std::stoi(value); return true; }
     if (key == "BREAK_BOX_MAX_ITEMS") { config.breakBoxMaxItems = std::stoi(value); return true; }
     if (key == "BREAK_BOX_FILL_ATTEMPTS") { config.breakBoxFillAttempts = std::stoi(value); return true; }
