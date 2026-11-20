@@ -10,6 +10,9 @@
 BOX_WIDTH = 3840   # 4K UHD width
 BOX_HEIGHT = 2160  # 4K UHD height (16:9)
 
+VIDEO_ASSET_PATH  = ../videos/videos
+VIDEOS_CSV_PATH   = ../videos/videos/installation.csv
+
 ################ LAYOUT GENERATION ########################
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)

@@ -17,8 +17,6 @@ PREVIEW_HEIGHT = 100  # OF preview window height when OUTPUT_MODE = syphon
 
 
 ############# PATHS ######################
-VIDEO_ASSET_PATH = ../videos
-VIDEOS_CSV_PATH = ../videos/installation.csv
 ARRANGEMENTS_PATH = ../arrangements
 AUDIO_PATH = ../audio
 

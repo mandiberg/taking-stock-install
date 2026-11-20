@@ -346,7 +346,7 @@ Arrangements that violate the expand tolerances are always rejected: each slot's
 
 The Break Box system allows a single large slot to be replaced during layout generation by a group of smaller slots that together cover the same area. Unlike nesting, the sub-items become full members of the top-level layout rather than an inner sub-layer. Only one break is allowed per layout.
 
-There is a fixed 5% chance that the very first item placed is allowed to match the canvas's own aspect ratio, which would fill the entire canvas with one video; otherwise the first item is forbidden from matching the canvas ratio, so the layout contains at least two videos. (Formerly `MAIN_BIN_FILL_CHANCE = 0.05`.)
+**MAIN_BIN_FILL_CHANCE** = Probability (0.0–1.0) that the very first item placed is allowed to match the canvas's own aspect ratio, which fills the entire canvas with one video. When the roll fails, the first item is forbidden from matching the canvas ratio so the layout contains at least two videos. Set to `1` for a guaranteed single-video full-canvas layout ("1×1 mode"); set to `0` to always require at least two videos. (default = 0.05)
 
 **ITEM_BREAK_SCALE** = The minimum fraction of total canvas area an item must cover to be eligible for breaking into sub-items. For example, `0.35` means only items occupying ≥ 35% of the canvas can break. Small items placed in corners are never eligible. (default = 0.35)
 
@@ -425,7 +425,6 @@ The following options used to live in config.txt but have been deprecated. They 
 | `ASPECT_EXPAND_FILTER`              | `true`      | Arrangements whose slots exceed the expand tolerances are rejected.                            |
 | `NESTING_LAYERS`                    | `0`         | Nesting is disabled and is not part of arrangement file names.                                 |
 | `NESTED_MIN_SPACE_THRESHOLD`        | `0`         | Unused, since nesting is disabled.                                                             |
-| `MAIN_BIN_FILL_CHANCE`              | `0.05`      | 5% chance the first item may match the canvas ratio and fill the whole canvas with one video.  |
 | `BREAK_BOX_COVERAGE_THRESHOLD`      | `0.99`      | Break-box sub-items must cover at least 99% of the original slot.                              |
 
 

@@ -10,6 +10,9 @@
 BOX_WIDTH = 3840   # square canvas width (4K)
 BOX_HEIGHT = 3840  # square canvas height (4K)
 
+VIDEO_ASSET_PATH  = ../videos/videos
+VIDEOS_CSV_PATH   = ../videos/videos/installation.csv
+
 ################ LAYOUT GENERATION ########################
 IGNORE_FINGERPRINT = true  # true = skip fingerprint check; reuse any matching arrangement file without regenerating
 LAYOUT_MAX_ATTEMPTS = 50000   # max sort() calls per phase (default 50k)
